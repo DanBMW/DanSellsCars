@@ -246,7 +246,9 @@
     var B = window.ctBrand || { cleanCar: function (c) { return c; } };
     var getStock = function (u) { return fetch(u, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
     var stock = getStock('../lookup/std-stock.json').catch(function () { return getStock('../lookup/stock.json'); }).then(function (d) {
-      S.generated = d.generated_at; S.cars = Object.keys(d.cars).map(function (k) { var c = B.cleanCar(d.cars[k]); c.kind = 'used'; return c; }); });
+      /* empty series read from the model name (the i3 had none), and the plate year where the feed's year is older */
+      S.generated = d.generated_at; S.cars = Object.keys(d.cars).map(function (k) { var c = B.cleanCar(d.cars[k]); c.kind = 'used';
+        if (!c.series && M.seriesOf) c.series = M.seriesOf(c); var y = M.carYear ? M.carYear(c) : null; if (y) c.year = y; return c; }); });
     var range = fetch('../MBG.html', { cache: 'no-cache' }).then(function (r) { return r.text(); }).then(function (h) {
       var doc = new DOMParser().parseFromString(h, 'text/html'); var out = [];
       $$('#new details.mbg-acc', doc).forEach(function (det) {
@@ -295,7 +297,7 @@
     var l = M.FAMILY.map(function (x) { return x[0]; }).filter(function (x) { return fams[x]; }); if (fams.Other) l.push('Other'); return l.length ? l : M.FAMILY.map(function (x) { return x[0]; }); }
   function allModels() {
     var fam = {}, vars = {};
-    pool().concat(S.newRange).forEach(function (c) { if (c.series && !/^M\d/.test(c.series)) fam[c.series] = 1; var v = M.variantOf(c); if (v) vars[v] = 1; });
+    pool().concat(S.newRange).forEach(function (c) { var sr = M.seriesOf ? M.seriesOf(c) : c.series; if (sr && !/^M\d/.test(sr)) fam[sr] = 1; var v = M.variantOf(c); if (v) vars[v] = 1; });
     var sort = function (a, b) { return a.localeCompare(b, 'en', { numeric: true }); };
     return Object.keys(fam).sort(sort).concat(Object.keys(vars).sort(sort));
   }
@@ -306,25 +308,33 @@
     var fm = st.filter(function (c) { return c.finance; }).map(function (c) { return c.finance.monthly; }); fm = fm.length ? Math.min.apply(null, fm) : null;
     S.newRange = (S.newRange || []).filter(function (p) { return !st.some(function (c) { return M.covers(c, p.name); }); })
       .map(function (p) { p.floor_cash = fc; p.floor_monthly = fm; return p; }); }
-  function stockLabel(c) { return c.kind === 'new_stock' ? 'New, in stock' : c.kind === 'new' ? 'Brand new, ordered for you' : c.source === 'group' ? 'I can source this one' : 'On my forecourt'; }
+  function stockLabel(c) { return c.kind === 'new_stock' ? 'New, in stock' : c.kind === 'new' ? 'Brand new, ordered for you' : c.source === 'group' ? 'Dan can source this' : 'On my forecourt'; }
   function ready(c) { return c.lead_min && c.lead_max ? (c.lead_min === c.lead_max ? 'Ready in about ' + c.lead_min + ' weeks' : 'Ready in ' + c.lead_min + ' to ' + c.lead_max + ' weeks') : ''; }
   function askModelWa(c) { return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the look of a new ' + c.model + ' on SwipeToDrive. Could you tell me about this model and what is available?'); }
   function buyOrAsk(c) { return c.kind === 'new' ? '<a class="ct-btn ct-btn-big ct-wa ct-ask" target="_blank" rel="noopener" href="' + esc(askModelWa(c)) + '">Ask ' + esc(waWho() || 'Dan') + ' about this model</a>'
     : '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>'; }
   function brandNew(c) { return c.kind === 'new' || c.kind === 'new_stock'; }
   function byReg(reg) { return pool().find(function (c) { return c.reg === reg; }); }
-  function waNum() { return (S.owner && S.owner.whatsapp) || CFG.DAN_WA; }
-  function waWho() { return S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
+  /* Lead routing (Dan, 17 Nov 2026): every self sign up and guest is Dan's. On the customer side WhatsApp, booking and
+     names always go to Dan, never to an assigned salesperson. Staff screens keep the owner's number. */
+  function custSide() { return !S.session || S.session.role === 'customer'; }
+  function waNum() { return custSide() ? CFG.DAN_WA : (S.owner && S.owner.whatsapp) || CFG.DAN_WA; }
+  function waWho() { return custSide() ? 'Dan' : S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
 
   /* ---------------- routing ---------------- */
-  var SCREENS = ['signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick', 'followups', 'quote', 'present'];
+  var SCREENS = ['start', 'guestme', 'signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick', 'followups', 'quote', 'present'];
   var HUB = ['followups', 'quote', 'present']; /* Dan's admin tools: admin only, never customers or guests */
   function go(name) { if (location.hash !== '#' + name) location.hash = name; else route(); }
   function route() {
     var h = (location.hash || '').slice(1); if (isAuthHash(h)) h = '';
-    h = h || (S.session ? (S.session.role === 'admin' ? 'team' : 'discover') : 'signin');
-    if (!S.session) h = 'signin';
+    h = h || (S.session ? (S.session.role === 'admin' ? 'team' : 'discover') : 'start');
+    /* Public visitors land on the browse first start (three questions, then swipe, no account). Sign in stays one tap
+       away, and anyone finishing a sign in, a "Tell me when it arrives" alert or a failed link still lands on it. */
+    if (!S.session) h = (h === 'signin' || AUTH_ERR || (window.AlertSave && window.AlertSave.get())) ? 'signin' : 'start';
     if (SCREENS.indexOf(h) === -1) h = 'discover';
+    var guest = isGuest();
+    if (guest) { if (h === 'me' || h === 'bought') h = 'guestme'; else if (h === 'profile') h = 'start'; else if (['discover', 'matches', 'guestme', 'start', 'signin'].indexOf(h) === -1) h = 'discover'; }
+    else if (S.session && (h === 'start' || h === 'guestme')) h = 'discover';
     var staff = S.session && S.session.role !== 'customer';
     if ((h === 'team' || h === 'invites' || h === 'buys') && !staff) h = 'discover';
     if (h === 'invites' && S.session.role !== 'admin') h = 'team';
@@ -335,15 +345,16 @@
     if (S.session && !S.cust && staff && (h === 'discover' || h === 'matches' || h === 'bought')) h = 'pick';
     else if (S.session && !S.cust && !staff && ['discover', 'matches', 'bought', 'me'].indexOf(h) !== -1) h = 'profile';
     if (h === 'pick') tab = tab === 'bought' ? 'team' : tab;
-    if (S.session && S.cust && !S.cust.name && !staff && h !== 'profile') h = 'profile';
+    if (S.session && S.cust && !S.cust.name && !staff && !guest && h !== 'profile') h = 'profile';
     $$('.ct-screen').forEach(function (s) { s.hidden = s.getAttribute('data-screen') !== h; });
-    $('#nav').hidden = !S.session;
-    $$('[data-nav]').forEach(function (a) { if (a.getAttribute('data-nav') === (h === 'pick' ? tab : h)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    $('#nav').hidden = !S.session || h === 'start' || h === 'signin';
+    $$('[data-nav]').forEach(function (a) { if (a.getAttribute('data-nav') === (h === 'pick' ? tab : h === 'guestme' ? 'me' : h)) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     $$('[data-staff-only]').forEach(function (e) { e.hidden = !staff; });
     $$('[data-admin-only]').forEach(function (e) { e.hidden = !(S.session && S.session.role === 'admin'); });
     var act = $('#acting'); act.hidden = !(staff && S.cust); if (S.cust) act.textContent = 'For ' + (S.cust.name || 'new customer');
     window.scrollTo(0, 0);
-    ({ profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys, followups: hubShow, quote: hubShow, present: hubShow }[h] || function () {})();
+    document.body.classList.toggle('ct-is-guest', guest);
+    ({ start: showStart, guestme: showGuestMe, profile: showProfile, discover: showDeck, matches: showMatches, me: showMe, bought: showBought, team: showTeam, invites: showInvites, buys: showBuys, followups: hubShow, quote: hubShow, present: hubShow }[h] || function () {})();
   }
   function hubShow() { if (window.ctHub && S.session && S.session.role === 'admin') window.ctHub.show(location.hash.slice(1)); }
   /* Android style shared axis slide between tabs, where the browser supports view transitions. Moving right
@@ -396,12 +407,13 @@
     return window.ChatProfile.save(sb, sbUser, ans).then(function () { track('chat_saved_to_profile', { where: 'app' }); try { ans._saved = sess.email || 'yes'; localStorage.setItem('sd_chat_answers_v1', JSON.stringify(ans)); } catch (e) {} toast('Your chat answers are saved to your profile'); })
       .catch(function (e) { console.warn('chat save', e); }); }
   function afterSignIn(sess) {
+    if (sess && !sess.guest) { store = LIVE ? supa : demo; S.askedLike = false; }   /* a real sign in always leaves guest mode */
     S.session = sess; if (!sess) { route(); return; }
     var staff = sess.role !== 'customer';
     return chatPending(sess).then(function () { return store.customers(); }).then(function (list) {
       if (!staff) S.cust = list[0] || null;
       else { var last = sessionStorage.getItem('ctActing'); S.cust = list.find(function (c) { return c.id === last; }) || null; }
-      return (staff ? Promise.resolve() : alertPending()).then(loadCust);
+      return (staff ? Promise.resolve() : guestCarry(sess).then(alertPending)).then(loadCust);
     }).then(function () { resyncPush(); if (!location.hash || location.hash === '#signin') location.hash = staff ? 'team' : (S.cust && S.cust.name ? 'discover' : 'profile'); else route(); iosNudge(); });
   }
   /* "Tell me when it arrives" (alerts.html): the alert waits on this device until the customer has signed in,
@@ -492,7 +504,7 @@
     drawTri('#modelChips', allModels().map(function (m) { return { key: m, label: m }; }), c.models || [], c.models_must || []);
     ['name', 'phone', 'email', 'postcode', 'monthly_gbp', 'cash_gbp', 'deposit_gbp'].forEach(function (k) { if (f.elements[k]) f.elements[k].value = c[k] == null ? '' : c[k]; });
     f.elements.annual_mileage.value = String(c.annual_mileage || 8000);
-    setChoice(f, 'budget_type', c.budget_type || 'monthly'); var fp = M.fuelPrefs(c); drawTri('#fuelChips', FUEL_OPTS, fp.all.length ? fp.all : ['open'], fp.must); setChoice(f, 'mileage_bands', c.mileage_bands || []); setChoice(f, 'body', c.body || 'any');
+    setChoice(f, 'budget_type', c.budget_type || 'monthly'); var fp = M.fuelPrefs(c); drawTri('#fuelChips', FUEL_OPTS, fp.all.length ? fp.all : ['open'], fp.must); setChoice(f, 'mileage_bands', c.mileage_bands || []); setBody('#bodyChips', c.body, M.bodyMust(c));
     f.elements.email_alerts.checked = !!c.email_alerts; f.elements.year_from.value = c.year_from ? String(c.year_from) : '';
     setChoice(f, 'new_used', c.new_used || 'both');
     var fams = {}; S.cars.forEach(function (car) { var fm = M.colourFamily(car); if (fm) fams[fm] = 1; });
@@ -515,6 +527,17 @@
       nt.textContent = c.user_id ? 'This customer signed in themselves, so they have agreed to use SwipeToDrive.' : c.comms_consent_at ? 'Consent recorded ' + new Date(c.comms_consent_at).toLocaleDateString('en-GB') + (c.comms_consent_by_name ? ' by ' + c.comms_consent_by_name : '') + '. Untick and save to withdraw it: their swipe links stop working.' : 'Leave this unticked and nothing is ever sent to them. You can still print their customer page.'; }
     $('#pfSave').textContent = staff ? 'Save and find matches' : 'Find my match';
   }
+  /* Body or size: one shape. Tap once for would like, twice for must have (only that shape), a third time to clear.
+     Any clears it. Used by the profile and the guest start. */
+  function setBody(sel, body, must) { $$(sel + ' button').forEach(function (b) { var v = b.getAttribute('data-v'), on = body && body !== 'any' ? v === body : v === 'any';
+      var st = on && v !== 'any' ? (must ? 'must' : 'like') : ''; b.setAttribute('data-state', st); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
+  function bodyVal(sel) { var b = $$(sel + ' button').filter(function (x) { var st = x.getAttribute('data-state'); return st === 'like' || st === 'must'; })[0];
+    return b ? { body: b.getAttribute('data-v'), must: b.getAttribute('data-state') === 'must' } : { body: 'any', must: false }; }
+  function bindBody(g) { if (!g || g._bodyBound) return; g._bodyBound = true;
+    g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; var v = b.getAttribute('data-v'), st = b.getAttribute('data-state') || '';
+      if (v === 'any') { setBody('#' + g.id, 'any', false); }
+      else if (!st) setBody('#' + g.id, v, false); else if (st === 'like') setBody('#' + g.id, v, true); else setBody('#' + g.id, 'any', false);
+      platform.haptic(8); }); }
   function drawTri(sel, opts, on, must) { var lastG = null; $(sel).innerHTML = opts.map(function (o) { var st = must.indexOf(o.key) !== -1 ? 'must' : on.indexOf(o.key) !== -1 ? 'like' : '';
       var head = o.group && o.group !== lastG ? '<span class="ct-grp">' + esc(o.group) + '</span>' : ''; lastG = o.group || lastG;
       return head + '<button type="button" data-v="' + esc(o.key) + '" data-state="' + st + '" aria-pressed="' + (st ? 'true' : 'false') + '">' + esc(o.label) + '</button>'; }).join(''); }
@@ -555,14 +578,14 @@
   function drawThumbs() { $('#pxThumbs').innerHTML = S.pxPhotos.map(function (p) { return p.preview ? '<img src="' + esc(p.preview) + '" alt="Part exchange photo">' : '<span class="ct-pill">Photo saved</span>'; }).join(''); }
   window.ctCrdPrintCurrent = function () { if (S.cust && window.ctCrd) window.ctCrd.open(S.cust, S.session); else toast('Save the customer first, then print.'); };
   function initProfile() {
-    var f = $('#profileForm'); bindChoice(f);
+    var f = $('#profileForm'); bindChoice(f); bindBody($('#bodyChips'));
     /* choosing "I have one" opens the part exchange section, so its questions are right there */
     $('.ct-seg[data-name="px_has"]', f).addEventListener('click', function () { if (choice(f, 'px_has') === 'yes') $('details.ct-sec[data-sec="px"]', f).open = true; });
     ['px_valuation_gbp', 'px_settlement_gbp'].forEach(function (k) { f.elements[k].addEventListener('input', liveEquity); });
     $('#pxRates').addEventListener('click', function (e) { var b = e.target.closest('button[data-r]'); if (!b) return; var row = b.closest('.ct-rate'), on = b.getAttribute('aria-pressed') === 'true';
       $$('button', row).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); }); if (!on) b.setAttribute('aria-pressed', 'true');
       $('.ct-rate-h em', row).textContent = on ? '' : RATE_L[+b.getAttribute('data-r')]; platform.haptic(6); });
-    $$('.ct-tri', f).forEach(function (g) { g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return;
+    $$('.ct-tri', f).forEach(function (g) { if (g.getAttribute('data-tri') === 'body') return; g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return;
       var v = b.getAttribute('data-v'), st = b.getAttribute('data-state'), anyKey = g.id === 'colourChips' ? 'Any' : g.id === 'fuelChips' ? 'open' : null, any = !!anyKey;
       var nx = any && v === anyKey ? (st ? '' : 'like') : (st === '' ? 'like' : st === 'like' ? 'must' : '');
       if (any && v === anyKey && nx) $$('button', g).forEach(function (x) { x.setAttribute('data-state', ''); x.setAttribute('aria-pressed', 'false'); });
@@ -590,9 +613,9 @@
       if (bad.length) { banner(f, bad.length === 1 ? 'One thing to fix before saving.' : bad.length + ' things to fix before saving.'); bad[0].scrollIntoView({ block: 'center' }); bad[0].focus({ preventScroll: true }); return; }
       var c = Object.assign({}, S.cust || {}, { id: (S.cust && S.cust.id) || S.pendingId || undefined, name: el.name.value.trim(), phone: el.phone.value.trim() || null, postcode: el.postcode.value.trim().toUpperCase(),
         budget_type: choice(f, 'budget_type'), monthly_gbp: +el.monthly_gbp.value || null, cash_gbp: +el.cash_gbp.value || null, deposit_gbp: +el.deposit_gbp.value || null,
-        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: triVals('#fuelChips').on.filter(function (x) { return x !== 'open'; }).join(',') || 'open', fuel_must: triVals('#fuelChips').must.filter(function (x) { return x !== 'open'; }), mileage_bands: [].concat(choice(f, 'mileage_bands') || []), body: choice(f, 'body'), models: $$('#modelChips button').length ? triVals('#modelChips').on : ((S.cust || {}).models || []), models_must: $$('#modelChips button').length ? triVals('#modelChips').must : ((S.cust || {}).models_must || []), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
+        annual_mileage: +el.annual_mileage.value, colours: triVals('#colourChips').on.filter(function (x) { return x !== 'Any'; }), colours_must: triVals('#colourChips').must, specs: triVals('#specChips').on, specs_must: triVals('#specChips').must, fuel: triVals('#fuelChips').on.filter(function (x) { return x !== 'open'; }).join(',') || 'open', fuel_must: triVals('#fuelChips').must.filter(function (x) { return x !== 'open'; }), mileage_bands: [].concat(choice(f, 'mileage_bands') || []), body: bodyVal('#bodyChips').body, body_must: bodyVal('#bodyChips').must, models: $$('#modelChips button').length ? triVals('#modelChips').on : ((S.cust || {}).models || []), models_must: $$('#modelChips button').length ? triVals('#modelChips').must : ((S.cust || {}).models_must || []), year_from: +el.year_from.value || null, new_used: choice(f, 'new_used') });
       if (staff) { c.email = el.email.value.trim() || null; c.email_alerts = el.email_alerts.checked; } /* staff can save a customer with a name only */
-      c.desk = deskRead(f, (S.cust || {}).desk);
+      c.desk = deskRead(f, (S.cust || {}).desk); c.desk.body_must = c.body_must || undefined; /* mirrored until customers.body_must exists (update-2026-11-17-body-must.sql) */
       if (staff && $('#commsConsent')) { var want = $('#commsConsent').checked, had = !!(S.cust && S.cust.comms_consent_at);
         if (want && !had) {
           /* failsafe: a second, plain statement of what ticking means, before anything is recorded */
@@ -619,7 +642,7 @@
         if (!/comms_consent/.test(m)) throw err; var c2 = Object.assign({}, c); CC.forEach(function (k) { delete c2[k]; });
         return store.saveCustomer(c2).then(function (saved) { setTimeout(function () { toast('Saved. Consent could not be recorded yet, so nothing will be sent to them.'); }, 1200); return saved; }); })
         .then(function (saved) { S.cust = saved; S.pendingId = null; sessionStorage.setItem('ctActing', saved.id); track('profile_saved', { by: staff ? 'staff' : 'customer' }); return loadCust(); })
-        .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; S.relax = null; go('discover'); })
+        .then(function () { busy(btn, false); toast(staff ? (wasNew ? 'Customer added' : 'Customer saved') : 'Saved'); S.deck = []; S.relax = null; go('discover'); setTimeout(iosNudge, 50); })
         .catch(function (err) { busy(btn, false); console.warn('save customer', err); banner(f, plainErr(err)); track('profile_save_failed', { code: (err && err.code) || '' }); });
     });
   }
@@ -630,10 +653,15 @@
     /* Never pad the deck with cars outside the customer's filters: an empty deck shows the end screen instead.
        One card per stable id (reg), and nothing already swiped. */
     var deep = platform.deepLink().reg, seen = S.swipes, ids = {};
-    S.deck = ranked.filter(function (x) { var id = x.car.reg; if (!id || seen[id] || ids[id]) return false; ids[id] = 1; return true; });
+    var fly = S.flying || {};
+    S.deck = ranked.filter(function (x) { var id = x.car.reg; if (!id || seen[id] || ids[id] || fly[id]) return false; ids[id] = 1; return true; });
+    spreadTwins(S.deck);
     if (deep) { var i = S.deck.findIndex(function (x) { return M.normReg(x.car.reg) === deep; }); if (i > 0) S.deck.unshift(S.deck.splice(i, 1)[0]); }
     S.emptyWhy = S.deck.length ? null : emptyReason(ranked);
   }
+  /* Two cars that look the same (same model, colour and price) never sit back to back, so a swipe never seems to show the same car twice. */
+  function spreadTwins(d) { var look = function (x) { var c = x.car; return [c.model, c.colour, c.price, c.kind === 'new' ? '' : c.year].join('|').toLowerCase(); };
+    for (var i = 1; i < d.length; i++) { if (look(d[i]) !== look(d[i - 1])) continue; for (var j = i + 1; j < d.length; j++) if (look(d[j]) !== look(d[i - 1])) { var t = d[j]; d.splice(j, 1); d.splice(i, 0, t); break; } } return d; }
   /* Why nothing is left, in plain words. Each check loosens one thing, so the customer hears the real reason. */
   function emptyReason(ranked) {
     if (ranked.length) return { kind: 'seen' };
@@ -678,7 +706,7 @@
     if (cust.budget_type === 'cash') [50, 500].forEach(function (s) { add('Increase budget by \u00a3' + s + ' to see', { budget: s }); });
     if (cust.budget_type === 'monthly') [50, 100].forEach(function (s) { add('Increase budget by \u00a3' + s + ' a month to see', { budget: s }); });
     if (M.fuelPrefs(cust).must.length) add('Any fuel', { clear: ['fuel'] }); /* a would like fuel never hides a car, so only a must have needs widening */
-    if (cust.body && cust.body !== 'any') add('Any shape or size', { clear: ['body'] });
+    if (M.bodyMust(cust)) add('Any shape or size', { clear: ['body'] }); /* only a must have shape hides cars */
     if ((cust.models || []).length) add('Any model', { clear: ['models'] });
     if (cust.year_from) add('Any model year', { clear: ['year'] });
     if ((cust.colours || []).length) add('Any colour', { clear: ['colours'] });
@@ -734,7 +762,7 @@
     var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, c.offer ? '' : ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
       : c.offer && f ? dealHtml(c, f, true)
-      : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">' + esc(noQuoteText(c, x.budgetMaybe)) + '</div>');
+      : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p><p class="ct-replink"><u>Representative example in Info</u>, tap the card</p>' : '<div class="ct-mon">' + esc(noQuoteText(c, x.budgetMaybe)) + '</div>');
     var just = M.justArrived(c) ? '<span class="ct-just">Just arrived</span>' : '';
     return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">SHORTLIST</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
@@ -771,8 +799,8 @@
   function showDeck() { if (needsFull(S.cust) && !S.fullDone) { S.fullDone = true; ensureFull().then(function () { S.deck = []; if (!$('#deck').hidden) { buildDeck(); drawDeck(); } }); }
     if (!S.deck.length) buildDeck(); drawDeck(); noteVisit(); if (S.session && S.session.role === 'customer') setTimeout(maybeTutorial, 450); }
   function drawDeck() {
-    var deck = $('#deck'); deck.innerHTML = '';
-    var top = S.deck.slice(0, 3);
+    var deck = $('#deck'), fly = $$('.ct-card', deck).filter(function (el) { return el._flung && !el._done; }); deck.innerHTML = '';
+    var top = S.deck.filter(function (x) { return !(S.flying || {})[x.car.reg]; }).slice(0, 3);
     /* warm the next few photos so a fast swipe never shows a blank card */
     S.deck.slice(1, 4).forEach(function (x) { var u = x.car && (x.car.image || (x.car.images || [])[0]); if (u && !(S.pre = S.pre || {})[u]) { S.pre[u] = new Image(); S.pre[u].decoding = 'async'; S.pre[u].src = u; } });
     var canUndo = !!(S.undo && S.undo.length);
@@ -789,6 +817,8 @@
       var depth = arr.length - 1 - i; el.style.transform = 'translateY(' + depth * 10 + 'px) scale(' + (1 - depth * 0.04) + ')'; el.style.zIndex = 10 - depth;
       if (depth === 0) drag(el, x); deck.appendChild(el);
     });
+    fly.forEach(function (el) { deck.appendChild(el); });   /* a card mid swipe finishes its flight above the new top card */
+    if (fly.length) deck.hidden = false;
     settlePhotos(deck);
   }
   function drag(el, x) {
@@ -820,7 +850,7 @@
     acts.addEventListener('pointermove', function (e) {
       if (!st || e.pointerId !== st.id) return;
       var dx = e.clientX - st.x, dy = e.clientY - st.y; if (Math.abs(dx) < 12 || Math.abs(dx) < Math.abs(dy)) return;
-      var s = st, card = $('#deck .ct-card:last-child'); st = null; if (!card || openOverlays().length) return;
+      var s = st, card = topCard(); st = null; if (!card || openOverlays().length) return;
       var o = { bubbles: true, cancelable: true, pointerId: s.id, pointerType: s.type, isPrimary: true, button: 0, buttons: 1 };
       card.dispatchEvent(new PointerEvent('pointerdown', Object.assign({ clientX: s.x, clientY: s.y }, o)));
       try { card.setPointerCapture(s.id); } catch (er) {}
@@ -829,14 +859,14 @@
     ['pointerup', 'pointercancel'].forEach(function (t) { acts.addEventListener(t, function () { st = null; }); });
   }
   function fling(el, x, dir, v) {
-    if (el._flung) return; el._flung = true;
+    if (el._flung || !el.isConnected || x._decided) return; el._flung = true; (S.flying = S.flying || {})[x.car.reg] = 1;
     var w = window.innerWidth, rm = reduced(); el.style.transition = rm ? 'opacity .2s' : 'transform .38s cubic-bezier(.3,.7,.4,1)';
     if (rm) el.style.opacity = 0;
     else if (dir === 2) el.style.transform = 'translate(0,-' + (window.innerHeight + 200) + 'px) scale(.9)';
     else el.style.transform = 'translate(' + dir * (w + 200) + 'px,-40px) rotate(' + dir * (30 + Math.min(20, Math.abs(v) * 10)) + 'deg)';
     $(dir === 2 ? '.ct-stamp-super' : dir > 0 ? '.ct-stamp-like' : '.ct-stamp-nope', el).style.opacity = 1;
     platform.haptic(dir === 2 ? [20, 30, 20, 30, 40] : dir > 0 ? [10, 30, 16] : 10);
-    setTimeout(function () { decide(x, dir > 0, dir === 2); }, rm ? 200 : 300);
+    setTimeout(function () { el._done = true; delete S.flying[x.car.reg]; decide(x, dir > 0, dir === 2); }, rm ? 200 : 300);
   }
   /* The deck always advances first; saving happens after and a failed save only shows a small note. */
   function saveSwipe(reg, liked, extra) {
@@ -869,7 +899,9 @@
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: brandNew(x.car) ? '' : x.car.reg, kind: x.car.kind, score: x.score });
     if (superLike) { badge(); matchMoment(x); return; }
     badge();
-    if (liked) { if (x.score > 90) matchMoment(x); else toast('Added to your shortlist'); } /* right swipe always shortlists; only over 90% gets the match pop up, shortlist first, test drive below */
+    if (liked) { if (x.score > 90) matchMoment(x);
+      else if (isGuest() && !gContact() && !S.askedLike) { S.askedLike = true; askContact({ why: 'like', car: x.car }); }   /* a guest is asked once per visit, on their first like */
+      else toast(isGuest() && !gContact() ? 'Liked. Saved on this phone' : 'Added to your shortlist'); } /* right swipe always shortlists; only over 90% gets the match pop up, shortlist first, test drive below */
   }
   /* Book a test drive: hands off to Dan's approval only booking link, or WhatsApp while there is none. Never on the swipe screen. */
   function tdGone(c) { var st = String(c.status || c.availability || '').toLowerCase(); return !!(c.sold || c.reserved || /sold|reserv/.test(st)); }
@@ -887,11 +919,12 @@
     : '<div class="ct-row"><a class="ct-btn ct-btn-big ct-td" target="_blank" rel="noopener" href="' + esc(tdHref(c)) + '">Book a test drive</a></div>'; }
   document.addEventListener('click', function (e) { var t = e.target.closest && e.target.closest('[data-td-similar]'); if (!t) return; e.preventDefault(); var sh = $('#sheet'); if (sh) sh.hidden = true; var m = $('#matchModal'); if (m) m.hidden = true; });
   function matchMoment(x) {
-    var c = x.car, m = $('#matchModal'); var mm = $('#mmCar');
+    var c = x.car, m = $('#matchModal'); var mm = $('#mmCar'); S.matchCar = c;
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
     $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other. Added to their shortlist.' : 'You and the ' + c.model + ' look made for each other. Added to your shortlist.';
     tdButton($('#mmTd'), c); var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
-    m.hidden = false; try { $('[data-close]', m).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
+    var g = isGuest() && !gContact(); $('#mmSave').hidden = !g; $('#mmShort').hidden = g; if (g) S.askedLike = true;
+    m.hidden = false; try { (g ? $('#mmSave') : $('[data-close]', m)).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
   function confetti(cv) { if (reduced()) return;
     var ctx = cv.getContext('2d'), W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
@@ -991,7 +1024,9 @@
       if (horiz) { dx = mx; p.style.transform = 'translateX(' + dx + 'px) rotate(' + dx * 0.02 + 'deg)'; p.classList.toggle('is-go', dx > 50); p.classList.toggle('is-stop', dx < -50); e.preventDefault(); } });
     function end() { if (!on) return; on = false; if (!horiz) return; p.style.transition = 'transform .3s ease'; p.classList.remove('is-go', 'is-stop');
       if (Math.abs(dx) > 90) { var dir = dx > 0 ? 1 : -1; p.style.transform = 'translateX(' + dir * 120 + '%)';
-        setTimeout(function () { $('#sheet').hidden = true; p.style.transition = 'none'; p.style.transform = ''; var t = topCard(); if (t && t._fling) t._fling(dir); track('sheet_swipe', { dir: dir }); }, 220); }
+        setTimeout(function () { $('#sheet').hidden = true; p.style.transition = 'none'; p.style.transform = ''; var reg = S.sheetCar && S.sheetCar.reg, t = topCard();
+          if (t && t.dataset.reg === reg && t._fling) t._fling(dir); else { var x = S.deck.find(function (y) { return y.car.reg === reg; }); if (x) decide(x, dir > 0, false); }
+          track('sheet_swipe', { dir: dir }); }, 220); }
       else p.style.transform = ''; }
     p.addEventListener('pointerup', end); p.addEventListener('pointercancel', function () { if (on && horiz) end(); on = false; }); }
   /* first visit tutorial over a demo card: like, pass, tap for details, swipe in details. Once per device, replay from How it works. */
@@ -1016,7 +1051,8 @@
       STEPS.forEach(function (s, k) { timers.push(setTimeout(function () { st.setAttribute('data-step', k); st.className = 'tut-stage s-' + s[0]; void st.offsetWidth; cap.textContent = s[1]; dots.forEach(function (d, j) { d.className = j === k ? 'on' : ''; }); }, k * 2600)); });
       timers.push(setTimeout(function () { done = true; $('.tut-go', o).focus(); }, STEPS.length * 2600)); }
     try { $('.tut-go', o).focus({ preventScroll: true }); } catch (e) {} track('tutorial_shown', { replay: !!replay, reduced: rm }); }
-  function topCard() { return $('#deck .ct-card:last-child'); }
+  /* the card the customer can see on top: never one that is already flying away */
+  function topCard() { var l = $$('#deck .ct-card').filter(function (el) { return !el._flung; }); return l[l.length - 1] || null; }
   var OVERLAYS = ['#sheet', '#matchModal', '#buyModal', '#iosGuide'];
   /* the first-visit tutorial counts too: while it is up, arrow keys and buttons must not swipe the cards hidden behind it */
   function openOverlays() { return OVERLAYS.map(function (s) { return $(s); }).concat([$('.ct-tut')]).filter(function (el) { return el && !el.hidden; }); }
@@ -1029,7 +1065,7 @@
     $('#btnLike').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(1); });
     $('#btnPass').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(-1); });
     $('#btnSuper').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(2); });
-    $('#btnInfo').addEventListener('click', function () { if (S.deck[0]) openSheet(S.deck[0]); });
+    $('#btnInfo').addEventListener('click', function () { var t = topCard(), x = t && S.deck.find(function (y) { return y.car.reg === t.dataset.reg; }); if (x) openSheet(x); });
     $('#btnUndo').addEventListener('click', undoSwipe);
     /* While any pop up or sheet is open the deck takes no input at all, and Escape closes the top one. */
     document.addEventListener('keydown', function (e) { var open = openOverlays();
@@ -1055,12 +1091,12 @@
     $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
       return '<article class="ct-m" data-open="' + esc(c.reg) + '" tabindex="0" aria-label="' + esc('Full details: ' + c.model) + '">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
-        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'I can source this one' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
+        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'Dan can source this' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
         (isNew ? '' : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp about ' + esc(c.kind === 'new_stock' ? 'this car' : M.normReg(c.reg)) + '</a></div>') +
         buyOrAsk(c) +
         '<button class="ct-unlike" type="button" data-unlike="' + esc(c.reg) + '">Remove from matches</button></div></article>'; }).join('');
-    $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to ' + (S.owner && S.owner.name ? S.owner.name.split(' ')[0] : 'Dan');
+    $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to Dan';
   }
   function initMatches() {
     $('#matchList').addEventListener('click', function (e) { var bb = e.target.closest('[data-buy]'); if (bb) { var car = byReg(bb.getAttribute('data-buy')); if (car) askBuy(car); return; } });
@@ -1088,7 +1124,9 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       liked_regs: L.filter(function (x) { return !brandNew(x); }).map(function (x) { return x.reg; }).join(', '),
       liked_new_models: L.filter(function (x) { return brandNew(x); }).map(function (x) { return x.model + (x.order_number ? ' (order ' + x.order_number + ')' : ''); }).join(', '),
       liked_cars: L.map(function (x) { return x.model + (brandNew(x) ? ' (new' + (x.order_number ? ', order ' + x.order_number : '') + ')' : ' ' + x.reg + ' ' + (x.price || '')); }).join(' | '),
-      owner_staff_name: S.owner ? (S.owner.name || '') : (S.session.role === 'staff' ? S.session.name : 'Dan'), owner_staff_email: S.owner ? (S.owner.email || '') : (S.session.role === 'staff' ? S.session.email : ''),
+      /* a customer's own send always goes to Dan (BETA rule); the colleague on the record is only noted for Dan */
+      owner_staff_name: custSide() ? 'Dan' : S.owner ? (S.owner.name || '') : (S.session.role === 'staff' ? S.session.name : 'Dan'), owner_staff_email: custSide() ? '' : S.owner ? (S.owner.email || '') : (S.session.role === 'staff' ? S.session.email : ''),
+      record_colleague: custSide() && S.owner ? (S.owner.name || '') : '',
       submitted_by: S.session.role, app_mode: LIVE ? 'live' : 'demo' };
     msg.className = 'ct-msg'; msg.textContent = 'Sending...';
     saveBuyRequest({ type: 'matches', cars: L.map(function (x) { return { reg: x.reg, model: x.model, price: x.kind === 'new' ? '' : (x.price || ''), kind: x.kind }; }) }).then(function (r) { body.request_id = r ? r.id : ''; });
@@ -1406,25 +1444,200 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); platform.deferredInstall = e; $('#installBtn').hidden = false; });
   window.addEventListener('appinstalled', function () { track('installed'); $('#installBtn').hidden = true; });
   $('#installBtn').addEventListener('click', doInstall);
-  function iosNudge() { if (platform.ios && !platform.standalone && !sessionStorage.getItem('ctIosSeen') && S.session) { sessionStorage.setItem('ctIosSeen', '1'); setTimeout(function () { $('#iosGuide').hidden = false; track('ios_guide_auto'); }, 1800); } }
+  /* The Add to Home Screen guide only comes up once a customer's profile is saved (never over the profile form, the sign in or a guest's first look) */
+  function iosReady() { var h = (location.hash || '').slice(1), staff = S.session && S.session.role !== 'customer';
+    return !!(S.session && !isGuest() && (staff || (S.cust && S.cust.id && S.cust.name && S.cust.updated_at)) && ['profile', 'signin', 'start', ''].indexOf(h) === -1 && !openOverlays().length); }
+  function iosNudge() { if (!platform.ios || platform.standalone || sessionStorage.getItem('ctIosSeen') || !iosReady()) return;
+    setTimeout(function () { if (!iosReady() || sessionStorage.getItem('ctIosSeen')) return; sessionStorage.setItem('ctIosSeen', '1'); $('#iosGuide').hidden = false; track('ios_guide_auto'); }, 1800); }
+
+  /* ---------------- guest: browse first, no account ----------------
+     A public visitor answers three questions and swipes real cars straight away. Everything stays on this device
+     (sd_guest_v1) until they choose to leave a name and a mobile or email, which is asked only when they like or
+     match a car, or tap test drive, WhatsApp, Buy or Send. Their details then go to Dan alone (Formspree email, and
+     the funnel-lead function creates their SwipeToDrive record with Dan as owner). If they later sign in, their
+     answers, consent and swipes are carried into the new account (guestCarry). Nothing here writes to the database
+     directly: a guest has no sign in. */
+  var GK = 'sd_guest_v1';
+  var CONSENT_GUEST = 'I agree that Dan Cane of Dan Sells, Sidcup can contact me by WhatsApp, phone call, email or app notification about the cars I like, and when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me.';
+  function gDb() { try { return JSON.parse(localStorage.getItem(GK)) || {}; } catch (e) { return {}; } }
+  function gPut(d) { try { localStorage.setItem(GK, JSON.stringify(d)); } catch (e) { toast('This phone is out of storage space'); } }
+  function gContact() { return gDb().contact || null; }
+  function isGuest() { return !!(S.session && S.session.guest); }
+  var guestStore = {
+    mode: 'guest',
+    session: function () { return Promise.resolve(null); },
+    lastVisit: function () { return Promise.resolve(null); }, setLastVisit: function () { return Promise.resolve(); },
+    customers: function () { var d = gDb(); return Promise.resolve(d.cust ? [d.cust] : []); },
+    saveCustomer: function (c) { var d = gDb(); c = safePrefs(Object.assign({}, c), d.cust || null); c.id = 'guest'; c.owner_staff_id = null; c.user_id = null; c.updated_at = new Date().toISOString(); d.cust = c; gPut(d); return Promise.resolve(c); },
+    swipes: function () { return Promise.resolve(gDb().swipes || {}); },
+    setSwipe: function (cid, reg, liked, extra) { var d = gDb(); d.swipes = d.swipes || {}; d.swipes[reg] = Object.assign({ liked: liked, at: Date.now() }, extra || {}); gPut(d); return Promise.resolve(); },
+    unswipe: function (cid, reg, prev) { var d = gDb(); d.swipes = d.swipes || {}; if (prev) d.swipes[reg] = prev; else delete d.swipes[reg]; gPut(d); return Promise.resolve(); },
+    purchases: function () { return Promise.resolve([]); },
+    owner: function () { return Promise.resolve(null); },
+    buyRequest: function (r) { var d = gDb(); r.id = uuid(); r.created_at = new Date().toISOString(); (d.buys = d.buys || []).push(r); gPut(d); return Promise.resolve(r); },
+    notifyBuy: function () { return Promise.resolve({ ok: false, reason: 'guest' }); },
+    alertRequest: function (r) { var d = gDb(); (d.alerts = d.alerts || []).push(r); gPut(d); return Promise.resolve(r); },
+    notify: function () { return Promise.resolve('off'); }, setNotify: function () { return Promise.resolve(); },
+    emailOn: function () { return false; }, setEmailOn: function () { return Promise.resolve(); }, savePush: function () { return Promise.resolve(false); },
+    signOut: function () { return Promise.resolve(); }
+  };
+  /* anything a guest does that needs the real store (sign in, the emailed link) goes straight to it */
+  (function () { var real = LIVE ? supa : demo; Object.keys(real).forEach(function (k) { if (!(k in guestStore) && typeof real[k] === 'function') guestStore[k] = function () { return real[k].apply(real, arguments); }; }); })();
+  function startGuest(cust) {
+    store = guestStore; S.session = { uid: 'guest', role: 'customer', guest: true, email: '', name: '' }; S.owner = null; S.undo = [];
+    return guestStore.saveCustomer(cust).then(function (saved) { S.cust = saved; return guestStore.swipes(); }).then(function (sw) { S.swipes = sw; S.deck = []; S.relax = null; badge(); });
+  }
+  /* the three questions */
+  var WIZ_SAY = ['Hi, I\u2019m Revvy, Dan\u2019s assistant. Three quick questions and you are swiping.', 'First, how would you like to pay? A rough figure is fine, or leave it blank.',
+    'Any shape or fuel in mind? Tap twice on a shape to only see that one.', 'Last one. Brand new, used, or either?'];
+  function wizStep(n) { var f = $('#startForm'); $$('.ct-wiz-step', f).forEach(function (st) { st.hidden = +st.getAttribute('data-step') !== n; });
+    $('.ct-start-hero').hidden = n > 0; $('#wizSay').textContent = WIZ_SAY[n] || ''; var rv = $('#wizRevvy .rvc'); if (rv && window.RevvyChar) window.RevvyChar.setEl(rv, n ? 'wink' : 'idle', 1400);
+    if (n) { try { f.scrollIntoView({ block: 'start' }); } catch (e) {} } track('guest_step', { step: n }); }
+  function showStart() { var f = $('#startForm'), c = (isGuest() && S.cust) || gDb().cust || {};
+    var rv = $('#wizRevvy'); if (rv && window.RevvyChar && !$('.rvc', rv)) rv.insertBefore(window.RevvyChar.make('rvc-lg rvc-wiz'), rv.firstChild);
+    setChoice(f, 'budget_type', c.budget_type || 'monthly'); f.elements.monthly_gbp.value = c.monthly_gbp || ''; f.elements.cash_gbp.value = c.cash_gbp || '';
+    setBody('#wizBody', c.body, M.bodyMust(c)); var fl = M.fuelList ? M.fuelList(c.fuel) : []; setChoice(f, 'fuel', fl.length ? fl : ['open']); setChoice(f, 'new_used', c.new_used || 'both');
+    showDeps(f); wizStep(isGuest() ? 1 : 0); }
+  function initStart() { var f = $('#startForm'); if (!f) return; bindChoice(f); bindBody($('#wizBody'));
+    f.addEventListener('click', function (e) { var b = e.target.closest('[data-wiz-go]'); if (b) wizStep(+b.getAttribute('data-wiz-go')); });
+    f.addEventListener('submit', function (e) { e.preventDefault(); var el = f.elements, old = gDb().cust || {}, bv = bodyVal('#wizBody'), fuel = [].concat(choice(f, 'fuel') || []).filter(function (x) { return x !== 'open'; });
+      var num = function (v) { v = Math.round(+v); return v > 0 ? v : null; };
+      var c = Object.assign({}, old, { budget_type: choice(f, 'budget_type') || 'monthly', monthly_gbp: num(el.monthly_gbp.value), cash_gbp: num(el.cash_gbp.value), body: bv.body, body_must: bv.must,
+        fuel: fuel.join(',') || 'open', fuel_must: [], new_used: choice(f, 'new_used') || 'both', annual_mileage: old.annual_mileage || 8000 });
+      c.desk = Object.assign({}, old.desk || {}, { lead_source: 'swipetodrive-guest', body_must: bv.must || undefined });
+      var ct = gContact(); if (ct) { c.name = ct.name; c.phone = ct.phone || null; c.email = ct.email || null; }
+      startGuest(c).then(function () { track('guest_start', { budget: c.budget_type, body: c.body, must: !!c.body_must, fuel: c.fuel, new_used: c.new_used }); go('discover'); }); });
+  }
+  /* guest "Me": what they told us, save details, sign in, forget */
+  function showGuestMe() { var c = S.cust || {}, ct = gContact();
+    $('#gmTitle').textContent = ct ? 'Hi ' + String(ct.name).split(' ')[0] : 'You are browsing as a guest';
+    $('#gmSub').textContent = ct ? 'Dan has your details and the cars you like. Your swipes are saved on this phone.' : 'Your answers and swipes are saved on this phone only.';
+    var money = c.budget_type === 'cash' ? (c.cash_gbp ? 'Cash, up to ' + M.gbp(c.cash_gbp) : 'Cash') : (c.monthly_gbp ? 'Monthly, up to ' + M.gbp(c.monthly_gbp) + ' a month' : 'Monthly');
+    $('#gmSummary').innerHTML = '<p><b>Budget:</b> ' + esc(money) + '</p><p><b>Shape:</b> ' + esc(!c.body || c.body === 'any' ? 'Any' : c.body + (M.bodyMust(c) ? ', must have' : '')) + '</p><p><b>Fuel:</b> ' + esc(fuelText(c)) + '</p><p><b>New or used:</b> ' + esc(c.new_used === 'new' ? 'Brand new' : c.new_used === 'used' ? 'Used' : 'Either') + '</p><p><b>Cars you like:</b> ' + liked().length + '</p>';
+    $('#gmSave').textContent = ct ? 'Update my details' : 'Save my details for Dan'; }
+  function initGuestMe() {
+    $('#gmSave').addEventListener('click', function () { askContact({ why: 'save' }); });
+    $('#gmForget').addEventListener('click', function () { if (!window.confirm('Clear your answers and swipes from this phone?')) return; try { localStorage.removeItem(GK); } catch (e) {} S.session = S.cust = null; S.swipes = {}; S.deck = []; store = LIVE ? supa : demo; track('guest_forget'); go('start'); });
+  }
+  /* The contact ask */
+  var ASK_COPY = {
+    like: ['Save this car with Dan', 'Leave your name and a mobile or email, and Dan will hold onto the cars you like and get back to you.'],
+    match: ['It\u2019s a match. Save it with Dan', 'Leave your name and a mobile or email, and Dan will check it is still here and get back to you.'],
+    td: ['Book a test drive with Dan', 'So Dan knows who is coming, leave your name and a mobile or email first.'],
+    wa: ['Message Dan on WhatsApp', 'Leave your name and a mobile or email so Dan can match your message to the cars you like.'],
+    buy: ['Ask Dan about this car', 'Leave your name and a mobile or email and Dan will get back to you about it.'],
+    send: ['Send your cars to Dan', 'Leave your name and a mobile or email and Dan will get back to you about them.'],
+    notify: ['Hear when one comes in', 'Leave your name and a mobile or email and Dan will tell you when a car that fits arrives.'],
+    save: ['Save your details for Dan', 'Leave your name and a mobile or email so Dan can help you find the right car.']
+  };
+  var askOpts = null;
+  function askContact(o) { askOpts = o || { why: 'save' }; var sh = $('#askSheet'), f = $('#askForm'), ct = gContact() || {}, cp = ASK_COPY[askOpts.why] || ASK_COPY.save, car = askOpts.car;
+    $('#askTitle').textContent = cp[0]; $('#askWhy').textContent = cp[1]; $('#askConsentText').textContent = CONSENT_GUEST;
+    $('#askCar').hidden = !car; if (car) $('#askCar').innerHTML = (car.image ? '<img src="' + esc(car.image) + '" alt="" width="72" height="54">' : '') + '<div><b>' + esc(car.model) + '</b><span>' + esc([car.kind === 'new' ? '' : car.price, car.kind === 'used' ? car.year : ''].filter(Boolean).join(', ')) + '</span></div>';
+    f.hidden = false; $('#askDone').hidden = true; f.elements.name.value = ct.name || ''; f.elements.phone.value = ct.phone || ''; f.elements.email.value = ct.email || ''; $('#askConsent').checked = !!ct.consent_at; $('#askMsg').textContent = ''; clearErrs(f);
+    var rv = $('#askRv'); if (rv && window.RevvyChar && !$('.rvc', rv)) rv.appendChild(window.RevvyChar.make()); if (rv && window.RevvyChar && $('.rvc', rv)) window.RevvyChar.setEl($('.rvc', rv), 'wink', 1400);
+    closeOverlay($('#matchModal')); sh.hidden = false; try { f.elements.name.focus({ preventScroll: true }); } catch (e) {} track('guest_ask', { why: askOpts.why }); }
+  function closeAsk() { $('#askSheet').hidden = true; askOpts = null; }
+  function phoneUK07(p) { var d = String(p || '').replace(/[^\d+]/g, '').replace(/^\+?44/, '0').replace(/^00/, ''); return /^07\d{9}$/.test(d) ? d : null; }
+  function guestAnswers(c) { return { pay: c.budget_type, mo: c.monthly_gbp || undefined, cash: c.cash_gbp || undefined, fuel: M.fuelList ? M.fuelList(c.fuel) : [], body: c.body && c.body !== 'any' ? [c.body] : [], body_must: !!M.bodyMust(c), interest: c.new_used }; }
+  /* the lead: an email to Dan (Formspree) and Dan's SwipeToDrive record (funnel-lead). Either one landing is a success. */
+  function guestLead(ct, o) {
+    var c = S.cust || {}, L = liked(), car = o && o.car, lead = 'STD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+    var body = { _subject: 'SwipeToDrive guest: ' + ct.name + ' (' + L.length + ' liked)' + (car ? ', ' + car.model : ''), form_page: 'swipe-drive-guest', lead_id: lead, name: ct.name, phone: ct.phone || '', email: ct.email || '',
+      reason: { like: 'Liked a car', match: 'Matched a car', td: 'Tapped Book a test drive', wa: 'Tapped WhatsApp', buy: 'Asked about a car', send: 'Sent their cars', notify: 'Asked to hear when one comes in', save: 'Saved their details' }[(o && o.why) || 'save'],
+      car: car ? tdText(car) : '', budget: c.budget_type === 'cash' ? 'Cash' + (c.cash_gbp ? ' up to \u00a3' + c.cash_gbp : '') : 'Monthly' + (c.monthly_gbp ? ' up to \u00a3' + c.monthly_gbp : ''),
+      body_or_size: (c.body || 'any') + (M.bodyMust(c) ? ' (must have)' : ''), fuel: fuelText(c), new_or_used: c.new_used || 'both',
+      liked_cars: L.map(function (x) { return x.model + (brandNew(x) ? ' (new' + (x.order_number ? ', order ' + x.order_number : '') + ')' : ' ' + x.reg + ' ' + (x.price || '')); }).join(' | ') || 'None yet',
+      consent: ct.consent_text, consent_at: ct.consent_at, owner_staff_name: 'Dan', submitted_by: 'guest', app_mode: LIVE ? 'live' : 'demo' };
+    if (!LIVE) return Promise.resolve({ ok: true, demo: true, body: body });   /* demo and tests: nothing leaves the device */
+    var fs = fetch(CFG.FORMSPREE, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.ok; }).catch(function () { return false; });
+    var fl = fetch(CFG.SUPABASE_URL + '/functions/v1/funnel-lead', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'swipetodrive-guest', name: ct.name, phone: ct.phone || '', email: ct.email || '', alert_consent: true, answers: guestAnswers(c),
+        likes: Object.keys(S.swipes).filter(function (r) { return S.swipes[r].liked; }).slice(0, 60).map(function (r) { return { reg: r, shortlisted: !!S.swipes[r].shortlisted }; }) }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }); }).then(function (j) { if (j && j.ref) { var d = gDb(); d.claim = j.ref; gPut(d); } return !!(j && j.ok); }).catch(function () { return false; });
+    return Promise.all([fs, fl]).then(function (r) { track('generate_lead', { form_page: 'swipe-drive-guest', why: (o && o.why) || 'save' }); return { ok: r[0] || r[1], email: r[0], record: r[1] }; });
+  }
+  function askNext(o) { var car = o && o.car, n = $('#askNext'); n.innerHTML = '';
+    var link = function (cls, href, text) { var a = document.createElement('a'); a.className = 'ct-btn ct-btn-big ' + cls; a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.textContent = text; a.addEventListener('click', function () { setTimeout(closeAsk, 300); }); n.appendChild(a); };
+    if (o && o.why === 'td' && car) link('ct-td', tdHref(car), 'Book the test drive');
+    else if (o && (o.why === 'wa' || o.why === 'buy' || o.why === 'match') && car) link('ct-wa', car.kind === 'new' ? askModelWa(car) : carWa(car), 'Open WhatsApp');
+    else if (o && o.href) link(/wa\.me/.test(o.href) ? 'ct-wa' : '', o.href, /wa\.me/.test(o.href) ? 'Open WhatsApp' : 'Carry on');
+    n.hidden = !n.children.length; }
+  function initAsk() { var f = $('#askForm'); if (!f) return;
+    $$('[data-ask-x]').forEach(function (b) { b.addEventListener('click', closeAsk); });
+    $('#askSheet').addEventListener('click', function (e) { if (e.target.id === 'askSheet') closeAsk(); });
+    f.addEventListener('submit', function (e) { e.preventDefault(); var el = f.elements, bad = [], btn = $('#askGo'); if (btn.disabled) return; clearErrs(f); $('#askMsg').textContent = '';
+      if (el._gotcha.value) { closeAsk(); return; }
+      var name = el.name.value.trim(), ph = el.phone.value.trim(), em = el.email.value.trim();
+      if (!name || name.length > 40 || /[<>@]/.test(name)) bad.push(fieldErr(f, 'name', 'Add your name.'));
+      if (ph && !phoneUK07(ph)) bad.push(fieldErr(f, 'phone', 'Please use a UK mobile starting 07 or +447.'));
+      if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
+      if (!ph && !em) bad.push(fieldErr(f, 'phone', 'Add a mobile or an email, so Dan can reply.'));
+      if (!$('#askConsent').checked) bad.push(fieldErr(f, $('#askConsent'), 'Tick to agree, so Dan can get back to you.'));
+      bad = bad.filter(Boolean); if (bad.length) { bad[0].focus(); return; }
+      var ct = { name: name, phone: phoneUK07(ph) || '', email: em.toLowerCase(), consent_at: new Date().toISOString(), consent_text: CONSENT_GUEST }, o = askOpts || { why: 'save' };
+      busy(btn, true, 'Sending...');
+      guestLead(ct, o).then(function (r) { busy(btn, false);
+        if (!r.ok) { $('#askMsg').textContent = 'That did not send. Check your signal and try again, or WhatsApp Dan on 07827 138197.'; return; }
+        var d = gDb(); d.contact = ct; d.lead_at = ct.consent_at; if (d.cust) { d.cust.name = ct.name; d.cust.phone = ct.phone || null; d.cust.email = ct.email || null; d.cust.comms_consent_at = ct.consent_at; d.cust.comms_consent_text = ct.consent_text; } gPut(d);
+        if (S.cust) { S.cust = d.cust || S.cust; }
+        $('#askDoneT').textContent = 'Thanks, ' + name.split(' ')[0];
+        $('#askDoneP').textContent = o.why === 'notify' ? 'Dan has your details and will tell you when a car that fits comes in.' : 'Dan has your details and the cars you like, and will be in touch, usually the same day.';
+        askNext(o); $('#askAcct').hidden = !(LIVE && ct.email); $('#askLinkMsg').textContent = '';
+        f.hidden = true; $('#askDone').hidden = false;
+        var rv = $('#askRv .rvc'); if (rv && window.RevvyChar) window.RevvyChar.setEl(rv, 'thumbs', 2400);
+        if (o.why === 'send') { $('#sendMsg').className = 'ct-msg ok'; $('#sendMsg').textContent = 'Sent. Dan will be in touch, usually the same day.'; }
+        if (o.why === 'notify') { $('#notifyMsg').className = 'ct-msg ok'; $('#notifyMsg').textContent = 'Done. Dan will tell you when a car like this comes in.'; }
+        track('guest_contact', { why: o.why, phone: !!ct.phone, email: !!ct.email }); }); });
+    $('#askLink').addEventListener('click', function () { var ct = gContact(), m = $('#askLinkMsg'); if (!ct || !ct.email || !LIVE) return; m.className = 'ct-msg'; m.textContent = 'Sending...';
+      supa.sendLink(ct.email).then(function () { m.className = 'ct-msg ok'; m.textContent = 'Check your inbox. Open the link on this phone and your swipes come with you.'; track('guest_link_sent'); })
+        .catch(function () { m.textContent = 'That did not send. You can sign in later from Me.'; }); });
+    /* the gate: test drive, WhatsApp, Buy, Send and Notify ask a guest for their details first */
+    document.addEventListener('click', function (e) { if (!isGuest() || gContact()) return; var t = e.target.closest && e.target.closest('#mmTd, #mmWa, a.ct-td, a.ct-wa, a.ct-ask, [data-buy], #sendBtn, #notifyBtn, #mmSave');
+      if (!t || t.closest('#askSheet')) return; e.preventDefault(); e.stopImmediatePropagation();
+      var car = !$('#matchModal').hidden ? S.matchCar : !$('#sheet').hidden ? S.sheetCar : (t.getAttribute('data-buy') ? byReg(t.getAttribute('data-buy')) : null);
+      if (!car) { var art = t.closest('[data-open]'); if (art) car = byReg(art.getAttribute('data-open')); }
+      var why = t.id === 'mmSave' ? 'match' : t.matches('#mmTd, a.ct-td') ? 'td' : t.matches('[data-buy]') ? 'buy' : t.id === 'sendBtn' ? 'send' : t.id === 'notifyBtn' ? 'notify' : 'wa';
+      askContact({ why: why, car: car, href: t.getAttribute('href') || '' }); }, true);
+  }
+  /* sign in after browsing as a guest: their answers, consent and swipes join the new (or claimed) record, owned by Dan */
+  function guestCarry(sess) { var d = gDb(); if (!sess || sess.role !== 'customer' || !d.cust || d.carried) return Promise.resolve();
+    var g = d.cust, ct = d.contact || {}, noop = function () {};
+    return (LIVE && d.claim ? Promise.resolve(supa.claim(d.claim)).then(noop, noop) : Promise.resolve()).then(function () { return store.customers(); }).then(function (list) {
+      var ex = list[0] || null, row = Object.assign({}, ex || {}), empty = function (v) { return v == null || v === '' || (Array.isArray(v) && !v.length); };
+      S.cust = ex;
+      if (empty(row.name) && (ct.name || g.name)) row.name = ct.name || g.name; if (empty(row.phone) && ct.phone) row.phone = ct.phone;
+      if (empty(row.budget_type) || (!row.monthly_gbp && !row.cash_gbp)) { row.budget_type = g.budget_type; row.monthly_gbp = g.monthly_gbp || null; row.cash_gbp = g.cash_gbp || null; }
+      if (empty(row.fuel) || row.fuel === 'open') { row.fuel = g.fuel || 'open'; row.fuel_must = g.fuel_must || []; }
+      if (empty(row.body) || row.body === 'any') { row.body = g.body || 'any'; row.body_must = !!g.body_must; }
+      if (empty(row.new_used) || row.new_used === 'both') row.new_used = g.new_used || 'both';
+      row.desk = Object.assign({}, g.desk || {}, row.desk || {}); if (row.body_must) row.desk.body_must = true; if (empty(row.desk.lead_source)) row.desk.lead_source = 'swipetodrive-guest';
+      if (ct.consent_at && !row.comms_consent_at) { row.comms_consent_at = ct.consent_at; row.comms_consent_text = ct.consent_text; }
+      return store.saveCustomer(row).catch(function (err) { if (!/comms_consent/.test(String((err && (err.message || err.details)) || ''))) throw err; var r2 = Object.assign({}, row); delete r2.comms_consent_at; delete r2.comms_consent_text; return store.saveCustomer(r2); });
+    }).then(function (saved) { S.cust = saved; var sw = d.swipes || {};
+      return store.swipes(saved.id).then(function (have) { return Promise.all(Object.keys(sw).filter(function (r) { return !have[r]; }).map(function (r) { return store.setSwipe(saved.id, r, !!sw[r].liked, sw[r].shortlisted ? { shortlisted: true } : null).catch(noop); })); }); })
+      .then(function () { try { localStorage.removeItem(GK); } catch (e) {} track('guest_carried', { swipes: Object.keys(d.swipes || {}).length }); setTimeout(function () { toast('Your answers and swipes are saved to your account'); }, 900); })
+      .catch(function (e) { console.warn('guest carry', e); }); }
 
   /* ---------------- boot ---------------- */
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(function (r) { window.__ctSW = r.scope; }).catch(function () {});
-  initSignin(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
+  initSignin(); initStart(); initGuestMe(); initAsk(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
   var dl = platform.deepLink();
   (function () { var a = window.AlertSave && window.AlertSave.get(), el = $('#alertNote'); if (!a || !el) return;
     el.hidden = false; el.textContent = 'One step left. Enter your email to save your alert for the ' + a.model + '. If you are new, you will set a password or use the link we email you.'; })();
   (LIVE ? supa.init() : Promise.resolve())
-    .then(function () { if (LIVE) { mountPw(); sb.auth.onAuthStateChange(function (ev) { if (ev === 'PASSWORD_RECOVERY') showRecover(); if (ev === 'SIGNED_IN' && !S.session) store.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); } return loadStock(); })
+    .then(function () { if (LIVE) { mountPw(); sb.auth.onAuthStateChange(function (ev) { if (ev === 'PASSWORD_RECOVERY') showRecover(); if (ev === 'SIGNED_IN' && (!S.session || S.session.guest)) supa.session().then(afterSignIn); if (ev === 'SIGNED_OUT') { S.session = S.cust = null; route(); } }); } return loadStock(); })
     .then(function () {
       /* staff 'new today' comes from the arrivals ledger, the same on every device, not from what this browser saw last */
       S.fresh = {}; S.cars.forEach(function (c) { if (c.arrived_days === 0) S.fresh[c.reg] = 1; });
       try { localStorage.removeItem('ctSeenRegs'); } catch (e) {}
       return store.session(); })
     .then(function (sess) { if (sess && LIVE && dl.claim) return supa.claim(dl.claim).then(function () { history.replaceState(null, '', location.pathname); return store.session(); }); return sess; })
-    .then(function (sess) { if (sess) track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return sess ? afterSignIn(sess) : route(); })
+    .then(function (sess) { if (sess) { track('sign_in', { method: LIVE ? 'magic_link' : 'demo', role: sess.role }); return afterSignIn(sess); }
+      var g = gDb(); if (g.cust && !(window.AlertSave && window.AlertSave.get())) return startGuest(g.cust).then(route);   /* a returning guest carries on where they left off */
+      return route(); })
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
     .catch(function (e) { console.warn('SwipeToDrive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
-  window.ctDebug = { S: S, store: store, safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList, pool: pool, redeck: function () { S.deck = []; if (location.hash === '#discover') showDeck(); } };
+  window.ctDebug = { S: S, get store() { return store; }, /* live: a guest's store until they sign in */ safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList, pool: pool, redeck: function () { S.deck = []; if (location.hash === '#discover') showDeck(); } };
 })();

@@ -22,11 +22,11 @@ async def shot(pg, n):
     if SHOTS: os.makedirs(SHOTS, exist_ok=True); await pg.screenshot(path=os.path.join(SHOTS, n))
 async def ctx_for(b, role='customer', last=None):
     ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, device_scale_factor=2)
-    await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_discover_tutorial_v1','1');" + (f"if(!sessionStorage.seeded){{localStorage.setItem('sdLastVisit','{last}');sessionStorage.seeded=1}}" if last else ''))
+    await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no');localStorage.setItem('sd_discover_tutorial_v1','1');" + (f"if(!sessionStorage.seeded){{localStorage.setItem('sdLastVisit','{last}');sessionStorage.seeded=1}}" if last else ''))
     await ctx.route('**/swipe-drive/config.js*', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
     await ctx.route('**/automation/stock-arrivals.json', lambda r: r.fulfill(body=json.dumps(L), content_type='application/json'))
     pg = await ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-    await pg.goto(BASE); await pg.wait_for_selector('#siEmail')
+    await pg.goto(BASE + '#signin'); await pg.wait_for_selector('#siEmail')
     await pg.fill('#siEmail', role + '@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click(f'[data-demo={role}]')
     if role == 'customer':
         await pg.wait_for_function("location.hash=='#profile'||location.hash=='#discover'")

@@ -17,7 +17,7 @@ time.sleep(1)
 try:
   with sync_playwright() as p:
     b = p.chromium.launch(); ctx = b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, device_scale_factor=2)
-    ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_discover_tutorial_v1','1');")
+    ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no');localStorage.setItem('sd_discover_tutorial_v1','1');")
     ctx.route('**/swipe-drive/config.js*', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
     ctx.route('https://www.googletagmanager.com/**', lambda r: r.abort())
     pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))

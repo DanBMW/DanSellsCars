@@ -1,5 +1,5 @@
 {
-  "name": "SwipeToDrive | Dan Sells",
+  "name": "SwipeToDrive BETA",
   "short_name": "SwipeToDrive",
   "id": "./",
   "start_url": "./?source=pwa",
@@ -8,7 +8,7 @@
   "orientation": "portrait",
   "background_color": "#0a0c0f",
   "theme_color": "#0a0c0f",
-  "description": "Swipe through BMWs that match what you want, then message Dan.",
+  "description": "Swipe through 600+ BMWs in and around London. Match, then book a test drive with Dan.",
   "categories": ["shopping", "lifestyle"],
   "icons": [
     {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},

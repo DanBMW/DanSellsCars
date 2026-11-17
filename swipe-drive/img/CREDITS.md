@@ -19,3 +19,6 @@
 
 ## Navigation icons
 - Drawn in the style of Lucide (ISC licence, https://lucide.dev/license); paths for heart, layers, users, message square and user.
+
+## og-1200x630.jpg
+- Link preview image (Open Graph and Twitter), made from hero-i7.webp above: cropped to 1200 x 630, darkened on the left, text added, photo credit in the corner. Shared under CC BY-SA 4.0 like the hero.

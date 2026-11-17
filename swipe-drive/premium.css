@@ -205,6 +205,13 @@ a{color:var(--acc2)}
   .ct-card .ct-tags span{flex:0 0 auto;white-space:nowrap}
   .ct-card .ct-price{font-size:24px!important}
   .ct-card .ct-rep{display:none}
+  .ct-card .ct-replink{display:block}
+  /* the Chat to Revvy row sits above the deck: keep it slim and give the deck its height back, so the price, monthly figure and
+     the representative example pointer stay above the floating buttons */
+  .ct-revvy-row{margin-bottom:8px}
+  .ct-revvy-row .ct-revvy,.ct-revvy-row .ct-edit-choices{height:44px;min-height:0;padding-top:0;padding-bottom:0;font-size:15px;line-height:1.15}
+  .ct-revvy-row .ct-revvy .rvc{width:30px;height:30px}
+  .ct-revvy-row:not([hidden])~.ct-deck{height:max(300px,calc(100vh - 274px - var(--safe-b)));height:max(300px,calc(100dvh - 274px - var(--safe-b)))}
   #deck:not([hidden])~.ct-actions{position:fixed;z-index:25;left:16px;right:16px;bottom:calc(71px + var(--safe-b));margin:0;padding:22px 0 10px;gap:10px;align-items:center;pointer-events:none;
     border-radius:0 0 var(--r-xl,24px) var(--r-xl,24px);background:linear-gradient(180deg,rgba(10,12,15,0),rgba(10,12,15,.78) 45%,rgba(10,12,15,.92))}
   #deck:not([hidden])~.ct-actions .ct-act{pointer-events:auto;touch-action:none;width:50px;height:50px;min-width:0;min-height:0;margin:0}

@@ -15,6 +15,8 @@ self.addEventListener('fetch', e => {
   if (/\/intro\/.*\.mp4$/.test(u.pathname)) return;
   /* chat and quick lane pages: plain network, so they never replace the cached app shell */
   if (r.mode === 'navigate' && /\/chat\//.test(u.pathname)) return;
+  /* the SwipeToDrive Privacy and Terms pages: plain network, so they never replace the cached app shell */
+  if (r.mode === 'navigate' && /\/swipe-drive\/(privacy|terms)\.html$/.test(u.pathname)) return;
   /* guest swipe page from the latest stock email: plain network, never cached, never replaces the app shell */
   if (/\/guest\.(html|js|css)$/.test(u.pathname)) return;
   if (r.mode === 'navigate') {

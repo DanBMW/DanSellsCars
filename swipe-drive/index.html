@@ -4,8 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>SwipeToDrive | Dan Sells</title>
-<meta name="description" content="Swipe through BMWs that match what you want, then message Dan.">
+<title>SwipeToDrive BETA | Find your perfect BMW</title>
+<meta name="description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive with Dan.">
+<link rel="canonical" href="https://dan-sells.co.uk/swipe-drive/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SwipeToDrive">
+<meta property="og:title" content="SwipeToDrive BETA | Find your perfect BMW">
+<meta property="og:description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive with Dan.">
+<meta property="og:url" content="https://dan-sells.co.uk/swipe-drive/">
+<meta property="og:image" content="https://dan-sells.co.uk/swipe-drive/img/og-1200x630.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SwipeToDrive BETA. Find your perfect BMW.">
+<meta property="og:locale" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SwipeToDrive BETA | Find your perfect BMW">
+<meta name="twitter:description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive with Dan.">
+<meta name="twitter:image" content="https://dan-sells.co.uk/swipe-drive/img/og-1200x630.jpg">
+<meta name="twitter:image:alt" content="SwipeToDrive BETA. Find your perfect BMW.">
 <meta name="theme-color" content="#0a0c0f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/logo.svg?v=10" type="image/svg+xml">
@@ -19,7 +35,7 @@
 <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="icons/splash-1290x2796.png">
 <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="icons/splash-750x1334.png">
 <link rel="preload" href="fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="app.css?v=50">
+<link rel="stylesheet" href="app.css?v=51">
 <link rel="stylesheet" href="revvy-character.css?v=2">
 <link rel="stylesheet" href="premium-actions.css?v=1">
 <link rel="stylesheet" href="px-capture.css?v=3">
@@ -28,8 +44,8 @@
 <link rel="stylesheet" href="../motion.css?v=1"/>
 <link rel="stylesheet" href="premium.css?v=6">
 <script src="../motion.js?v=1" defer></script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XZL1RF6SV6"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XZL1RF6SV6');</script>
+<!-- Google Analytics loads only after the visitor accepts the cookie bar (consent.js) -->
+<script src="consent.js?v=1" defer></script>
 <script src="../analytics.js" defer></script>
 </head>
 <body class="ct">
@@ -37,11 +53,50 @@
 <div class="ct-loader" id="loader" role="status" aria-label="Loading SwipeToDrive"><svg class="ct-wheel" viewBox="0 0 100 100" width="76" height="76" aria-hidden="true"><circle cx="50" cy="50" r="47" class="w-tyre"/><circle cx="50" cy="50" r="36" class="w-rim"/><g class="w-spokes"><path d="M50 50 L46 16 L54 16 Z" transform="rotate(0 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(72 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(144 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(216 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="9" class="w-hub"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(36 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(108 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(180 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(252 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(324 50 50)"/></svg><p>Warming up the engine</p></div>
 <div class="ct-app" id="app">
   <header class="ct-top">
-    <div class="ct-brand"><img class="ct-logo" src="icons/logo.svg?v=10" width="32" height="32" alt=""><span class="ct-brand-t"><span class="ct-brand-w">SwipeTo<b>Drive</b></span><small>powered by Dan Sells</small></span></div>
+    <div class="ct-brand"><img class="ct-logo" src="icons/logo.svg?v=10" width="32" height="32" alt=""><span class="ct-brand-t"><span class="ct-brand-w">SwipeTo<b>Drive</b><span class="ct-beta" aria-label="beta">BETA</span></span><small>powered by Dan Sells</small></span></div>
     <div class="ct-acting" id="acting" hidden></div>
     <button class="ct-install-btn" id="installBtn" type="button" hidden>Install the app</button>
   </header>
   <div class="ct-demo" id="demoBar" hidden>Demo mode: your profile stays on this phone. Real sign in switches on when Dan connects the backend.</div>
+
+  <!-- 0. public start: browse first, no account (guest) -->
+  <section class="ct-screen ct-start" data-screen="start" hidden>
+    <div class="ct-hero ct-start-hero" data-step="0">
+      <div class="ct-hero-media" aria-hidden="true"><img src="img/hero-i7-800.webp" srcset="img/hero-i7-800.webp 800w, img/hero-i7.webp 1280w" sizes="(min-width:520px) 520px, 100vw" alt="" width="1280" height="812" fetchpriority="high" decoding="async"><span class="ct-hud ct-hud-tl">SWIPETODRIVE</span><span class="ct-hud ct-hud-tr">BETA</span><span class="ct-hud-line"></span></div><a class="ct-credit" href="https://commons.wikimedia.org/wiki/File:BMW_i7_xDrive60_1X7A6822.jpg" target="_blank" rel="noopener">Photo: Alexander-93, CC BY-SA 4.0</a>
+      <p class="ct-eyebrow">600+ BMWs in and around London</p>
+      <h1>Find your perfect BMW.</h1>
+      <p>Answer three quick questions, then swipe through real cars that fit. No account needed.</p>
+    </div>
+    <form class="ct-panel ct-wiz" id="startForm" novalidate>
+      <div class="ct-wiz-revvy" id="wizRevvy"><span class="ct-wiz-say" id="wizSay" aria-live="polite">Hi, I'm Revvy, Dan's assistant. Three quick questions and you are swiping.</span></div>
+      <div class="ct-wiz-step" data-step="0">
+        <button class="ct-btn ct-btn-big" type="button" data-wiz-go="1">Start swiping</button>
+        <p class="ct-sub ct-wiz-alt">Already have an account? <a href="#signin" data-wiz-signin>Sign in</a></p>
+      </div>
+      <div class="ct-wiz-step" data-step="1" hidden>
+        <p class="ct-wiz-n">Question 1 of 3</p><h2>How would you like to pay?</h2>
+        <div class="ct-seg" data-name="budget_type"><button type="button" data-v="monthly">Monthly</button><button type="button" data-v="cash">Cash price</button></div>
+        <label class="ct-f" data-show="budget_type=monthly"><span>Up to a month (&pound;) <em class="ct-opt">optional</em></span><input name="monthly_gbp" type="number" inputmode="numeric" min="0" step="10" placeholder="For example 450"></label>
+        <label class="ct-f" data-show="budget_type=cash"><span>Up to (&pound;) <em class="ct-opt">optional</em></span><input name="cash_gbp" type="number" inputmode="numeric" min="0" step="500" placeholder="For example 30000"></label>
+        <div class="ct-row ct-wiz-nav"><button class="ct-btn ct-btn-ghost" type="button" data-wiz-go="0">Back</button><button class="ct-btn" type="button" data-wiz-go="2">Next</button></div>
+      </div>
+      <div class="ct-wiz-step" data-step="2" hidden>
+        <p class="ct-wiz-n">Question 2 of 3</p><h2>What shape and fuel?</h2>
+        <span class="ct-lab">Shape</span>
+        <p class="ct-hint">Tap once to see it first. Tap twice to only see that shape.</p>
+        <div class="ct-chips ct-tri" data-tri="body" id="wizBody"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
+        <span class="ct-lab">Fuel</span>
+        <div class="ct-chips ct-multi" data-name="fuel"><button type="button" data-v="open">Open minded</button><button type="button" data-v="petrol">Petrol</button><button type="button" data-v="diesel">Diesel</button><button type="button" data-v="hybrid">Hybrid</button><button type="button" data-v="phev">Plug in hybrid</button><button type="button" data-v="electric">Electric</button></div>
+        <div class="ct-row ct-wiz-nav"><button class="ct-btn ct-btn-ghost" type="button" data-wiz-go="1">Back</button><button class="ct-btn" type="button" data-wiz-go="3">Next</button></div>
+      </div>
+      <div class="ct-wiz-step" data-step="3" hidden>
+        <p class="ct-wiz-n">Question 3 of 3</p><h2>New or used?</h2>
+        <div class="ct-seg" data-name="new_used"><button type="button" data-v="used">Used</button><button type="button" data-v="new">Brand new</button><button type="button" data-v="both">Either</button></div>
+        <div class="ct-row ct-wiz-nav"><button class="ct-btn ct-btn-ghost" type="button" data-wiz-go="2">Back</button><button class="ct-btn ct-btn-big" type="submit" id="wizDone">Show me cars</button></div>
+      </div>
+    </form>
+    <p class="ct-legal ct-signin-legal"><a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <button type="button" class="ct-linkbtn" onclick="window.ctConsent&&window.ctConsent.open()">Cookie settings</button></p>
+  </section>
 
   <!-- 1. sign in -->
   <section class="ct-screen" data-screen="signin">
@@ -101,7 +156,8 @@
         <p class="ct-hint">Tap once for would like, and other fuels still show lower down. Tap twice for must have, and you only see that fuel. Tap a third time to clear it.</p>
         <div class="ct-chips ct-tri" data-tri="fuel" id="fuelChips"></div>
         <span class="ct-lab">Body or size</span>
-        <div class="ct-chips" data-name="body"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
+        <p class="ct-hint">Tap once for would like, and other shapes still show lower down. Tap twice for must have, and you only see that shape. Tap a third time to clear it.</p>
+        <div class="ct-chips ct-tri" data-tri="body" id="bodyChips"><button type="button" data-v="any">Any</button><button type="button" data-v="small">Small and easy</button><button type="button" data-v="hatchback">Hatchback</button><button type="button" data-v="saloon">Saloon</button><button type="button" data-v="estate">Touring</button><button type="button" data-v="suv">SUV</button><button type="button" data-v="family">Family space</button><button type="button" data-v="coupe">Coupe or convertible</button></div>
         <span class="ct-lab">Models you like</span>
         <div class="ct-tapkey" role="note"><b>Only want to see certain models? Tap it twice.</b><div class="ct-chips ct-tri ct-tapkey-demo" aria-hidden="true"><button type="button" tabindex="-1" data-state="">X3</button><span>Not picked</span><button type="button" tabindex="-1" data-state="like">X3</button><span>Tap once: would like, shown first but other suggestions still appear</span><button type="button" tabindex="-1" data-state="must">X3</button><span>Tap twice: must have, you will only see these models, with no other suggestions</span></div><small>Tap a third time to clear it.</small></div>
         <div class="ct-chips ct-tri" data-tri="models" id="modelChips"></div>
@@ -205,7 +261,7 @@
       <h3>Get the app</h3>
       <div id="installInfo"></div>
       <div class="ct-card-lite" id="meTerms"></div>
-      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender. <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a></p>
+      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender. <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <button type="button" class="ct-linkbtn" onclick="window.ctConsent&&window.ctConsent.open()">Cookie settings</button></p>
       <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" id="signOut" type="button">Sign out</button></div>
     </div>
   </section>
@@ -290,6 +346,23 @@
     </form>
   </section>
 
+  <!-- guest: no account yet -->
+  <section class="ct-screen" data-screen="guestme" hidden>
+    <div class="ct-panel">
+      <h2 id="gmTitle">You are browsing as a guest</h2>
+      <p class="ct-sub" id="gmSub">Your answers and swipes are saved on this phone only.</p>
+      <div class="ct-revvy-row" data-revvy-row hidden><button class="ct-revvy" type="button" data-revvy><img src="icons/icon-192.png" alt="">Chat to Revvy</button></div>
+      <div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" id="gmWa" href="https://wa.me/447827138197">WhatsApp Dan</a></div>
+      <div class="ct-card-lite" id="gmSummary"></div>
+      <div class="ct-row"><button class="ct-btn" type="button" id="gmSave">Save my details for Dan</button><a class="ct-btn ct-btn-ghost" href="#start" id="gmEdit">Change my answers</a></div>
+      <h3>Keep your swipes on any device</h3>
+      <p class="ct-sub">Sign in or create a free account and everything you have swiped comes with you.</p>
+      <div class="ct-row"><a class="ct-btn ct-btn-ghost" href="#signin">Sign in or create an account</a></div>
+      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender. <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <button type="button" class="ct-linkbtn" onclick="window.ctConsent&&window.ctConsent.open()">Cookie settings</button></p>
+      <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" id="gmForget" type="button">Clear my answers from this phone</button></div>
+    </div>
+  </section>
+
   <nav class="ct-nav" id="nav" hidden>
     <a href="#discover" data-nav="discover"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></svg><span>Discover</span></a>
     <a href="#matches" data-nav="matches"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg><span>Matches</span><i class="ct-badge" id="matchBadge" hidden></i></a>
@@ -300,7 +373,29 @@
 </div>
 
 <div class="ct-sheet" id="sheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-label="Car details"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><div id="sheetBody"></div></div></div>
-<div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart"><svg class="pa-ic" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></span><img src="icons/icon-192.png" alt="Dan Sells"></div><p id="mmText"></p><a class="ct-btn ct-btn-big ct-short" id="mmShort" href="#matches" data-close>View shortlist</a><a class="ct-btn ct-td" id="mmTd" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>Book a test drive</a><a class="ct-btn ct-wa" id="mmWa" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5l1.2-3.4A7.5 7.5 0 1 1 9 18z"/></svg>Message on WhatsApp</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
+<div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart"><svg class="pa-ic" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></span><img src="icons/icon-192.png" alt="Dan Sells"></div><p id="mmText"></p><button class="ct-btn ct-btn-big ct-short" id="mmSave" type="button" hidden>Save it with Dan</button><a class="ct-btn ct-btn-big ct-short" id="mmShort" href="#matches" data-close>View shortlist</a><a class="ct-btn ct-wa" id="mmWa" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5l1.2-3.4A7.5 7.5 0 1 1 9 18z"/></svg>Message on WhatsApp</a><a class="ct-btn ct-td" id="mmTd" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>Book a test drive</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
+<div class="ct-sheet ct-ask" id="askSheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-labelledby="askTitle"><button class="ct-x" type="button" data-ask-x aria-label="Close">&times;</button>
+  <form id="askForm" novalidate>
+    <div class="ct-ask-head"><span class="ct-ask-rv" id="askRv"></span><div><h2 id="askTitle">Save this car with Dan</h2><p class="ct-sub" id="askWhy">Leave your name and a mobile or email, and Dan will hold onto the cars you like and get back to you.</p></div></div>
+    <div class="ct-ask-car" id="askCar" hidden></div>
+    <label class="ct-f"><span>Name <em class="ct-req">required</em></span><input name="name" autocomplete="name" required maxlength="40"></label>
+    <label class="ct-f"><span>Mobile</span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="07700 900123"></label>
+    <label class="ct-f"><span>or email</span><input name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com"></label>
+    <p class="ct-hint">A mobile or an email is enough. You do not need both.</p>
+    <label class="ct-check"><input type="checkbox" name="consent" id="askConsent"> <span id="askConsentText"></span></label>
+    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="ct-hp" aria-hidden="true">
+    <button class="ct-btn ct-btn-big" type="submit" id="askGo">Send to Dan</button>
+    <button class="ct-btn ct-btn-ghost" type="button" data-ask-x>Not now, keep swiping</button>
+    <p class="ct-msg" id="askMsg" role="status" aria-live="polite"></p>
+    <p class="ct-legal"><a href="privacy.html" target="_blank" rel="noopener">How Dan uses your details</a></p>
+  </form>
+  <div id="askDone" hidden>
+    <h2 id="askDoneT">Thanks</h2><p id="askDoneP" role="status"></p>
+    <div class="ct-row" id="askNext"></div>
+    <div class="ct-card-lite" id="askAcct" hidden><p><b>Keep your swipes on any device?</b> We will email you a sign in link. Totally optional.</p><button class="ct-btn ct-btn-ghost" type="button" id="askLink">Email me a sign in link</button><p class="ct-msg" id="askLinkMsg" role="status"></p></div>
+    <button class="ct-btn ct-btn-ghost" type="button" data-ask-x>Keep swiping</button>
+  </div>
+</div></div>
 <div class="ct-ios" id="iosGuide" hidden><div class="ct-ios-in"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><h2>Add SwipeToDrive to your Home Screen</h2><p>On iPhone, alerts only work once the app is on your Home Screen. It takes ten seconds:</p>
   <ol><li><span class="ct-ios-ico"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 3v12M7 8l5-5 5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M5 12v8h14v-8" stroke="currentColor" stroke-width="2" fill="none"/></svg></span>Tap the <b>Share</b> button in Safari's toolbar.</li>
   <li><span class="ct-ios-ico">&#x2795;</span>Scroll down and tap <b>Add to Home Screen</b>.</li>
@@ -328,7 +423,7 @@
 <script src="match-core.js?v=46"></script>
 <script src="std-brand.js?v=1"></script>
 <script src="alert-save.js?v=41"></script>
-<script src="app.js?v=58"></script>
+<script src="app.js?v=59"></script>
 <script src="../product-email.js?v=42"></script>
 <script src="../quote-email.js?v=41"></script>
 <script src="../email-signature.js?v=2"></script>

@@ -7,12 +7,12 @@ def ok(c,m): res.append(bool(c)); print(('PASS ' if c else 'FAIL ')+m)
 async def run(b, mobile):
     t='mobile' if mobile else 'desktop'
     kw=dict(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,device_scale_factor=2) if mobile else dict(viewport={'width':1280,'height':860})
-    ctx=await b.new_context(**kw); await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_discover_tutorial_v1','1');")
+    ctx=await b.new_context(**kw); await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no');localStorage.setItem('sd_discover_tutorial_v1','1');")
     await ctx.route('**/swipe-drive/config.js*', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
     pg=await ctx.new_page(); errs=[]; pg.on('pageerror',lambda e:errs.append(str(e)))
     async def shot(n):
         if OUT: await pg.wait_for_timeout(300); await pg.screenshot(path=f'{OUT}/{n}-{t}.png')
-    await pg.goto(BASE); await pg.wait_for_selector('#siEmail'); await pg.fill('#siEmail','dan@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click('[data-demo=admin]')
+    await pg.goto(BASE + '#signin'); await pg.wait_for_selector('#siEmail'); await pg.fill('#siEmail','dan@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click('[data-demo=admin]')
     await pg.wait_for_timeout(1200); await pg.evaluate("location.hash='#team'"); await pg.wait_for_timeout(800)
     for nm,ph in (('Lorna Hayre','07700900111'),('Sam Test','07700900222')):
         await pg.click('#addCust'); await pg.wait_for_selector('#profileForm [name=name]'); await pg.fill('#profileForm [name=name]',nm); await pg.fill('#profileForm [name=phone]',ph)

@@ -18,10 +18,10 @@ time.sleep(1)
 try:
   with sync_playwright() as p:
     b = p.chromium.launch(); ctx = b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, device_scale_factor=2)
-    ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_discover_tutorial_v1','1');")
+    ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no');localStorage.setItem('sd_discover_tutorial_v1','1');")
     ctx.route('**/swipe-drive/config.js*', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
     pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-    pg.goto(BASE); pg.wait_for_selector('#siEmail'); pg.fill('#siEmail', 'dan@example.com'); pg.click('#signinForm button[type=submit]')
+    pg.goto(BASE + '#signin'); pg.wait_for_selector('#siEmail'); pg.fill('#siEmail', 'dan@example.com'); pg.click('#signinForm button[type=submit]')
     pg.click('[data-demo=admin]'); pg.wait_for_timeout(800)
     pg.evaluate("(f)=>{var d=JSON.parse(localStorage.ctDemoV1);d.customers=f;localStorage.ctDemoV1=JSON.stringify(d);}", FAKE)
     pg.goto(BASE + '#team'); pg.reload(); pg.wait_for_selector('#custList .ct-cust, #custList article, #custList > *', timeout=15000); pg.wait_for_timeout(1500)

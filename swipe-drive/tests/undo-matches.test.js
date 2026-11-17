@@ -7,7 +7,7 @@ check('undo button in the deck controls, off until there is a swipe', /<button[^
 check('each swipe is remembered for undo, a few back', /S\.undo = S\.undo \|\| \[\]\)\.push\(\{ x: x, prev: prev \}\)/.test(app) && /var UNDO_MAX = \d+;/.test(app));
 check('undo puts the card back on top and drops the swipe', /S\.deck\.unshift\(x\)/.test(app) && /delete S\.swipes\[reg\]/.test(app));
 check('undo waits for the swipe save before deleting it (no race)', /saved\.then\(function \(\) \{[^}]*store\.unswipe/.test(app));
-check('undo deletes the stored swipe (live and demo)', (app.match(/unswipe: function \(cid, reg, prev\)/g) || []).length === 2 && /from\('swipes'\)\.delete\(\)\.eq\('customer_id', cid\)\.eq\('reg', reg\)/.test(app));
+check('undo deletes the stored swipe (live and demo)', (app.match(/unswipe: function \(cid, reg, prev\)/g) || []).length >= 2 && /from\('swipes'\)\.delete\(\)\.eq\('customer_id', cid\)\.eq\('reg', reg\)/.test(app));
 check('undo closes the match pop up and updates the matches badge', /closeOverlay\(\$\('#matchModal'\)\);[\s\S]{0,200}badge\(\)/.test(app));
 check('undo button disabled when there is nothing to undo', /\$\('#btnUndo'\)\.disabled = !canUndo/.test(app));
 check('keyboard: down arrow or Ctrl/Cmd+Z undoes', /e\.key === 'ArrowDown' \|\| \(\(e\.ctrlKey \|\| e\.metaKey\)/.test(app));

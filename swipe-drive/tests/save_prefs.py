@@ -6,12 +6,12 @@ def ok(c,m): res.append(bool(c)); print(('PASS ' if c else 'FAIL ')+m)
 async def main():
   async with async_playwright() as p:
     b=await p.chromium.launch(channel='chrome'); ctx=await b.new_context(viewport={'width':390,'height':844})
-    await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_discover_tutorial_v1','1');")
+    await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no');localStorage.setItem('sd_discover_tutorial_v1','1');")
     await ctx.route('**/swipe-drive/config.js*', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
     pg=await ctx.new_page(); errs=[]; pg.on('pageerror',lambda e:errs.append(str(e)))
     sp=lambda row,prev: pg.evaluate("([r,p])=>ctDebug.safePrefs(r,p)",[row,prev])
     r=await sp({'id':'a','models':None,'models_must':None,'fuel':None,'mileage_bands':None,'colours':None,'specs':None},{'models':['X3'],'fuel':'diesel','colours':['Blue'],'specs':['feat:hud']}) if False else None
-    await pg.goto(BASE); await pg.wait_for_selector('#siEmail'); await pg.fill('#siEmail','sam@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click('[data-demo=customer]')
+    await pg.goto(BASE + '#signin'); await pg.wait_for_selector('#siEmail'); await pg.fill('#siEmail','sam@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click('[data-demo=customer]')
     await pg.wait_for_function("location.hash=='#profile'||location.hash=='#discover'")
     r=await sp({'id':'a','models':None,'models_must':None,'fuel':None,'mileage_bands':None,'colours':None,'specs':None},{'models':['X3'],'fuel':'diesel','colours':['Blue'],'specs':['feat:hud']})
     ok(r['models']==['X3'] and r['fuel']=='diesel' and r['colours']==['Blue'] and r['specs']==['feat:hud'],'null prefs fall back to existing values '+json.dumps(r))

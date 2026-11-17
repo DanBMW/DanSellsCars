@@ -48,7 +48,7 @@ async def main():
         ok(ch.get('no_current_car') is True and 'curMonthly' not in ch.get('answers', {}) and ch['answers'].get('colour') == 'Black Sapphire, Brooklyn Grey', 'desk.chat holds the answers, no current monthly for no car, both colours')
         ok(not errs, f'chat no page errors {errs[:2]}'); await ctx.close()
         # ---------- app sign in screen ----------
-        ctx = await b.new_context(**PHONE); await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_discover_tutorial_v1','1')")
+        ctx = await b.new_context(**PHONE); await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no');localStorage.setItem('sd_discover_tutorial_v1','1')")
         pg = await ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto(BASE); await pg.wait_for_selector('#pwMount input[name=au_email]', timeout=20000)
         ok(await pg.locator('#pwMount .au-g').count() == 0, 'Google button hidden while GOOGLE_LOGIN_ENABLED is false')
@@ -70,7 +70,7 @@ async def main():
         nm = await pg.evaluate("(window.ctDebug&&ctDebug.S.cust||{}).name"); ok(nm == 'Sam Test', f'app shows the profile the chat saved ({nm})')
         ok(not errs, f'app no page errors {errs[:2]}'); await ctx.close()
         # ---------- Google button with the flag on (config swapped in the browser only) ----------
-        ctx = await b.new_context(**PHONE); await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1')")
+        ctx = await b.new_context(**PHONE); await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no')")
         async def flag(route):
             r = await route.fetch(); body = (await r.text()).replace('GOOGLE_LOGIN_ENABLED: false', 'GOOGLE_LOGIN_ENABLED: true'); await route.fulfill(response=r, body=body)
         await ctx.route('**/swipe-drive/config.js*', flag); pg = await ctx.new_page(); await pg.goto(BASE); await pg.wait_for_selector('#pwMount .au-g', timeout=20000)

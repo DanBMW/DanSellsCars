@@ -10,14 +10,14 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(channel='chrome')
         ctx = await b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, device_scale_factor=2)
-        await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_discover_tutorial_v1','1');")
+        await ctx.add_init_script("localStorage.setItem('sdIntroSeen','1');localStorage.setItem('sd_cookie_consent_v1','no');localStorage.setItem('sd_discover_tutorial_v1','1');")
         await ctx.route('**/swipe-drive/config.js*', lambda r: r.fulfill(body=DEMO, content_type='text/javascript'))
         pg = await ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        await pg.goto(BASE); await pg.wait_for_selector('#siEmail'); await pg.fill('#siEmail', 'dan@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click('[data-demo=admin]')
+        await pg.goto(BASE + '#signin'); await pg.wait_for_selector('#siEmail'); await pg.fill('#siEmail', 'dan@example.com'); await pg.click('#signinForm button[type=submit]'); await pg.click('[data-demo=admin]')
         await pg.wait_for_timeout(1200); await pg.evaluate(SEED); await pg.evaluate("location.hash='#me'"); await pg.wait_for_timeout(500); await pg.evaluate("location.hash='#team'"); await pg.wait_for_timeout(1200)
         await pg.locator('.ct-c[data-cid="c-cs1"] [data-act=edit]').click(); await pg.wait_for_timeout(1500)
         if SHOT: await pg.locator('details[data-sec=car] > summary').scroll_into_view_if_needed(); await pg.screenshot(path=SHOT)
-        for sel, m in [('#fuelChips', 'fuel'), ('[data-name=body]', 'body'), ('#modelChips', 'models'), ('#colourChips', 'colours'), ('#specChips', 'specs'), ('[data-name=new_used]', 'new or used')]:
+        for sel, m in [('#fuelChips', 'fuel'), ('#bodyChips', 'body'), ('#modelChips', 'models'), ('#colourChips', 'colours'), ('#specChips', 'specs'), ('[data-name=new_used]', 'new or used')]:
             ok(await pg.is_visible('#profileForm ' + sel), m + ' visible')
         n = await pg.locator('#specChips button').count(); vis = await pg.evaluate("[...document.querySelectorAll('#specChips button')].filter(b=>b.checkVisibility()).length")
         ok(n >= 33 and vis == n, f'all spec picks visible ({vis}/{n})')
