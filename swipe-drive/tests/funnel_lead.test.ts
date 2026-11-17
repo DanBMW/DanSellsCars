@@ -2,12 +2,12 @@
 import { handle } from '../backend/supabase/functions/_shared/funnel-lead.ts';
 const env = (_: string) => '';
 function fakeDb(o: any = {}) {
-  const st: any = { hits: {}, customers: o.customers || [], claims: [], updates: [], likes: [] };
+  const st: any = { hits: {}, customers: o.customers || [], claims: [], updates: [], likes: [], swipes: [] };
   const q = (t: string) => { const f: any = { t, filt: {} };
-    const api: any = { select: () => api, ilike: (_c: string, v: string) => { st.likes.push(v); f.like = v; return api; }, is: () => api, order: () => api, limit: () => api, eq: () => api,
-      maybeSingle: async () => ({ data: st.customers.find((c: any) => c.email === f.like.replace(/\\/g, '')) || null }),
+    const api: any = { select: () => api, ilike: (_c: string, v: string) => { st.likes.push(v); f.like = v; return api; }, is: () => api, order: () => api, limit: () => api, eq: (c: string, v: string) => { if (c === 'phone') f.phone = v; return api; },
+      maybeSingle: async () => ({ data: st.customers.find((c: any) => f.like != null ? c.email === f.like.replace(/\\/g, '') : c.phone === f.phone) || null }),
       single: async () => (o.claimErr ? { error: { message: 'x' } } : { data: { id: 'claim-' + (st.claims.length - 1) } }),
-      insert: (r: any) => { if (t === 'customers') { if (o.insErr) return Promise.resolve({ error: { message: 'x' } }); st.customers.push(r); return Promise.resolve({}); } st.claims.push(r); return api; },
+      insert: (r: any) => { if (t === 'swipes') { st.swipes.push(...r); return Promise.resolve({}); } if (t === 'customers') { if (o.insErr) return Promise.resolve({ error: { message: 'x' } }); st.customers.push(r); return Promise.resolve({}); } st.claims.push(r); return api; },
       update: (r: any) => { st.updates.push(r); return { eq: async () => ({}) }; } };
     return api; };
   return { st, db: { rpc: async (_n: string, a: any) => o.rpcErr ? { error: {} } : { data: (st.hits[a.key_hash] = (st.hits[a.key_hash] || 0) + 1) }, from: q } };
@@ -59,3 +59,25 @@ Deno.test('join no: choice recorded, consent never set', async () => { const f =
 Deno.test('join with an unknown or malformed claim is refused', async () => { const f = joinDb();
   eq((await handle(post(JSON.stringify({ action: 'join', claim: 'x', choice: 'yes' })), () => f.db, env)).status, 400, 'bad');
   eq((await handle(post(JSON.stringify({ action: 'join', claim: '99999999-2222-3333-4444-555555555555', choice: 'yes' })), () => f.db, env)).status, 404, 'unknown'); eq(f.st.updates.length, 0, 'nothing'); });
+
+// SwipeToDrive guest (browse first): a mobile OR an email, the agreement ticked, Dan owns it, liked cars become swipes
+const gbody = (x: any = {}) => JSON.stringify({ source: 'swipetodrive-guest', name: 'Gus Guest', phone: '', email: 'gus@example.com', alert_consent: true,
+  answers: { pay: 'monthly', mo: 450, fuel: ['electric', 'phev'], body: ['suv'], body_must: true, interest: 'used' }, likes: [{ reg: 'ab12 cde', shortlisted: true }, { reg: 'BAD REG!!' }, { reg: 'XY34ZZZ' }], ...x });
+Deno.test('guest lead with email: record for Dan, guest consent wording, swipes, claim', async () => {
+  const f = fakeDb(); const r = await handle(post(gbody()), () => f.db, env); const j = await r.json(); const c = f.st.customers[0];
+  eq(r.status, 200, 'status'); eq(j.ok, true, 'ok'); eq(j.ref, 'claim-0', 'claim ref'); eq(c.owner_staff_id, null, 'owner Dan'); eq(c.email, 'gus@example.com', 'email'); eq(c.phone, null, 'no phone');
+  eq(/about the cars I like/.test(c.comms_consent_text), true, 'guest consent text'); eq(c.body, 'suv', 'body'); eq(c.desk.body_must, true, 'body must'); eq(c.fuel, 'electric,phev', 'fuel'); eq(c.monthly_gbp, 450, 'budget');
+  eq(c.desk.lead_source, 'swipetodrive-guest', 'source'); eq(f.st.swipes.length, 2, 'two valid likes'); eq(f.st.swipes[0].reg, 'AB12CDE', 'reg cleaned'); eq(f.st.swipes[0].shortlisted, true, 'shortlist kept'); });
+Deno.test('guest lead with only a mobile: saved, no claim', async () => {
+  const f = fakeDb(); const j = await (await handle(post(gbody({ email: '', phone: '07700 900456' })), () => f.db, env)).json();
+  eq(j.ok, true, 'ok'); eq(j.claim, false, 'no claim without email'); eq(f.st.customers[0].phone, '07700900456', 'phone'); eq(f.st.customers[0].email, null, 'email null'); });
+Deno.test('guest lead: needs a contact and the tick', async () => {
+  const f = fakeDb();
+  eq((await handle(post(gbody({ email: '', phone: '' })), () => f.db, env)).status, 400, 'no contact');
+  eq((await handle(post(gbody({ alert_consent: false })), () => f.db, env)).status, 400, 'no consent');
+  eq((await handle(post(gbody({ phone: '0208 123 4567', email: '' })), () => f.db, env)).status, 400, 'landline is not a mobile');
+  eq(f.st.customers.length, 0, 'nothing saved'); });
+Deno.test('guest lead for an existing email only adds a note', async () => {
+  const f = fakeDb({ customers: [{ id: 'c1', email: 'gus@example.com', user_id: 'u1', desk: { x: 1 } }] });
+  const j = await (await handle(post(gbody()), () => f.db, env)).json();
+  eq(j.ok, true, 'ok'); eq(f.st.customers.length, 1, 'no new record'); eq(f.st.updates[0].desk.enquiry.repeat, true, 'note'); eq(f.st.updates[0].desk.x, 1, 'desk kept'); eq(f.st.swipes.length, 0, 'no swipes written onto an existing record'); });

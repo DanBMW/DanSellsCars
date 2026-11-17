@@ -11,6 +11,12 @@ const MILES = { u6: 5000, '6to10': 8000, '10to15': 12500, '15plus': 18000 };
 const WHEN = { now: 'now', month: 'month', quarter: 'quarter', browsing: 'browsing' };
 const COLOURS = ['Black', 'White', 'Grey', 'Silver', 'Blue', 'Red', 'Green'];
 export const CONSENT = "I agree that Dan Cane of Dan Sells, Sidcup can contact me by WhatsApp, phone call or app notification when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.";
+/* SwipeToDrive guest (browse first, no account): the wording the guest ticked in the app, word for word (app.js CONSENT_GUEST) */
+export const CONSENT_GUEST = 'I agree that Dan Cane of Dan Sells, Sidcup can contact me by WhatsApp, phone call, email or app notification about the cars I like, and when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me.';
+export const GUEST_SRC = 'swipetodrive-guest';
+const G_BODY = ['small', 'hatchback', 'saloon', 'estate', 'suv', 'family', 'coupe'];
+const G_FUEL = ['petrol', 'diesel', 'hybrid', 'phev', 'electric'];
+const REG_OK = /^[A-Z0-9]{2,12}$/;
 const arr = (a) => (Array.isArray(a) ? a : []).map(String).slice(0, 30);
 const uniq = (a) => [...new Set(a)];
 const num = (v, lo, hi) => { const n = Math.round(Number(v)); return Number.isFinite(n) && n >= lo && n <= hi ? n : null; };
@@ -22,10 +28,35 @@ export function validate(b) {
   if (b._gotcha) return 'spam';
   const name = String(b.name || '').trim();
   if (!name || name.length > 40 || /[<>@]/.test(name)) return 'name';
+  if (b.source === GUEST_SRC) {   // a guest gives a mobile OR an email, and must have ticked the agreement
+    const em = String(b.email || '').trim().toLowerCase(), ph = String(b.phone || '').trim();
+    if (ph && !phone07(ph)) return 'phone';
+    if (em && (!/^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$/.test(em) || em.length > 120)) return 'email';
+    if (!ph && !em) return 'contact';
+    if (b.alert_consent !== true) return 'consent';
+    return null;
+  }
   if (!phoneUK(b.phone)) return 'phone';
   const email = String(b.email || '').trim().toLowerCase();
   if (!/^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$/.test(email) || email.length > 120) return 'email';
   return null;
+}
+/* a guest's answers from the SwipeToDrive start (app values, not the funnel's) and the cars they liked */
+export function guestCustomer(b, now) {
+  const a = (b && b.answers) || {}, at = now || new Date().toISOString();
+  const fuel = uniq(arr(a.fuel).map((v) => v.toLowerCase()).filter((v) => G_FUEL.includes(v)));
+  const body = arr(a.body).map((v) => v.toLowerCase()).filter((v) => G_BODY.includes(v))[0] || 'any';
+  const em = String(b.email || '').trim().toLowerCase();
+  const row = { name: String(b.name).trim().slice(0, 40), phone: phone07(b.phone), email: em || null,
+    fuel: fuel.length ? fuel.join(',') : 'open', body, new_used: a.interest === 'new' ? 'new' : a.interest === 'used' ? 'used' : 'both',
+    comms_consent_at: at, comms_consent_text: CONSENT_GUEST };
+  if (a.pay === 'cash') { row.budget_type = 'cash'; const c = num(a.cash, 1000, 500000); if (c) row.cash_gbp = c; }
+  else { row.budget_type = 'monthly'; const mo = num(a.mo, 50, 5000); if (mo) row.monthly_gbp = mo; }
+  const likes = (Array.isArray(b.likes) ? b.likes : []).slice(0, 60).map((l) => ({ reg: String((l && l.reg) || '').toUpperCase().replace(/\s/g, ''), shortlisted: !!(l && l.shortlisted) }))
+    .filter((l) => REG_OK.test(l.reg));
+  row.desk = { lead_source: GUEST_SRC, body_must: (body !== 'any' && a.body_must === true) || undefined,
+    enquiry: { source: GUEST_SRC, at, first_name: row.name.split(' ')[0], actioned_at: null, likes: likes.map((l) => l.reg) } };
+  return { row, likes };
 }
 export function toCustomer(b, now) {
   const a = (b && b.answers) || {}, at = now || new Date().toISOString();

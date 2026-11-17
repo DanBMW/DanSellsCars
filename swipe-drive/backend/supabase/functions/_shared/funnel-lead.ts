@@ -1,5 +1,5 @@
 // Shared by funnel-lead/index.ts and tests/funnel_lead.test.ts. See funnel-lead/index.ts.
-import { validate, toCustomer, CONSENT } from './funnel.js';
+import { validate, toCustomer, guestCustomer, CONSENT, GUEST_SRC } from './funnel.js';
 const SITE = 'https://dan-sells.co.uk', APP = SITE + '/swipe-drive/';
 const CORS = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Headers': 'content-type, apikey, authorization, x-client-info', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
@@ -25,6 +25,30 @@ async function join(b: any, req: Request, getDb: () => any, env: (k: string) => 
   const u = await db.from('customers').update(upd).eq('id', c.id); if (u.error) return json({ ok: false, reason: 'save' }, 500);
   return json({ ok: true });
 }
+// SwipeToDrive guest: someone browsing without an account left a name and a mobile or email (with the agreement
+// ticked) when they liked a car or tapped test drive or WhatsApp. The record is Dan's (no owner), with their answers,
+// consent and liked cars. An existing record (same email, else same mobile) is never overwritten: it gets an enquiry
+// note with the liked regs. A claim link comes back only when there is an email (claims are by email).
+async function guest(b: any, db: any) {
+  const { row, likes } = guestCustomer(b);
+  let ex: any = null;
+  if (row.email) { const like = row.email.replace(/[\\%_]/g, (c: string) => '\\' + c); ex = (await db.from('customers').select('id,user_id,desk').ilike('email', like).is('closed_at', null).order('created_at', { ascending: false }).limit(1).maybeSingle()).data; }
+  if (!ex && row.phone) ex = (await db.from('customers').select('id,user_id,desk').eq('phone', row.phone).is('closed_at', null).order('created_at', { ascending: false }).limit(1).maybeSingle()).data;
+  let id = ex?.id;
+  if (ex) {
+    const desk = { ...(ex.desk || {}) }; desk.enquiry = { ...row.desk.enquiry, repeat: true, consent_at: row.comms_consent_at, consent_text: row.comms_consent_text };
+    const u = await db.from('customers').update({ desk }).eq('id', ex.id); if (u.error) return json({ ok: false, reason: 'save' }, 500);
+  } else {
+    id = crypto.randomUUID();
+    const ins = await db.from('customers').insert({ id, owner_staff_id: null, user_id: null, ...row });
+    if (ins.error) { console.error('funnel-lead guest insert', ins.error.message); return json({ ok: false, reason: 'save' }, 500); }
+    if (likes.length) { const s = await db.from('swipes').insert(likes.map((l: any) => ({ customer_id: id, reg: l.reg, liked: true, shortlisted: l.shortlisted }))); if (s.error) console.error('funnel-lead guest swipes', s.error.message); }
+  }
+  if (ex?.user_id || !row.email) return json({ ok: true, claim: false });
+  const cl = await db.from('customer_claims').insert({ customer_id: id, email: row.email }).select('id').single();
+  if (cl.error) return json({ ok: true, claim: false });
+  return json({ ok: true, claim: true, ref: cl.data.id });
+}
 // The request handler, with the database passed in so tests can run it against a fake.
 export async function handle(req: Request, getDb: () => any, env: (k: string) => string) {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
@@ -41,6 +65,7 @@ export async function handle(req: Request, getDb: () => any, env: (k: string) =>
   const hit = await db.rpc('lead_hit', { key_hash: key });
   if (hit.error) return json({ ok: false, reason: 'busy' }, 503);    // no rate limit, no write
   if ((hit.data | 0) > 5) return json({ ok: false, reason: 'slow down' }, 429);   // more than 5 an hour from one network
+  if (b.source === GUEST_SRC) return guest(b, db);
   const row: any = toCustomer(b);
   // one record per email: an existing one is never overwritten from a public form, it only gets a new enquiry note
   const like = row.email.replace(/[\\%_]/g, (c: string) => '\\' + c);   // an email is matched as text, never as a pattern
