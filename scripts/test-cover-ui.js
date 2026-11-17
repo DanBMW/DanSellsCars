@@ -79,7 +79,7 @@ const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok
   check('a reason must be chosen', /choose a reason/.test(await p.locator('#c-msg').innerText()));
   await p.click('[data-k="other"]'); await p.waitForTimeout(150);
   await p.click('#c-send'); await p.waitForTimeout(150);
-  check('Other needs words', /say why/.test(await p.locator('#c-msg').innerText()) && (await store(p, 'coverLink/' + TOK + '/answer')) === undefined);
+  check('Other needs words', /managers why/.test(await p.locator('#c-msg').innerText()) && (await store(p, 'coverLink/' + TOK + '/answer')) === undefined);
   await p.fill('#c-text', 'Car broke down'); await p.click('#c-send'); await p.waitForTimeout(300);
   const a2 = await store(p, 'coverLink/' + TOK + '/answer');
   check('the decline is written with the reason and the words', a2 && a2.kind === 'other' && a2.text === 'Car broke down', JSON.stringify(a2));
@@ -88,6 +88,41 @@ const check = (name, c, d) => { if (c) pass++; else fail++; console.log((c ? 'ok
   p = await open('/cover.html?t=' + TOK, fixture());
   await p.click('#c-no'); await p.click('[data-k="customer"]'); await p.click('#c-send'); await p.waitForTimeout(300);
   check('With a customer needs no words', (await store(p, 'coverLink/' + TOK + '/answer')).kind === 'customer');
+
+  /* I cannot cover right now must say why too */
+  p = await open('/cover.html?t=' + TOK + '&a=cannot', fixture());
+  await p.click('[data-k="cannot"]'); await p.click('#c-send'); await p.waitForTimeout(150);
+  check('I cannot cover right now needs words', /managers why/.test(await p.locator('#c-msg').innerText()) && (await store(p, 'coverLink/' + TOK + '/answer')) === undefined);
+  await p.fill('#c-text', 'Stuck in traffic'); await p.click('#c-send'); await p.waitForTimeout(300);
+  check('and goes with them', (await store(p, 'coverLink/' + TOK + '/answer')).text === 'Stuck in traffic');
+
+  /* nudged by a manager: Where are you? with I am here first */
+  p = await open('/cover.html?t=' + TOK + '&a=here', fixture({ seat: { absent: { personId: 'mon', by: 'manager email', ts: 5 } } }));
+  t = await txt(p);
+  check('a nudged person sees Where are you? and I am here', /Where are you\?/.test(t) && await p.locator('#c-here').isVisible(), t);
+  await shot(p, 'cover-where.png');
+  await p.click('#c-here'); await p.waitForTimeout(300);
+  check('I am here is written on their link', (await store(p, 'coverLink/' + TOK + '/answer')).kind === 'here');
+  check('and the page says the managers are told', /told you are here/.test(await txt(p)));
+  p = await open('/cover.html?t=' + TOK, fixture({ seat: { absent: { personId: 'mon', by: 'manager email', ts: 5 } } }));
+  await p.click('#c-no'); await p.click('[data-k="notin"]'); await p.click('#c-send'); await p.waitForTimeout(300);
+  check('or they cannot be in, with a reason', (await store(p, 'coverLink/' + TOK + '/answer')).kind === 'notin');
+
+  /* a manager's Nudge link from the start of shift email */
+  const MT = 'Mm3_dEf-ghIJklmnOPqrstUVwxyz0123';
+  const mfix = o => { const f = fixture(o); f.coverLink[MT] = Object.assign({}, f.coverLink[TOK], { role: 'manager' }); return f; };
+  p = await open('/cover.html?t=' + MT + '&a=nudge', mfix());
+  t = await txt(p);
+  check('the managers link asks to nudge them, by name', /Nudge Mon\?/.test(t) && /has not confirmed yet/.test(t) && !(await p.locator('#c-yes').count()), t);
+  check('nothing is sent on load', (await store(p, 'coverLink/' + MT + '/answer')) === undefined);
+  await shot(p, 'cover-nudge.png');
+  await p.click('#c-nudge'); await p.waitForTimeout(300);
+  check('one tap nudges', (await store(p, 'coverLink/' + MT + '/answer')).kind === 'nudge' && p.__kicks.length === 1);
+  check('and says what happens next', /Where are you\?/.test(await txt(p)));
+  p = await open('/cover.html?t=' + MT, mfix({ seat: { status: 'covering', absent: { personId: 'mon', ts: 5, reply: { status: 'here', ts: 6 } } } }));
+  check('it shows their reply to an earlier nudge', /says they are here/.test(await txt(p)) && /has confirmed/.test(await txt(p)));
+  p = await open('/cover.html?t=' + MT, mfix({ seat: { personId: 'carl' } }));
+  check('nobody to nudge once the place has moved on', /no longer on this place/.test(await txt(p)) && !(await p.locator('#c-nudge').count()));
 
   /* the state of the seat decides what is offered */
   p = await open('/cover.html?t=' + TOK, fixture({ seat: { status: 'covering' } }));

@@ -312,7 +312,7 @@
         ".write": false,
         "answer": {
           ".write": "data.parent().child('personId').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/)",
-          ".validate": "newData.hasChildren(['kind', 'ts']) && newData.child('kind').isString() && newData.child('kind').val().matches(/^(covering|cannot|notin|offsite|customer|other)$/) && newData.child('ts').val() === now && (!newData.child('text').exists() || newData.child('text').val().length <= 500) && (newData.child('kind').val() !== 'other' || (newData.child('text').exists() && newData.child('text').val().length >= 1))",
+          ".validate": "newData.hasChildren(['kind', 'ts']) && newData.child('kind').isString() && newData.child('kind').val().matches(/^(covering|cannot|notin|offsite|customer|other|here|nudge)$/) && newData.child('ts').val() === now && (!newData.child('text').exists() || newData.child('text').val().length <= 500) && ((newData.child('kind').val() !== 'other' && newData.child('kind').val() !== 'cannot') || (newData.child('text').exists() && newData.child('text').val().length >= 1))",
           "kind": { ".validate": "newData.isString()" },
           "text": { ".validate": "newData.isString()" },
           "ts": { ".validate": "newData.isNumber()" },
@@ -328,7 +328,7 @@
         ".write": false,
         "answer": {
           ".write": "data.parent().child('personId').exists() && $token.matches(/^[A-Za-z0-9_-]{24,64}$/)",
-          ".validate": "newData.hasChildren(['kind', 'ts']) && newData.child('kind').isString() && newData.child('kind').val().matches(/^(covering|cannot|notin|offsite|customer|other)$/) && newData.child('ts').val() === now && (!newData.child('text').exists() || newData.child('text').val().length <= 500) && (newData.child('kind').val() !== 'other' || (newData.child('text').exists() && newData.child('text').val().length >= 1))",
+          ".validate": "newData.hasChildren(['kind', 'ts']) && newData.child('kind').isString() && newData.child('kind').val().matches(/^(covering|cannot|notin|offsite|customer|other|here|nudge)$/) && newData.child('ts').val() === now && (!newData.child('text').exists() || newData.child('text').val().length <= 500) && ((newData.child('kind').val() !== 'other' && newData.child('kind').val() !== 'cannot') || (newData.child('text').exists() && newData.child('text').val().length >= 1))",
           "kind": { ".validate": "newData.isString()" },
           "text": { ".validate": "newData.isString()" },
           "ts": { ".validate": "newData.isNumber()" },

@@ -52,39 +52,79 @@
     var ended = l.date < now.date || (l.date === now.date && minsOf(l.to) <= now.mins);
     if (S.sent) { $('c-body').innerHTML = head + S.sent; return; }
     if (ended) { $('c-body').innerHTML = head + '<p class="note">This shift has finished. Nothing more to do.</p>'; return; }
+    if (l.role === 'manager') return paintManager(fb, token, LROOT, head, r);
     var mine = r.personId === l.personId;
     var saidNo = (mine && r.status === 'declined') || (!mine && (r.declined || {})[l.personId]);
     if (saidNo) { $('c-body').innerHTML = head + '<p class="note">You said you cannot cover. The managers have been told and the next person is put on.</p>'; return; }
     if (!mine) { $('c-body').innerHTML = head + '<p class="note">This place has been handed to someone else, so there is nothing more to do here.</p>'; return; }
     var covering = r.status === 'covering';
+    /* a manager has nudged them: Where are you? comes first */
+    var nudged = r.absent && r.absent.personId === l.personId && !r.absent.reply;
+    if (nudged) {
+      var nh = head + '<p class="note warn"><b>Where are you?</b> A manager says you are not in the showroom, and you are on cover until ' + esc(l.to) + '.</p>' +
+        '<button class="big btn" type="button" id="c-here">I am here</button>';
+      if (!S.picking) nh += '<button class="ghost btn" type="button" id="c-no">I cannot be in</button>';
+      else nh += reasonsHtml();
+      nh += '<p class="msg" id="c-msg" aria-live="polite"></p>';
+      var keep0 = $('c-text') ? $('c-text').value : '';
+      $('c-body').innerHTML = nh;
+      if ($('c-text')) $('c-text').value = keep0;
+      $('c-here').onclick = function () { send(fb, token, LROOT, { kind: 'here' }, '<p class="note ok">Thanks. The managers have been told you are here, and you are down as covering until ' + esc(l.to) + '.</p>'); };
+      wireReasons(fb, token, LROOT);
+      return;
+    }
     var html = head + (covering
       ? '<p class="note ok">You are down as covering the showroom until ' + esc(l.to) + '. Thank you.</p>'
       : '<p class="lead">You are on showroom cover until ' + esc(l.to) + '. Please tell us now.</p>' +
         '<button class="big btn" type="button" id="c-yes">I am covering</button>');
     if (!S.picking) {
       html += '<button class="ghost btn" type="button" id="c-no">' + (covering ? 'I can no longer cover' : 'I cannot cover') + '</button>';
-    } else {
-      html += '<div class="why"><b>Why can you not cover?</b><div class="chips">' +
-        Object.keys(RR.REASONS).map(function (k) { return '<button type="button" class="chip' + (S.reason === k ? ' on' : '') + '" data-k="' + k + '">' + esc(RR.REASONS[k]) + '</button>'; }).join('') +
-        '</div><textarea id="c-text" rows="2" maxlength="500" placeholder="' + (S.reason === 'other' ? 'Please say why (needed)' : 'Anything the managers should know (optional)') + '"></textarea>' +
-        '<button class="big btn danger" type="button" id="c-send">Send to the managers</button></div>';
-    }
+    } else html += reasonsHtml();
     html += '<p class="msg" id="c-msg" aria-live="polite"></p><p class="small muted">No sign in needed. This link is yours alone, so please do not forward it.</p>';
     var keepText = $('c-text') ? $('c-text').value : '';
     $('c-body').innerHTML = html;
     if ($('c-text')) $('c-text').value = keepText;
     if ($('c-yes')) $('c-yes').onclick = function () { send(fb, token, LROOT, { kind: 'covering' }, '<p class="note ok">Thank you, you are down as covering the showroom until ' + esc(l.to) + '. The reminders stop now.</p>'); };
+    wireReasons(fb, token, LROOT);
+  }
+
+  /* the reasons, the same five as reception.html. "I cannot cover right now" and Other must say why. */
+  function reasonsHtml() {
+    var need = S.reason && RR.needsWords(S.reason);
+    return '<div class="why"><b>Why can you not cover?</b><div class="chips">' +
+      Object.keys(RR.REASONS).map(function (k) { return '<button type="button" class="chip' + (S.reason === k ? ' on' : '') + '" data-k="' + k + '">' + esc(RR.REASONS[k]) + '</button>'; }).join('') +
+      '</div><textarea id="c-text" rows="2" maxlength="500" placeholder="' + (need ? 'Tell the managers why (needed)' : 'Anything the managers should know (optional)') + '"></textarea>' +
+      '<button class="big btn danger" type="button" id="c-send">Send to the managers</button></div>';
+  }
+  function wireReasons(fb, token, LROOT) {
     if ($('c-no')) $('c-no').onclick = function () { S.picking = true; paint(fb, token, LROOT); };
     Array.prototype.forEach.call(document.querySelectorAll('[data-k]'), function (b) { b.onclick = function () { S.reason = b.getAttribute('data-k'); paint(fb, token, LROOT); }; });
     if ($('c-send')) $('c-send').onclick = function () {
       var text = ($('c-text').value || '').trim();
       if (!S.reason) { $('c-msg').textContent = 'Please choose a reason.'; return; }
       var a = RR.answer(S.reason, text);
-      if (!a) { $('c-msg').textContent = 'Please say why.'; return; }
+      if (!a) { $('c-msg').textContent = 'Please tell the managers why.'; return; }
       var ans = { kind: S.reason };
       if (text) ans.text = text.slice(0, 500);
       send(fb, token, LROOT, ans, '<p class="note">Thanks for letting us know. The managers have been told and the next person is being put on.</p>');
     };
+  }
+
+  /* a manager's Nudge link from the start of shift email: one tap sends the person Where are you? */
+  function paintManager(fb, token, LROOT, head, r) {
+    var l = S.link, who = esc(l.name || 'them');
+    var on = r.personId === l.personId && (r.status === 'assigned' || r.status === 'covering');
+    var html = head.replace('<h1>Hi ' + esc(l.name || '') + '</h1>', '<h1>Nudge ' + who + '?</h1>');
+    if (!on) { $('c-body').innerHTML = html + '<p class="note">' + who + ' is no longer on this place, so there is nobody to nudge here. Open showroom cover to see who is on.</p><a class="big btn" href="reception.html">Open showroom cover</a>'; return; }
+    var pending = r.absent && r.absent.personId === l.personId && !r.absent.reply;
+    var replied = r.absent && r.absent.personId === l.personId && r.absent.reply;
+    html += '<p class="lead">' + who + ' should be in the showroom until ' + esc(l.to) + (r.status === 'covering' ? ' and has confirmed.' : ' and has not confirmed yet.') + '</p>' +
+      (pending ? '<p class="note warn">Nudged already, no reply yet. You can nudge again.</p>' : '') +
+      (replied ? '<p class="note">' + (r.absent.reply.status === 'here' ? who + ' says they are here.' : who + ' is not in: ' + esc(r.absent.reply.text || '')) + '</p>' : '') +
+      '<button class="big btn danger" type="button" id="c-nudge">Nudge ' + who + ', not in the showroom</button>' +
+      '<p class="msg" id="c-msg" aria-live="polite"></p><p class="small muted">They get a Where are you? email straight away with their own link. This link is for managers only, please do not forward it.</p>';
+    $('c-body').innerHTML = html;
+    $('c-nudge').onclick = function () { send(fb, token, LROOT, { kind: 'nudge' }, '<p class="note ok">Done. ' + who + ' has been sent Where are you? and you will be emailed their answer.</p>'); };
   }
 
   function send(fb, token, LROOT, ans, done) {

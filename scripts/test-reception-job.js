@@ -714,5 +714,96 @@ async function runAt(db, date, h, m, cfgExtra) {
     console.log('ok: no links in test mode; links go when their day is pruned');
   }
 
+  // 17 November: both people answer for themselves, a reason must be given, and the managers get the start of every shift with a Nudge each
+  {
+    const L = { links: true };
+    const allMail = db => Object.assign({}, db.data.lockupTest.notify || {}, (db.data.lockupPrivate || {}).notify || {});
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, L);
+    const day = () => db.data.lockupTest.reception[MON];
+    const p1 = day().am.personId, p2 = day().am2.personId;
+    const t1 = db.data[J.IDX_ROOT][MON]['am_' + p1].t, t2 = db.data[J.IDX_ROOT][MON]['am2_' + p2].t;
+    assert.ok(t1 && t2 && t1 !== t2, 'each of the two has their own link');
+    day().am2.status = 'covering';
+    r = await runAt(db, MON, 8, 55, L);
+    assert.ok(!r.added.some(id => /_start_/.test(id)), 'nothing to the managers before the shift starts');
+    r = await runAt(db, MON, 9, 2, L);
+    const st = r.added.filter(id => /_start_/.test(id));
+    assert.strictEqual(st.length, 1, 'one email at the start of the shift: ' + r.added.join(','));
+    const sm = allMail(db)[st[0]];
+    assert.strictEqual(sm.to, 'managers');
+    assert.ok(db.data.lockupPrivate.notify[st[0]], 'with nudge links, so on the private queue');
+    const n1 = team[p1].name, n2 = team[p2].name;
+    assert.ok(sm.subject.indexOf(n1 + ' and ' + n2) >= 0 && /1 of 2 confirmed/.test(sm.subject), sm.subject);
+    assert.ok(/Place 1: .*Not confirmed yet/.test(sm.text) && /Place 2: .*Confirmed, covering/.test(sm.text), sm.text);
+    assert.ok(new RegExp('Nudge ' + n1 + ': https://dan-sells\\.co\\.uk/cover\\.html\\?t=[A-Za-z0-9_-]+&a=nudge').test(sm.text) && new RegExp('Nudge ' + n2 + ':').test(sm.text), sm.text);
+    assert.ok(/Nudge .*not in the showroom/.test(sm.html));
+    const m1 = db.data[J.IDX_ROOT][MON]['m-am_' + p1].t;
+    assert.ok(m1 && m1 !== t1 && db.data[J.LINK_ROOT][m1].role === 'manager', 'the nudge link is a separate managers link');
+    r = await runAt(db, MON, 9, 17, L);
+    assert.ok(!r.added.some(id => /_start_/.test(id)), 'once a shift');
+    console.log('ok: the managers get the start of each shift: who is on, who has confirmed, a Nudge for each');
+
+    // a person's link cannot nudge, and I cannot cover right now with no words is refused
+    db.data[J.LINK_ROOT][t1].answer = { kind: 'nudge', ts: 9100 };
+    await runAt(db, MON, 9, 20, L);
+    assert.ok(!day().am.absent, 'a person cannot nudge');
+    db.data[J.LINK_ROOT][t1].answer = { kind: 'cannot', ts: 9200 };
+    await runAt(db, MON, 9, 21, L);
+    assert.strictEqual(day().am.personId, p1, 'no reason, no change');
+    assert.strictEqual(day().am.status, 'assigned');
+    // a manager's link can only nudge
+    db.data[J.LINK_ROOT][m1].answer = { kind: 'covering', ts: 9300 };
+    await runAt(db, MON, 9, 22, L);
+    assert.strictEqual(day().am.status, 'assigned', 'a managers link cannot confirm for them');
+    console.log('ok: each link does only its own job, and a decline needs a reason');
+
+    // Nudge from the email: the person gets Where are you? with their own link, I am here tells the managers
+    db.data[J.LINK_ROOT][m1].answer = { kind: 'nudge', ts: 9400 };
+    r = await runAt(db, MON, 9, 25, L);
+    assert.strictEqual(day().am.absent.personId, p1);
+    assert.strictEqual(day().am.absent.by, 'manager email');
+    assert.strictEqual(day().am.personId, p1, 'a nudge does not take them off');
+    const wid = r.added.find(id => /_absent_/.test(id));
+    const wm = db.data.lockupPrivate.notify[wid];
+    assert.ok(wm && /Where are you/.test(wm.subject) && wm.text.indexOf('t=' + t1 + '&a=here') > 0 && wm.text.indexOf('t=' + t1 + '&a=cannot') > 0, 'Where are you? with their own link: ' + (wm && wm.text));
+    assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'absent' && e.personId === p1).length, 1, 'logged as absent');
+    db.data[J.LINK_ROOT][t1].answer = { kind: 'here', ts: 9500 };
+    r = await runAt(db, MON, 9, 30, L);
+    assert.strictEqual(day().am.status, 'covering', 'I am here counts as covering');
+    assert.strictEqual(day().am.absent.reply.status, 'here');
+    const rid = r.added.find(id => /_reply_/.test(id));
+    assert.ok(rid && /is here/.test(allMail(db)[rid].subject), 'the managers hear: ' + r.added.join(','));
+    console.log('ok: a Nudge from the email reaches them with their own link, and I am here goes back to the managers');
+
+    // the start email for a shift with nobody free names the gap and has no nudge
+    const everyoneAway = {};
+    Object.keys(team).forEach(id => { everyoneAway['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
+    db = fakeDb();
+    r = await runAt(db, MON, 9, 1, Object.assign({ absences: everyoneAway }, L));
+    const se = allMail(db)[r.added.find(id => /_start_/.test(id))];
+    assert.ok(se && /nobody on/.test(se.subject) && /Nobody free, please choose someone/.test(se.text) && !/Nudge/.test(se.text), se && se.text);
+    assert.ok(db.data.lockupTest.notify[r.added.find(id => /_start_/.test(id))], 'with nothing private in it, on the ordinary queue');
+    console.log('ok: a shift nobody can cover says so at its start');
+  }
+
+  // cover emails queued on the old code (sign in links) and not sent yet are swapped for ones with a personal link
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const before = Object.keys(db.data.lockupTest.notify).filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.strictEqual(before.length, 6);
+    db.data.lockupTest.notify[before[0]].sent = 1;
+    r = await runAt(db, MON, 8, 15, { links: true });
+    const pub = Object.keys(db.data.lockupTest.notify).filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.deepStrictEqual(pub, [before[0]], 'only the one already sent stays as it was: ' + pub.join(','));
+    const priv = Object.keys(db.data.lockupPrivate.notify).filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.strictEqual(priv.length, 5);
+    assert.ok(priv.every(id => /cover\.html\?t=/.test(db.data.lockupPrivate.notify[id].text) && db.data.lockupPrivate.notify[id].sendAfter), 'with their link, still held to the shift');
+    r = await runAt(db, MON, 8, 30, { links: true });
+    assert.ok(!r.added.some(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id)), 'once');
+    console.log('ok: unsent cover emails from before the links are swapped for ones with a link');
+  }
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

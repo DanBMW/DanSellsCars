@@ -35,6 +35,10 @@ for (const [L, R, LINKS] of [['coverLink', 'lockup', 'shifts'], ['coverLinkTest'
   await ok(assertSucceeds(set(ref(anon, L + '/' + T + '/answer'), { kind: 'customer', ts: serverTimestamp() })));
   await ok(assertSucceeds(set(ref(anon, L + '/' + T + '/answer'), { kind: 'other', text: 'At the dentist', ts: serverTimestamp() })));
   await ok(assertFails(set(ref(anon, L + '/' + T + '/answer'), { kind: 'other', ts: serverTimestamp() })));
+  await ok(assertFails(set(ref(anon, L + '/' + T + '/answer'), { kind: 'cannot', ts: serverTimestamp() })));
+  await ok(assertSucceeds(set(ref(anon, L + '/' + T + '/answer'), { kind: 'cannot', text: 'Stuck in traffic', ts: serverTimestamp() })));
+  await ok(assertSucceeds(set(ref(anon, L + '/' + T + '/answer'), { kind: 'here', ts: serverTimestamp() })));
+  await ok(assertSucceeds(set(ref(anon, L + '/' + T + '/answer'), { kind: 'nudge', ts: serverTimestamp() })));
   await ok(assertFails(set(ref(anon, L + '/' + T + '/answer'), { kind: 'covering', ts: 12345 })));
   await ok(assertFails(set(ref(anon, L + '/' + T + '/answer'), { kind: 'boss', ts: serverTimestamp() })));
   await ok(assertFails(set(ref(anon, L + '/' + T + '/answer'), { kind: 'covering', ts: serverTimestamp(), extra: 1 })));

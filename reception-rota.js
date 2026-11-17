@@ -126,12 +126,16 @@
     return { assignments: out, short: short };
   }
 
+  /* reasons that are not a why on their own: the person must add words (Dan, 17 November 2026:
+     "if someone cannot cover they need to say why"). The other three name the reason themselves. */
+  function needsWords(kind) { return kind === 'cannot' || kind === 'other'; }
+
   /* what a covering person can answer, and what it does to the day */
   function answer(kind, reason) {
     if (kind === 'covering') return { status: 'covering', reassign: false };
     if (!REASONS[kind]) return null;
     var r = String(reason || '').trim(); /* the words are kept for every reason, not only Other */
-    if (kind === 'other' && !r) return null; /* a reason is needed for Other */
+    if (needsWords(kind) && !r) return null; /* "I cannot cover right now" and Other must say why */
     return { status: 'declined', reassign: true, reason: REASONS[kind], reasonText: r.slice(0, 500) };
   }
 
@@ -221,6 +225,41 @@
       '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover. No sign in needed: this link is yours alone.</p></div></div>';
     return { subject: subject, text: text, html: html };
   }
+  /* the managers' email at the start of each shift (Dan, 17 November 2026): who should be on,
+     whether each has confirmed, and a one tap Nudge for each person on, with no sign in.
+     rows: [{ seat, name, state: covering|assigned|declined|open|short|absent, nudgeUrl? }] */
+  var STATE_WORDS = {
+    covering: 'Confirmed, covering', assigned: 'Not confirmed yet', absent: 'Nudged, not answered yet',
+    declined: 'Cannot cover, being replaced', open: 'Nobody yet, being filled', short: 'Nobody free, please choose someone'
+  };
+  function startEmail(shift, rows, opts) {
+    opts = opts || {};
+    var on = rows.filter(function (r) { return r.name && (r.state === 'covering' || r.state === 'assigned' || r.state === 'absent'); });
+    var ok = rows.filter(function (r) { return r.state === 'covering'; }).length;
+    var subject = 'Showroom ' + shift.from + ' to ' + shift.to + ': ' + (on.length ? on.map(function (r) { return r.name; }).join(' and ') : 'nobody on') + (ok === rows.length ? '' : ' (' + ok + ' of ' + rows.length + ' confirmed)');
+    var lines = ['Showroom cover ' + shift.from + ' to ' + shift.to + ' starts now. Who should be in the showroom:', ''];
+    rows.forEach(function (r, i) {
+      lines.push('Place ' + (i + 1) + ': ' + (r.name || 'Nobody') + ', ' + (STATE_WORDS[r.state] || r.state) + '.');
+      if (r.nudgeUrl) lines.push('Not in the showroom? Nudge ' + r.name + ': ' + r.nudgeUrl);
+    });
+    lines.push('', 'Open showroom cover: ' + PAGE_URL);
+    var rowHtml = rows.map(function (r, i) {
+      var tone = r.state === 'covering' ? '#2ea56a' : (r.state === 'assigned' || r.state === 'absent') ? '#c98a00' : '#c0392b';
+      return '<div style="border:1px solid #d9e3ee;border-left:6px solid ' + tone + ';border-radius:12px;padding:14px;margin:0 0 12px">' +
+        '<div style="font-size:13px;color:#6b7a8c">Place ' + (i + 1) + '</div>' +
+        '<div style="font-size:18px;font-weight:800;margin:2px 0">' + escHtml(r.name || 'Nobody') + '</div>' +
+        '<div style="font-size:15px;color:' + tone + ';font-weight:700">' + escHtml(STATE_WORDS[r.state] || r.state) + '</div>' +
+        (r.nudgeUrl ? '<div style="margin-top:10px">' + mailBtn(r.nudgeUrl, 'Nudge ' + r.name + ', not in the showroom', 'danger') + '</div>' : '') +
+        '</div>';
+    }).join('');
+    var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + ' starts now</div>' +
+      '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
+      '<p style="margin:0 0 14px">Who should be in the showroom. If someone is not there, tap Nudge: they get a Where are you? email straight away, with no sign in for you or for them.</p>' +
+      rowHtml + mailBtn(PAGE_URL, 'Open showroom cover', 'primary') +
+      '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover. The Nudge links are for managers only, please do not forward.</p></div></div>';
+    return { subject: subject, text: lines.join('\n'), html: html };
+  }
   function unconfirmedNote(name, shift, mins) {
     var line = name + ' has not confirmed showroom cover ' + shift.from + ' to ' + shift.to + ' after ' + mins + ' minutes of reminders. They are still being asked every 15 minutes.';
     return { subject: name + ' has not confirmed showroom cover ' + shift.from + ' to ' + shift.to, text: line };
@@ -229,8 +268,9 @@
   /* "where are you" nudge: tap I am here, or say you cannot be in */
   function absentEmail(name, shift, opts) {
     opts = opts || {};
-    var here = coverPageUrl({ date: opts.date, shift: shift.id, action: 'here' });
-    var away = coverPageUrl({ date: opts.date, shift: shift.id, action: 'away' });
+    /* with a personal link: I am here, or the cannot cover reasons, with no sign in */
+    var here = opts.token ? linkUrl(opts.token, 'here', opts.test) : coverPageUrl({ date: opts.date, shift: shift.id, action: 'here' });
+    var away = opts.token ? linkUrl(opts.token, 'cannot', opts.test) : coverPageUrl({ date: opts.date, shift: shift.id, action: 'away' });
     var line = 'Hi ' + name + ', you are not in the showroom. You are on showroom cover ' + shift.from + ' to ' + shift.to + '.';
     var text = line + '\n\nI am here:\n' + here + '\n\nI cannot be in:\n' + away;
     var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
@@ -501,6 +541,6 @@ function publicRota(day, date, dow, team) {
   });
 }
 
-var api = { linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
+var api = { needsWords: needsWords, startEmail: startEmail, STATE_WORDS: STATE_WORDS, linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

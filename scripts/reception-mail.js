@@ -42,7 +42,9 @@ const PLAN_FROM = 7 * 60 + 30; /* 07:30 UK */
    sits under lockup, which is world readable. */
 const LINK_ROOT = RR.TEST_ONLY ? 'coverLinkTest' : 'coverLink';
 const IDX_ROOT = RR.TEST_ONLY ? 'coverLinkIdxTest' : 'coverLinkIdx';
-const LINK_KINDS = /^(covering|cannot|notin|offsite|customer|other)$/;
+/* what a person may answer on their own link, and what a manager's nudge link may do */
+const LINK_KINDS = /^(covering|cannot|notin|offsite|customer|other|here)$/;
+const NUDGE_KIND = 'nudge';
 /* until they answer: a reminder every 15 minutes, and the managers told once at the third */
 const NAG_MS = 15 * 60 * 1000;
 const NAG_MANAGERS_AT = 3;
@@ -192,14 +194,15 @@ async function run(o) {
   /* personal links: only where the private queue is sent (live mode), never in a dry run */
   const links = !!o.links && !dry;
   const idx = links ? Object.assign({}, (await db.ref(IDX_ROOT + '/' + date).get()).val() || {}) : {};
-  const linkKey = (sid, pid) => sid + '_' + pid;
-  const linkFor = async (s, pid) => {
+  /* a person's own link is <seat>_<person>; a managers' nudge link for that person is m-<seat>_<person> */
+  const linkKey = (sid, pid, manager) => (manager ? 'm-' : '') + sid + '_' + pid;
+  const linkFor = async (s, pid, manager) => {
     if (!links || !pid) return null;
-    const k = linkKey(s.id, pid);
+    const k = linkKey(s.id, pid, manager);
     if (idx[k] && idx[k].t) return idx[k].t;
     const t = crypto.randomBytes(24).toString('base64url');
     const p = team[pid] || {};
-    await db.ref(LINK_ROOT + '/' + t).set({ date, shift: s.id, personId: pid, name: firstName(p, pid), from: s.from, to: s.to, ts: Date.now() });
+    await db.ref(LINK_ROOT + '/' + t).set(Object.assign({ date, shift: s.id, personId: pid, name: firstName(p, pid), from: s.from, to: s.to, ts: Date.now() }, manager ? { role: 'manager' } : {}));
     idx[k] = { t };
     await db.ref(IDX_ROOT + '/' + date + '/' + k).set(idx[k]);
     return t;
@@ -259,13 +262,34 @@ async function run(o) {
     const e = idx[k];
     if (!e || !e.t) continue;
     const ans = (await db.ref(LINK_ROOT + '/' + e.t + '/answer').get()).val();
-    if (!ans || typeof ans.ts !== 'number' || ans.ts === e.h || !LINK_KINDS.test(String(ans.kind || ''))) continue;
-    const sid = k.split('_')[0], pid = k.slice(sid.length + 1);
+    const mgr = k.indexOf('m-') === 0, kk = mgr ? k.slice(2) : k;
+    /* a manager's link can only nudge, and a person's link can never nudge */
+    if (!ans || typeof ans.ts !== 'number' || ans.ts === e.h || (mgr ? ans.kind !== NUDGE_KIND : !LINK_KINDS.test(String(ans.kind || '')))) continue;
+    const sid = kk.split('_')[0], pid = kk.slice(sid.length + 1);
     idx[k] = Object.assign({}, e, { h: ans.ts });
     await db.ref(IDX_ROOT + '/' + date + '/' + k + '/h').set(ans.ts);
     const r = today[sid] || {};
     if (!shifts.some(x => x.id === sid) || r.personId !== pid || (r.status !== 'assigned' && r.status !== 'covering')) { say('Link answer on ' + sid + ' for a seat no longer held: ignored'); continue; }
+    if (mgr) {
+      /* the same as a manager tapping Nudge on reception.html: step 1 logs it and emails them Where are you? */
+      const absent = { personId: pid, by: 'manager email', ts: ans.ts };
+      today[sid] = Object.assign({}, r, { absent });
+      await db.ref(root + '/reception/' + date + '/' + sid + '/absent').set(absent);
+      say('Nudge from the managers email on ' + sid + ': ' + firstName(team[pid], pid));
+      continue;
+    }
     let change = null;
+    if (ans.kind === 'here') {
+      /* I am here, after a nudge: the managers hear it (step 1, the absent reply) and they count as covering */
+      change = { status: 'covering', ts: ans.ts, coveringTs: r.coveringTs || ans.ts };
+      if (r.absent && r.absent.personId === pid && !r.absent.reply) change['absent/reply'] = { status: 'here', ts: ans.ts };
+      const nx = Object.assign({}, r, { status: 'covering', ts: ans.ts, coveringTs: change.coveringTs });
+      if (change['absent/reply']) nx.absent = Object.assign({}, r.absent, { reply: change['absent/reply'] });
+      today[sid] = nx;
+      await db.ref(root + '/reception/' + date + '/' + sid).update(change);
+      say('Link answer on ' + sid + ': ' + firstName(team[pid], pid) + ' is here');
+      continue;
+    }
     if (ans.kind === 'covering') { if (r.status !== 'covering') change = { status: 'covering', ts: ans.ts, coveringTs: ans.ts }; }
     else {
       const a = RR.answer(ans.kind, ans.text);
@@ -386,9 +410,10 @@ async function run(o) {
       await logWrite('absent_' + date + '_' + s.id + '_' + ab.ts, { kind: 'absent', personId: ab.personId, date, shift: s.id, from: s.from, to: s.to, ts: ab.ts, by: ab.by || '' });
       if (ap.email) {
         const first = firstName(ap, ab.personId);
-        const mail = RR.absentEmail(first, s, { date: date });
-        qAdd(rcId('absent', date, s.id, ab.ts), { to: [testExec || ap.email], subject: mail.subject,
-          text: mail.text, html: mail.html, ts: Date.now() }, dry);
+        const token = await linkFor(s, ab.personId);
+        const mail = RR.absentEmail(first, s, { date: date, token: token });
+        qAdd(rcId('absent', date, s.id, ab.ts), Object.assign({ to: [testExec || ap.email], subject: mail.subject,
+          text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}), dry);
       }
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ absentHandledTs: ab.ts });
       today[s.id] = Object.assign({}, r, { absentHandledTs: ab.ts });
@@ -556,6 +581,14 @@ async function run(o) {
     if (!pid || (r.status !== 'assigned' && r.status !== 'covering')) continue;
     if (mailedCover[s.id + '|' + pid]) continue;
     if (coverAlreadySent(notifyMap, date, s.id, pid)) continue;
+    /* a cover email queued before personal links existed and not sent yet (17 November: the next day
+       was planned at 17:30 on the old code) is swapped for one carrying their own link */
+    const oldId = rcId(date, s.id, pid), old = notifyMap[oldId];
+    if (links && old && !old.sent && !/cover\.html\?t=/.test(String(old.text || ''))) {
+      await db.ref(root + '/notify/' + oldId).remove();
+      delete notifyMap[oldId];
+      say('Swapping the queued cover email for ' + s.id + ' to one with their own link');
+    }
     const p = team[pid] || {};
     if (!(testExec || p.email)) continue;
     const cover = await coverMail(p, pid, s, { sendAfter: coverSendAfterMs(date, s.from) });
@@ -587,6 +620,38 @@ async function run(o) {
       if (k >= NAG_MANAGERS_AT) {
         const note = RR.unconfirmedNote(firstName(p, pid), s, Math.round((nowMs - base) / 60000) + 10);
         qAdd(rcId('nagMgr', date, s.id, pid), { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
+      }
+    }
+  }
+
+  /* 2d. the start of each shift (Dan, 17 November 2026): one email to the managers saying who
+     should be in the showroom, whether each has confirmed, and a Nudge per person on (their own
+     no sign in link, on the private queue). Once a shift, from its start until it ends, so a run
+     GitHub starts late still sends it and a run after the shift never does. */
+  if (date === n.date) {
+    const bases = [];
+    shifts.forEach(s => { if (!bases.some(b => b.from === s.from && b.to === s.to)) bases.push({ from: s.from, to: s.to, base: s.base || s.id }); });
+    for (const b of bases) {
+      if (n.mins < minsOf(b.from) || n.mins >= minsOf(b.to)) continue;
+      const id = rcId('start', date, b.base);
+      if (notifyHas(id)) continue;
+      const seats = shifts.filter(s => s.from === b.from && s.to === b.to);
+      const rows = [];
+      for (const s of seats) {
+        const r = today[s.id] || {}, pid = r.personId;
+        const held = pid && (r.status === 'assigned' || r.status === 'covering');
+        const state = !held ? (r.status === 'short' ? 'short' : r.status === 'declined' ? 'declined' : 'open')
+          : (r.absent && r.absent.personId === pid && !r.absent.reply ? 'absent' : r.status);
+        const row = { seat: s.id, name: held ? firstName(team[pid], pid) : '', state };
+        if (held) {
+          const t = await linkFor(s, pid, true);
+          if (t) row.nudgeUrl = RR.linkUrl(t, 'nudge');
+        }
+        rows.push(row);
+      }
+      const mail = RR.startEmail(b, rows, { date });
+      if (qAdd(id, Object.assign({ to: 'managers', subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, rows.some(x => x.nudgeUrl) ? { private: true } : {}), dry)) {
+        say('Start of shift email for ' + b.from + ' to ' + b.to + ': ' + mail.subject);
       }
     }
   }
