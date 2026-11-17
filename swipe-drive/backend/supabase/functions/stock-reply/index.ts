@@ -13,9 +13,9 @@ const DONE: Record<string, string> = {
   keepinformed: "Thanks. Dan will keep an eye out and send you more cars that fit.",
   offmarket: 'Thanks for letting Dan know. Good luck, and you know where he is if anything changes.'
 };
-const page = (body: string, status = 200) => new Response(`<!doctype html><html lang="en-GB"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Dan Sells | BMW Ruxley</title>
+const page = (body: string, status = 200) => new Response(`<!doctype html><html lang="en-GB"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Dan Sells | SwipeToDrive</title>
 <body style="margin:0;background:#f2f4f8;font:17px/1.5 Helvetica,Arial,sans-serif;color:#0b1220"><div style="max-width:460px;margin:48px auto;background:#fff;border-radius:16px;padding:28px 24px;text-align:center">
-<div style="font-weight:700;font-size:20px;margin:0 0 14px">Dan Sells <span style="font-weight:400;font-size:14px;color:#4a5568">BMW Ruxley</span></div>${body}</div></body></html>`, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+<div style="font-weight:700;font-size:20px;margin:0 0 14px">Dan Sells <span style="font-weight:400;font-size:14px;color:#4a5568">Sidcup</span></div>${body}</div></body></html>`, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
 
 Deno.serve(async (req) => {
   const url = new URL(req.url); const t = url.searchParams.get('t') || '';

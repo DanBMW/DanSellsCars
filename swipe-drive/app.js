@@ -241,8 +241,12 @@
 
   /* ---------------- data ---------------- */
   function loadStock() {
-    var stock = fetch('../lookup/stock.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
-      S.generated = d.generated_at; S.cars = Object.keys(d.cars).map(function (k) { var c = d.cars[k]; c.kind = 'used'; return c; }); });
+    /* SwipeToDrive's own copy of the used list (lookup/std-stock.json, written next to stock.json by build-lookup.mjs,
+       with no listing links or retailer names). Until it exists, the shared list is read and cleaned the same way here. */
+    var B = window.ctBrand || { cleanCar: function (c) { return c; } };
+    var getStock = function (u) { return fetch(u, { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); };
+    var stock = getStock('../lookup/std-stock.json').catch(function () { return getStock('../lookup/stock.json'); }).then(function (d) {
+      S.generated = d.generated_at; S.cars = Object.keys(d.cars).map(function (k) { var c = B.cleanCar(d.cars[k]); c.kind = 'used'; return c; }); });
     var range = fetch('../MBG.html', { cache: 'no-cache' }).then(function (r) { return r.text(); }).then(function (h) {
       var doc = new DOMParser().parseFromString(h, 'text/html'); var out = [];
       $$('#new details.mbg-acc', doc).forEach(function (det) {
@@ -263,7 +267,7 @@
         .then(function (of) { if (of && M.applyOffers) M.applyOffers(S.newStock, of); }); }).catch(function () { S.newStock = []; });
     /* arrival dates (the same ledger stock.html badges from); quiet failure means no Just arrived badges */
     var arr = fetch('../automation/stock-arrivals.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { S.arrivals = d; }).catch(function () { S.arrivals = null; });
-    /* Hedin's description of each used car, keyed by listing id. Never waited on: without it the sheet simply has no About this car. */
+    /* the description of each used car from the shared feed, keyed by listing id, cleaned for display (std-brand.js). Never waited on: without it the sheet simply has no About this car. */
     fetch('../automation/car-descriptions.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { window.ctDesc = d || null; }).catch(function () { window.ctDesc = null; });
     var det = fetch('../automation/car-details.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) { window.ctDetails = d; }).catch(function () { window.ctDetails = null; });
     return Promise.all([stock, range, det, ns, arr]).then(function () { M.stampArrivals(S.cars, S.arrivals); placeholders(); });
@@ -504,7 +508,7 @@
     drawRates(c.px_condition_ratings); $('#pxConfirm').checked = false;
     $('#pxConfirmLabel').textContent = staff ? 'I confirm, on behalf of the customer, that this is what they told me' : 'I confirm';
     openSections(c);
-    $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by your sales executive' : '') : '';
+    $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by Dan' : '') : '';
     S.pxPhotos = (px.photos || []).slice(); drawThumbs(); showDeps(f);
     var dk = $('#deskBox'); if (dk.getAttribute('data-for') !== String(staff)) { dk.innerHTML = deskHtml(staff); dk.setAttribute('data-for', String(staff)); bindChoice(dk); } deskFill(f, c.desk);
     var cb = $('#commsConsent'); if (cb) { cb.checked = !!c.comms_consent_at; var nt = $('#commsConsentNote');
@@ -917,9 +921,11 @@
       tdHtml(c) + (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
     $('#sheet').hidden = false;
   }
-  /* About this car: Hedin's own words, minus the dealer boilerplate shared by every car, with dashes read as spaces to match the site */
+  /* About this car: the listing's own words, minus the dealer boilerplate shared by every car and anything naming the
+     dealer group (std-brand.js), with dashes read as spaces to match the site */
   function descHtml(c) { var d = c && c.listing_id != null && (window.ctDesc || {})[String(c.listing_id)], t = d && d.text; if (!t || typeof t !== 'string') return '';
-    var ps = t.split(/\n\s*\n/).map(function (p) { return p.replace(/\s*[\u2010-\u2015-]+\s*/g, ' ').replace(/\s+/g, ' ').trim(); })
+    var paras = window.ctBrand ? window.ctBrand.cleanDesc(t) : [];
+    var ps = paras.map(function (p) { return p.replace(/\s*[\u2010-\u2015-]+\s*/g, ' ').replace(/\s+/g, ' ').trim(); })
       .filter(function (p) { return p && !/^Buy with confidence/i.test(p) && !/^Welcome to BMW/i.test(p) && !/^We assist you with everything/i.test(p); }); if (!ps.length) return '';
     return '<div class="ct-desc"><h4>About this car</h4>' + ps.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>'; }
   function photos(c) { var l = (c.images && c.images.length ? c.images : []).slice(0, 10); if (c.image && l.indexOf(c.image) === -1 && !l.length) l = [c.image]; return l; }
@@ -1166,7 +1172,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     var on = v === 'push' || v === 'both'; $('#notifyState').textContent = 'Phone notifications: ' + (on ? 'On' : 'Off, tap Turn on to hear when a car fits you') + (v === 'email' || v === 'both' ? '. Email alerts: On' : '');
     var b = $('#notifySeg [data-v=push]'); if (b) b.textContent = on ? 'On' : 'Turn on'; }
   /* The site notice on the Me page: only says confirmed after this person pressed Confirm here (or on the site). */
-  var TERMS = 'This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan\u2019s personal website and is not the official website of BMW or Hedin Automotive. Full terms and conditions can be found <a href="../terms.html" target="_blank" rel="noopener">here</a>.';
+  var TERMS = 'This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan\u2019s personal website and is not an official BMW website. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>.';
   function termsAt() { try { return localStorage.getItem('sdTermsAt') || ''; } catch (e) { return ''; } }
   function termsBox() { var el = $('#meTerms'); if (!el) return; var at = termsAt();
     el.innerHTML = '<h3>Please read and confirm</h3><p class="ct-sub">' + TERMS + '</p>' + (at ? '<p class="ct-msg ok">You confirmed this on ' + esc(new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '.</p>'
@@ -1335,7 +1341,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
           return store.guestLink(cc.id).then(function (r) { if (!r || !r.ok) { if (waWin) waWin.close(); toast('No link: ' + ((r && r.reason) || 'try again')); return; }
             if (act === 'copylink') { (navigator.clipboard ? navigator.clipboard.writeText(r.url) : Promise.reject()).then(function () { toast('Swipe link copied. It works for ' + (r.days || 30) + ' days'); }, function () { window.prompt('Copy this swipe link', r.url); }); track('swipe_link_copied'); return; }
             var first = String(cc.name || '').split(' ')[0], num = String(cc.phone || '').replace(/\D/g, '').replace(/^0/, '44');
-            var text = 'Hi' + (first ? ' ' + first : '') + ', it\'s ' + (S.session.name ? S.session.name.split(' ')[0] : 'Dan') + ' at BMW Ruxley. I have picked out some cars in stock I think you will like. Have a quick swipe through them here: ' + r.url;
+            var text = 'Hi' + (first ? ' ' + first : '') + ', it\'s ' + (S.session.name ? S.session.name.split(' ')[0] : 'Dan') + ' from Dan Sells in Sidcup. I have picked out some cars in stock I think you will like. Have a quick swipe through them here: ' + r.url;
             var wu = 'https://wa.me/' + (num.length >= 11 ? num : '') + '?text=' + encodeURIComponent(text); if (waWin) { try { waWin.opener = null; } catch (e) {} waWin.location.href = wu; } else platform.openExternal(wu); track('swipe_link_whatsapp'); }); }).catch(function (err) { if (waWin) waWin.close(); toast(plainErr(err)); }); return; }
       if (act === 'applyupd' || act === 'dismissupd') { store.customers().then(function (l) { var cc = l.find(function (x) { return x.id === id; }); if (!cc) return; var pr = (cc.guest_update && cc.guest_update.proposed) || {};
           var patch = Object.assign({}, cc, { guest_update: null }); if (act === 'applyupd') { if (pr.phone) patch.phone = pr.phone; if (pr.email) patch.email = pr.email; }

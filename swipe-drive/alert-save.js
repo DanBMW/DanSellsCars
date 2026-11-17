@@ -5,7 +5,7 @@
    comms_consent_text (the database stamps who and when). Nothing here sends any message. */
 (function (g) {
   var KEY = 'sd_alert_pending_v1';
-  var CONSENT = 'I agree that Dan Cane at Hedin Ruxley can contact me by WhatsApp, phone call or app notification when a car that matches this alert comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.';
+  var CONSENT = 'I agree that Dan Cane of Dan Sells, Sidcup can contact me by WhatsApp, phone call or app notification when a car that matches this alert comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.';
   function uniq(a) { var s = {}, o = []; (a || []).forEach(function (x) { var k = String(x).toLowerCase(); if (x && !s[k]) { s[k] = 1; o.push(x); } }); return o; }
   function clean(a) { a = a || {}; return { model: String(a.model || '').slice(0, 40), specs: uniq(a.specs || []).slice(0, 12).map(String), new_used: /^(new|used|both)$/.test(a.new_used) ? a.new_used : 'both',
     name: String(a.name || '').trim().slice(0, 40), phone: String(a.phone || '').replace(/\s+/g, ''), consent_at: a.consent_at || '', source: String(a.source || 'alerts').slice(0, 40) }; }

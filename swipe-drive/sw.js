@@ -22,7 +22,7 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match('./index.html').then(m => m || caches.match('./offline.html'))));
     return;
   }
-  if (/\/lookup\/stock\.json$|MBG\.html$/.test(u.pathname)) {
+  if (/\/lookup\/(std-)?stock\.json$|MBG\.html$/.test(u.pathname)) {
     e.respondWith(fetch(r).then(res => { const c = res.clone(); caches.open(V).then(x => x.put(r, c)); return res; }).catch(() => caches.match(r)));
     return;
   }

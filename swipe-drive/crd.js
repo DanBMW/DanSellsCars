@@ -51,7 +51,7 @@
       : c.comms_consent_at ? 'Yes. Recorded ' + new Date(c.comms_consent_at).toLocaleDateString('en-GB') + (c.comms_consent_by_name ? ' by ' + c.comms_consent_by_name : '') + '.'
       : 'NO. Do not message this customer.';
 
-    var h = '<header class="cp-head"><div><h1>Customer profile</h1><p>Dan Sells, Hedin BMW Ruxley</p><p>Salesperson: ' + v(sales) + '</p></div>'
+    var h = '<header class="cp-head"><div><h1>Customer profile</h1><p>Dan Sells, Sidcup</p><p>Salesperson: ' + v(sales) + '</p></div>'
       + '<div class="cp-r"><p>' + esc(stamp()) + '</p><p>Ref ' + esc(String(c.id || '').slice(0, 8).toUpperCase()) + '</p><p>SwipeToDrive</p></div></header>';
     h += '<section class="cp-sec"><h2 class="cp-bar">Customer details</h2>' + tbl([
       tr('Name', v(c.name)), tr('Mobile', v(c.phone)), tr('Email', v(c.email)), tr('Postcode', v(c.postcode)),

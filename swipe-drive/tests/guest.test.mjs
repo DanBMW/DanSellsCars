@@ -19,7 +19,7 @@ let r = await guestHandle({ t: good, action: 'deck' }, deps);
 ok(r.status === 200 && r.body.cars.length === 2 && r.body.cars[0].reg === 'BB22BBB', 'deck: emailed car first, sold car left out');
 const flat = JSON.stringify(r.body);
 ok(!/Lorna|07700900111|lorna@example|DA14|450|Audi|AB12XYZ|budget|monthly_gbp|postcode|phone|email|"name"/.test(flat), 'deck response holds no customer details or preferences');
-ok(!r.body.cars.some(c => c.listing_url && !c.listing_url.startsWith('https://hedinautomotive.co.uk/')), 'only Hedin links pass through');
+ok(!r.body.cars.some(c => 'listing_url' in c), 'no listing links pass through (SwipeToDrive never links to the dealer group site)');
 ok(Array.isArray(r.body.notes) && r.body.notes.length === 0, 'deck: no no stock notes when the chosen model is in stock');
 { const keep = cust.models; cust.models = ['M2', '3 Series']; const d2 = await guestHandle({ t: good, action: 'deck' }, deps); cust.models = keep;
   const n2 = d2.body.notes || []; ok(n2.length === 1 && n2[0].model === 'M2' && n2[0].kind === 'none' && /^No M2 in stock right now, as M cars/.test(n2[0].text), 'deck: M2 note explains why');

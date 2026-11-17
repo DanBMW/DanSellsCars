@@ -277,6 +277,18 @@ function main() {
 
   const s1 = writeStamped(path.join(OUT, 'stock.json'),
     { count: total, counts: { forecourt: nF, group: nG }, cars: sortKeys(cars) }, today);
+  /* SwipeToDrive's own copy of today's list: the same cars with no listing link or retailer name, because nothing
+     public on SwipeToDrive may name the dealer group (Dan, 17 Nov 2026). It can never stop this job: if it fails
+     the file is removed, and the app falls back to stock.json and cleans that itself. */
+  const STD = path.join(OUT, 'std-stock.json');
+  try {
+    const std = {};
+    for (const [r, c] of Object.entries(cars)) { const { listing_url, retailer_name, ...rest } = c; std[r] = rest; }
+    writeStamped(STD, { count: total, counts: { forecourt: nF, group: nG }, cars: sortKeys(std) }, today);
+  } catch (e) {
+    console.warn('std-stock.json not written: ' + e.message);
+    try { fs.unlinkSync(STD); } catch (_) {}
+  }
   const s2 = writeStamped(path.join(OUT, 'recent.json'),
     { keep_days: KEEP_DAYS, count: Object.keys(recent).length, cars: sortKeys(recent) }, today);
   const s3 = writeIfChanged(LEDGER, JSON.stringify(sortKeys(ledger), null, 1) + '\n');

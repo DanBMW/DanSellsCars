@@ -10,7 +10,7 @@ const SPEC = { heated: 'feat:heated', pano: 'feat:pano', hud: 'feat:hud', sound:
 const MILES = { u6: 5000, '6to10': 8000, '10to15': 12500, '15plus': 18000 };
 const WHEN = { now: 'now', month: 'month', quarter: 'quarter', browsing: 'browsing' };
 const COLOURS = ['Black', 'White', 'Grey', 'Silver', 'Blue', 'Red', 'Green'];
-export const CONSENT = "I agree that Dan Cane at Hedin Ruxley can contact me by WhatsApp, phone call or app notification when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.";
+export const CONSENT = "I agree that Dan Cane of Dan Sells, Sidcup can contact me by WhatsApp, phone call or app notification when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.";
 const arr = (a) => (Array.isArray(a) ? a : []).map(String).slice(0, 30);
 const uniq = (a) => [...new Set(a)];
 const num = (v, lo, hi) => { const n = Math.round(Number(v)); return Number.isFinite(n) && n >= lo && n <= hi ? n : null; };
