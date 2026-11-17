@@ -6,7 +6,13 @@
  *   - sales executives only, so the handover team (Chloe and Molly) are never
  *     put on reception; anyone off, on holiday or away is left out, using the
  *     shift calendar's own availability (ShiftRota.staffOn);
- *   - three shifts across the day, one person on each;
+ *   - three shifts across the day, two people on each (Dan, 17 November 2026).
+ *     Each shift is two seats with their own id (am and am2, mid and mid2,
+ *     pm and pm2), so everything that works per shift (the cover email, I
+ *     cannot cover, take, assign, nudge, the history) works per seat unchanged;
+ *   - nobody sits in both seats of one shift. A double shift is allowed only
+ *     with a gap between the two (morning and afternoon, never back to back),
+ *     and only when nobody free is on no shift yet;
  *   - fair: people with fewest recent reception shifts first, then people who
  *     have not already covered a shift today, so one person does not get the
  *     whole day when someone else is free;
@@ -19,7 +25,7 @@
   'use strict';
 
   /* three shifts a day. Times are local (UK). Dan to confirm. */
-  var SHIFTS = {
+  var BASE = {
     weekday: [
       { id: 'am', from: '09:00', to: '12:00' },
       { id: 'mid', from: '12:00', to: '15:00' },
@@ -31,6 +37,21 @@
       { id: 'pm', from: '14:00', to: '17:00' }
     ]
   };
+  /* people on each shift. The first seat keeps the shift's own id, so days
+     planned before 17 November (one person a shift) still read the same. */
+  var SEATS = 2;
+  function seated(list) {
+    var out = [];
+    list.forEach(function (s) {
+      for (var i = 1; i <= SEATS; i++) out.push({ id: i === 1 ? s.id : s.id + i, from: s.from, to: s.to, base: s.id, seat: i });
+    });
+    return out;
+  }
+  var SHIFTS = { weekday: seated(BASE.weekday), sat: seated(BASE.sat) };
+  /* two seats at the same time (the same shift) */
+  function sameTime(a, b) { return minsOf(a.from) < minsOf(b.to) && minsOf(b.from) < minsOf(a.to); }
+  /* too close for one person to do both: the same time, or back to back with no gap */
+  function tooClose(a, b) { return minsOf(a.from) <= minsOf(b.to) && minsOf(b.from) <= minsOf(a.to); }
   var REASONS = {
     cannot: 'I cannot cover right now',
     notin: 'I am not in today',
@@ -82,15 +103,19 @@
   function planDay(opts) {
     var shifts = opts.shifts || [], pool = poolFor(opts.available, opts.team, opts.exclude);
     var hist = opts.history || {}, declined = opts.declined || {}, existing = opts.existing || {}, busy = opts.busy || {};
-    var out = {}, short = [], today = {};
+    var out = {}, short = [], today = {}, skip = opts.skip || [];
+    var byId = {}; shifts.forEach(function (s) { byId[s.id] = s; });
+    /* is this person on a seat too close to s (same shift, or back to back) */
+    var near = function (id, s) { return Object.keys(out).some(function (k) { return out[k] === id && k !== s.id && byId[k] && tooClose(byId[k], s); }); };
     /* keep standing assignments as they are */
     shifts.forEach(function (s) { if (existing[s.id] && pool.indexOf(existing[s.id]) >= 0) { out[s.id] = existing[s.id]; today[existing[s.id]] = (today[existing[s.id]] || 0) + 1; } });
     shifts.forEach(function (s) {
-      if (out[s.id]) return;
+      if (out[s.id] || skip.indexOf(s.id) >= 0) return;
       var no = declined[s.id] || [];
       var free = function (id) { return no.indexOf(id) < 0 && !clashes(busy, id, s); };
-      var cand = pool.filter(function (id) { return free(id) && Object.keys(out).every(function (k) { return out[k] !== id; }); });
-      /* no double shifts: someone already on today is never put on a second one. If nobody new is free the shift is short. */
+      /* a second shift only with a gap: never both seats of one shift, never back to back.
+         Fewest shifts today sorts first, so a double only happens when nobody else is free. */
+      var cand = pool.filter(function (id) { return free(id) && !near(id, s); });
       if (!cand.length) { out[s.id] = null; short.push(s.id); return; }
       cand.sort(function (a, b) {
         return ((today[a] || 0) - (today[b] || 0)) || ((hist[a] || 0) - (hist[b] || 0)) || (pool.indexOf(a) - pool.indexOf(b));
@@ -184,13 +209,15 @@
     return new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
   }
 
-  function shortNote(shift, free, onOther, booked, names) {
+  function shortNote(shift, free, onOther, booked, names, places) {
     var nm = function (id) { return (names || {})[id] || id; };
     var lines = [];
-    lines.push('Nobody free is left for showroom cover ' + shift.from + ' to ' + shift.to + '. Please choose someone.');
+    lines.push(places > 1
+      ? 'Nobody free is left for either place on showroom cover ' + shift.from + ' to ' + shift.to + '. Please choose two people.'
+      : 'Nobody free is left for showroom cover ' + shift.from + ' to ' + shift.to + '. Please choose someone.');
     lines.push('');
     lines.push('Free and not on a shift yet: ' + (free.length ? free.map(nm).join(', ') : 'nobody'));
-    lines.push('Free but already on another shift today: ' + (onOther.length ? onOther.map(nm).join(', ') : 'nobody'));
+    lines.push('Free but already on another shift today (fine if there is a gap between): ' + (onOther.length ? onOther.map(nm).join(', ') : 'nobody'));
     lines.push('With an appointment over this shift: ' + (booked.length ? booked.map(nm).join(', ') : 'nobody'));
     lines.push('');
     lines.push('Assign on reception.html (managers, Assign under the shift).');
@@ -333,12 +360,11 @@
 
   /* The shift whose window contains nowMins, or null outside every window (heads-up does not count). */
   function activeShiftAt(shifts, nowMins) {
-    var i, s;
-    for (i = 0; i < (shifts || []).length; i++) {
-      s = shifts[i];
-      if (nowMins >= minsOf(s.from) && nowMins < minsOf(s.to)) return s;
-    }
-    return null;
+    return activeShiftsAt(shifts, nowMins)[0] || null;
+  }
+  /* every seat whose window contains nowMins (both seats of the shift that is on) */
+  function activeShiftsAt(shifts, nowMins) {
+    return (shifts || []).filter(function (s) { return nowMins >= minsOf(s.from) && nowMins < minsOf(s.to); });
   }
 
   /* When a walk-in-taken alert names the person currently on the active cover shift,
@@ -352,14 +378,15 @@
     if (kind !== 'walk-in-taken' && kind !== 'walkin-taken'
         && kind !== 'walkin-arrived-taken' && kind !== 'walk-in-arrived-taken'
         && kind !== 'walkin-waiting-taken' && kind !== 'walk-in-waiting-taken') return null;
-    var shift = activeShiftAt(opts.shifts, opts.nowMins);
+    var pid = matchPersonByName(opts.assignedTo, opts.team);
+    if (!pid) return null;
+    /* the seat on the active shift this person holds (two people a shift since 17 November) */
+    var shift = activeShiftsAt(opts.shifts, opts.nowMins).filter(function (s) { return ((opts.day || {})[s.id] || {}).personId === pid; })[0];
     if (!shift) return null;
     var rec = (opts.day || {})[shift.id] || {};
     if (!rec.personId || rec.status === 'declined' || rec.status === 'short' || rec.status === 'open') return null;
     /* a reallocate already queued and not yet handled: do not stack another */
     if (rec.reallocate && rec.reallocate.ts !== rec.reallocateHandledTs) return null;
-    var pid = matchPersonByName(opts.assignedTo, opts.team);
-    if (!pid || pid !== rec.personId) return null;
     var cust = String(opts.customer || '').trim().slice(0, 80);
     return {
       shiftId: shift.id,
@@ -430,6 +457,6 @@ function publicRota(day, date, dow, team) {
   });
 }
 
-var api = { PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
+var api = { SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

@@ -2150,7 +2150,7 @@ body.premiere .rcrota{display:none!important}
 <script src="staff-gate.js"></script>
 <script src="lockup-rota.js"></script>
 <script src="shifts-rota.js"></script>
-<script src="reception-rota.js"></script>
+<script src="reception-rota.js?v=2"></script>
 <script src="team-identity.js"></script><script src="team-session.js"></script>
 <script>
 /* ============================================================
@@ -3620,15 +3620,21 @@ function paintCoverRota(shifts, day, team){
   const el=document.getElementById('rcrota'), rows=document.getElementById('rcrota-rows');
   if(!el||!rows)return;
   if(!shifts||!shifts.length){ el.hidden=true; rows.innerHTML=''; return; }
-  rows.innerHTML=shifts.map(function(s){
-    const r=day[s.id]||{};
-    const short=r.status==='short';
-    const open=short||r.status==='declined'||!r.personId;
-    const covering=!open && r.status==='covering';
-    const name=short?'No one':(open?'Nobody yet':((team[r.personId]&&team[r.personId].name)||r.personId));
-    const st=covering?'Covering':(short?'Not covered':(open?(r.status==='declined'?'Cannot cover':'Open'):'On'));
-    const cls=covering?'covering':(short?'short':(open?'open':''));
-    return '<div class="rcrota-row '+cls+'"><span class="rcrota-t">'+coverEsc(s.from)+'\u2013'+coverEsc(s.to)+'</span><span class="rcrota-n">'+coverEsc(name)+'</span><span class="rcrota-s">'+coverEsc(st)+'</span></div>';
+  /* two places a shift since 17 November: one row a shift, both names on it */
+  const groups=[];
+  shifts.forEach(function(s){ const g=groups.filter(function(x){ return x.from===s.from && x.to===s.to; })[0]; if(g) g.seats.push(s); else groups.push({from:s.from,to:s.to,seats:[s]}); });
+  rows.innerHTML=groups.map(function(g){
+    const recs=g.seats.map(function(s){ return day[s.id]||{}; });
+    const isOpen=function(r){ return r.status==='short'||r.status==='declined'||!r.personId; };
+    const on=recs.filter(function(r){ return !isOpen(r); });
+    const allShort=recs.every(function(r){ return r.status==='short'; });
+    const names=on.map(function(r){ return (team[r.personId]&&team[r.personId].name)||r.personId; });
+    const missing=recs.length-on.length;
+    const name=!on.length?(allShort?'No one':'Nobody yet'):names.join(' & ')+(missing?' + '+missing+' needed':'');
+    const covering=!missing && on.every(function(r){ return r.status==='covering'; });
+    const st=covering?'Covering':(!missing?'On':(allShort?'Not covered':(on.length?'One short':'Open')));
+    const cls=covering?'covering':(allShort?'short':(missing?'open':''));
+    return '<div class="rcrota-row '+cls+'"><span class="rcrota-t">'+coverEsc(g.from)+'\u2013'+coverEsc(g.to)+'</span><span class="rcrota-n">'+coverEsc(name)+'</span><span class="rcrota-s">'+coverEsc(st)+'</span></div>';
   }).join('');
   el.hidden=false;
 }
@@ -3740,10 +3746,14 @@ function paintCover(){
     if(n.mins>=HEAD_FROM && n.mins<start){ now=first; heads=true; }
   }
   if(!now){ b.hidden=true; b.classList.remove('heads','open','covering'); return; }
-  const r=day[now.id]||{};
-  const short=r.status==='short';
-  const open=short||r.status==='declined'||!r.personId;
-  const covering=!open && r.status==='covering';
+  /* both places on the shift that is on (two people a shift since 17 November): the badge shows whoever is on */
+  const seats=shifts.filter(function(s){ return s.from===now.from && s.to===now.to; });
+  const isOpenRec=function(x){ return x.status==='short'||x.status==='declined'||!x.personId; };
+  const filled=seats.map(function(s){ return day[s.id]||{}; }).filter(function(x){ return !isOpenRec(x); });
+  const r=filled[0]||day[now.id]||{};
+  const short=!filled.length && seats.every(function(s){ return (day[s.id]||{}).status==='short'; });
+  const open=!filled.length;
+  const covering=!open && filled.length===seats.length && filled.every(function(x){ return x.status==='covering'; });
   b.classList.toggle('open',open);
   b.classList.toggle('covering',covering);
   b.classList.toggle('heads',heads);
@@ -3767,7 +3777,9 @@ function paintCover(){
     if(pic) img.src=pic; else ph.textContent=(name||'?').charAt(0).toUpperCase();
     ph.textContent=(name||'?').charAt(0).toUpperCase();
     document.getElementById('rcsmall').textContent=heads?('Showroom from '+now.from):'On showroom cover';
-    document.getElementById('rcname').textContent=name;
+    const others=filled.slice(1).map(function(x){ return (team[x.personId]&&team[x.personId].name)||x.personId; });
+    const gap=seats.length-filled.length;
+    document.getElementById('rcname').textContent=[name].concat(others).join(' & ')+(gap?' + '+gap+' needed':'');
   }
   document.getElementById('rctime').textContent=now.from+' to '+now.to;
   b.hidden=false;

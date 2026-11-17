@@ -38,8 +38,12 @@ const team = {
   dan: { name: 'Dan', email: 'daniel.cane@hedinautomotive.co.uk', order: 2, active: true },
   ben: { name: 'Ben', email: 'ben.x@hedinautomotive.co.uk', order: 3, active: true },
   chloe: { name: 'Chloe', email: 'chloe.x@hedinautomotive.co.uk', order: 4, active: true },
-  molly: { name: 'Molly', email: 'molly.x@hedinautomotive.co.uk', order: 5, active: true }
+  molly: { name: 'Molly', email: 'molly.x@hedinautomotive.co.uk', order: 5, active: true },
+  /* two people a shift since 17 November: six sales executives fill the six seats with nobody twice */
+  mon: { name: 'Mon', email: 'mon.x@hedinautomotive.co.uk', order: 6, active: true },
+  karis: { name: 'Karis', email: 'karis.x@hedinautomotive.co.uk', order: 7, active: true }
 };
+const SEATS = ['am', 'am2', 'mid', 'mid2', 'pm', 'pm2'];
 const at = (h, m) => ({ mins: h * 60 + m });
 const MON = '2026-11-02', SUN = '2026-11-08';
 const rcPfx = () => (RR.TEST_ONLY ? 'rc_test' : 'rc_live');
@@ -67,14 +71,14 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(r.added.length, 0);
   console.log('ok: nothing is planned before 07:30');
 
-  // 08:00: three shifts, three different sales people, one email each, chloe and molly never
+  // 08:00: three shifts of two seats, six different sales people, one email each, chloe and molly never
   db = fakeDb();
   r = await runAt(db, MON, 8, 0);
   const day = db.data.lockupTest.reception[MON];
-  const ppl = ['am', 'mid', 'pm'].map(k => day[k].personId);
-  assert.strictEqual(new Set(ppl).size, 3, JSON.stringify(ppl));
+  const ppl = SEATS.map(k => day[k].personId);
+  assert.strictEqual(new Set(ppl).size, 6, JSON.stringify(ppl));
   assert.ok(ppl.every(p => p !== 'chloe' && p !== 'molly'));
-  assert.strictEqual(r.added.length, 3, 'three cover emails: ' + r.added.join(','));
+  assert.strictEqual(r.added.length, 6, 'six cover emails: ' + r.added.join(','));
   const mail = db.data.lockupTest.notify[r.added[0]];
   assert.ok(/You are on showroom cover\. Please cover showroom until/.test(mail.text), mail.text);
   if (RR.TEST_ONLY) assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?test=1/.test(mail.text), mail.text);
@@ -138,7 +142,9 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(shortDay.am.status, 'short', JSON.stringify(shortDay.am));
   assert.strictEqual(shortDay.mid.status, 'short');
   const shortNote = r.added.filter(id => id.indexOf(rcPfx() + '_short_') === 0);
-  assert.strictEqual(shortNote.length, 3, 'one note per uncovered shift: ' + r.added.join(','));
+  assert.strictEqual(shortNote.length, 3, 'one note per uncovered shift, not one per seat: ' + r.added.join(','));
+  assert.strictEqual(shortDay.am2.status, 'short');
+  assert.ok(/either place/.test(db.data.lockupTest.notify[shortNote[0]].text), 'the note says both places are empty');
   const shortMail = db.data.lockupTest.notify[shortNote[0]];
   assert.ok(/Showroom not covered 09:00 to 12:00/.test(shortMail.subject), shortMail.subject);
   assert.strictEqual(shortMail.to, 'managers');
@@ -159,9 +165,9 @@ async function runAt(db, date, h, m, cfgExtra) {
   db = fakeDb();
   await runAt(db, MON, 8, 0);
   const logged = Object.values(db.data.receptionLogTest || {});
-  assert.strictEqual(logged.filter(e => e.kind === 'on').length, 3, 'three shifts logged as on: ' + JSON.stringify(logged));
+  assert.strictEqual(logged.filter(e => e.kind === 'on').length, 6, 'six seats logged as on: ' + JSON.stringify(logged));
   await runAt(db, MON, 8, 15);
-  assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on').length, 3, 'a later run logs nothing twice');
+  assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on').length, 6, 'a later run logs nothing twice');
   const amWho = db.data.lockupTest.reception[MON].am.personId;
   db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { status: 'declined', reason: 'I am off site', reasonText: '', ts: 2000 });
   await runAt(db, MON, 9, 0);
@@ -230,10 +236,15 @@ async function runAt(db, date, h, m, cfgExtra) {
   db = fakeDb();
   await runAt(db, MON, 8, 0, { team: offTeam });
   const offDay = db.data.lockupTest.reception[MON];
-  const onDay = ['am', 'mid', 'pm'].map(k => offDay[k] && offDay[k].personId).filter(Boolean);
+  const onDay = SEATS.map(k => offDay[k] && offDay[k].personId).filter(Boolean);
   assert.ok(!onDay.includes('carl') && !onDay.includes('tomi'), 'days off are respected: ' + JSON.stringify(onDay));
-  assert.strictEqual(new Set(onDay).size, onDay.length, 'no double shifts: ' + JSON.stringify(onDay));
-  console.log('ok: someone on a day off is not put on, and nobody is on twice');
+  const wkS = RR.shiftsFor(1);
+  wkS.forEach(x => wkS.forEach(y => {
+    const a = (offDay[x.id] || {}).personId;
+    if (x.id < y.id && a && a === (offDay[y.id] || {}).personId) assert.ok(!RR.tooClose(x, y), 'a double only with a gap: ' + JSON.stringify(onDay));
+  }));
+  assert.strictEqual(new Set(onDay).size, 4, 'all four people in are used before anyone doubles: ' + JSON.stringify(onDay));
+  console.log('ok: someone on a day off is not put on, and a double shift always has a gap');
 
   // with a customer: the person on the shift is taken off at once, logged as a skip with that reason, and the next person goes on
   db = fakeDb();
@@ -254,7 +265,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   await runAt(db, MON, 8, 0, { absences: everyoneBusy });
   const shortNoteId = Object.keys(db.data.lockupTest.notify).filter(k => k.indexOf(rcPfx() + '_short_') === 0)[0];
   const shortText = db.data.lockupTest.notify[shortNoteId].text;
-  assert.ok(/Free and not on a shift yet: nobody/.test(shortText) && /Please choose someone/.test(shortText), shortText);
+  assert.ok(/Free and not on a shift yet: nobody/.test(shortText) && /Please choose two people/.test(shortText), shortText);
   const dateMail = db.data.lockupTest.notify[shortNoteId];
   assert.ok(/Monday 2 November/.test(dateMail.subject) && /Monday 2 November/.test(dateMail.text), 'the managers email names the date: ' + dateMail.subject);
   assert.ok(/https:\/\/dan-sells\.co\.uk\/reception\.html/.test(dateMail.text) && /reception\.html/.test(dateMail.html), 'and links to the page');
@@ -352,7 +363,17 @@ async function runAt(db, date, h, m, cfgExtra) {
     db = fakeDb();
     await runAt(db, MON, 8, 0);
     const prev = db.data.lockupTest.reception[MON].mid.personId;
-    assert.ok(prev && prev !== 'ben');
+    /* Ben sits in the other seat of this shift, so his take is refused; nothing changes */
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid2.personId, 'ben');
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, {
+      take: { personId: 'ben', by: 'ben', ts: 11000 }
+    });
+    r = await runAt(db, MON, 9, 45);
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid.personId, prev, 'one person never sits in both seats of a shift');
+    assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_taken_') === 0).length, 0);
+    /* Ben comes off mid2 (Karis takes it), and then his take of mid goes through */
+    db.data.lockupTest.reception[MON].mid2 = { personId: 'karis', status: 'assigned', ts: 11500 };
+    db.data.lockupTest.reception[MON].pm2 = { personId: 'tomi', status: 'assigned', ts: 11500 };
     db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, {
       take: { personId: 'ben', by: 'ben', ts: 12000 }
     });
@@ -509,8 +530,7 @@ async function runAt(db, date, h, m, cfgExtra) {
     r = await runAt(db, MON, 9, 40, { absences: away(amWas, MON) });
     const d1 = db.data.lockupTest.reception[MON];
     assert.ok(d1.am.personId && d1.am.personId !== amWas, 'am refilled with someone else: ' + d1.am.personId);
-    assert.notStrictEqual(d1.am.personId, d1.mid.personId);
-    assert.notStrictEqual(d1.am.personId, d1.pm.personId);
+    assert.ok([d1.am2.personId, d1.mid.personId, d1.mid2.personId].indexOf(d1.am.personId) < 0, 'never the other seat or back to back');
     assert.strictEqual(d1.am.offCalendar.personId, amWas);
     assert.strictEqual(d1.am.declined[amWas], true);
     const sentNow = r.added.map(id => db.data.lockupTest.notify[id]).filter(e => Array.isArray(e.to) && /Showroom cover/.test(e.subject || ''));
@@ -565,6 +585,31 @@ async function runAt(db, date, h, m, cfgExtra) {
     } });
     assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, amNow, 'cancelled or in-but-no-lockup keeps cover');
     console.log('ok: off on the team calendar takes them off cover and refills the shift now, once');
+  }
+
+  // 17 November: a day planned with one person a shift gets its second seats mid afternoon.
+  // Seats that have ended are left alone (no email, no short note); the afternoon's second seat is filled now.
+  {
+    db = fakeDb({ lockupTest: { reception: { [MON]: {
+      _day: { plannedAt: 1 },
+      am: { personId: 'tomi', status: 'covering', ts: 1 },
+      mid: { personId: 'carl', status: 'covering', ts: 1 },
+      pm: { personId: 'dan', status: 'assigned', ts: 1 }
+    } }, notify: {
+      [rcPfx() + '_' + MON + '_am_tomi']: { sent: 1 }, [rcPfx() + '_' + MON + '_mid_carl']: { sent: 1 }, [rcPfx() + '_' + MON + '_pm_dan']: { sent: 1 }
+    } } });
+    r = await runAt(db, MON, 16, 16);
+    const d = db.data.lockupTest.reception[MON];
+    assert.ok(!d.am2 && !d.mid2, 'ended seats are not filled: ' + JSON.stringify(d));
+    assert.ok(d.pm2 && d.pm2.personId && ['dan', 'carl'].indexOf(d.pm2.personId) < 0, 'the afternoon second seat is filled with a gap: ' + JSON.stringify(d.pm2));
+    assert.deepStrictEqual([d.am.personId, d.mid.personId, d.pm.personId], ['tomi', 'carl', 'dan'], 'nobody already on is moved');
+    assert.ok(!r.added.some(id => /_short_/.test(id)), 'no short notes for seats that have ended: ' + r.added.join(','));
+    const pm2Mail = r.added.filter(id => id.indexOf(rcPfx() + '_' + MON + '_pm2_') === 0);
+    assert.strictEqual(pm2Mail.length, 1, 'one email for the new seat: ' + r.added.join(','));
+    assert.strictEqual(r.added.filter(id => /^rc_(live|test)_2026-11-02_/.test(id)).length, 1, 'and none for anyone else');
+    r = await runAt(db, MON, 16, 31);
+    assert.strictEqual(r.added.length, 0, 'the next run sends nothing: ' + r.added.join(','));
+    console.log('ok: a day planned with one person a shift gets its second seats, ended seats left alone');
   }
 
   console.log('all reception job tests passed');

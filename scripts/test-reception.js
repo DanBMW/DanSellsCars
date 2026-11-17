@@ -12,52 +12,118 @@ const team = {
 const wk = R.shiftsFor(2), sat = R.shiftsFor(6);
 const everyone = ['tomi', 'carl', 'dan', 'chloe', 'molly', 'ben'];
 
-// three shifts on open days, two on Sunday (none), Saturday has its own hours
-assert.strictEqual(wk.length, 3); assert.strictEqual(sat.length, 3); assert.strictEqual(R.shiftsFor(0).length, 0);
-assert.deepStrictEqual([wk[0].from, wk[2].to], ['09:00', '18:00']);
-console.log('ok: three shifts on each open day, none on Sunday');
+const W = id => wk.filter(s => s.id === id)[0];
+const ids = list => list.map(s => s.id);
+
+// three shifts on open days, two seats each (Dan, 17 November 2026); none on Sunday; Saturday has its own hours
+assert.deepStrictEqual(ids(wk), ['am', 'am2', 'mid', 'mid2', 'pm', 'pm2']);
+assert.deepStrictEqual(ids(sat), ['am', 'am2', 'mid', 'mid2', 'pm', 'pm2']);
+assert.strictEqual(R.shiftsFor(0).length, 0);
+assert.deepStrictEqual([W('am').from, W('am').to, W('am2').from, W('am2').to], ['09:00', '12:00', '09:00', '12:00'], 'both seats share the shift hours');
+assert.deepStrictEqual([wk[0].from, wk[5].to], ['09:00', '18:00']);
+assert.ok(R.sameTime(W('am'), W('am2')) && !R.sameTime(W('am'), W('mid')));
+assert.ok(R.tooClose(W('am'), W('mid')), 'back to back is too close');
+assert.ok(!R.tooClose(W('am'), W('pm')), 'morning and afternoon have a gap');
+assert.ok(!R.tooClose(sat[0], sat[4]), 'Saturday 09:00 to 12:00 and 14:00 to 17:00 have a gap');
+console.log('ok: three shifts of two seats on each open day, none on Sunday');
 
 // handover team and excluded people are never on reception
 const pool = R.poolFor(everyone, team, ['ben']);
 assert.deepStrictEqual(pool, ['tomi', 'carl', 'dan']);
 console.log('ok: only sales executives go on reception, Chloe and Molly never');
 
-// one person per shift, and each person covers a shift before anyone covers two
-const plan = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan', 'chloe'], team, history: {} });
+/* every plan: nobody in both seats of a shift, nobody back to back */
+function sound(plan, shifts) {
+  const a = plan.assignments;
+  shifts.forEach(x => shifts.forEach(y => {
+    if (x.id < y.id && a[x.id] && a[x.id] === a[y.id]) assert.ok(!R.tooClose(x, y), a[x.id] + ' on ' + x.id + ' and ' + y.id + ' with no gap: ' + JSON.stringify(a));
+  }));
+}
+
+// six people: six different people on six seats
+const six = ['tomi', 'carl', 'dan', 'will', 'ben', 'mon'];
+const t6 = Object.assign({ mon: { order: 7 } }, team);
+const plan = R.planDay({ shifts: wk, available: six.concat('chloe'), team: t6, history: {} });
 const people = Object.keys(plan.assignments).map(k => plan.assignments[k]);
-assert.strictEqual(new Set(people).size, 3, 'three different people on three shifts: ' + JSON.stringify(plan.assignments));
+assert.strictEqual(new Set(people).size, 6, 'six different people on six seats: ' + JSON.stringify(plan.assignments));
 assert.ok(people.indexOf('chloe') < 0);
 assert.deepStrictEqual(plan.short, []);
-console.log('ok: three different sales executives cover the three shifts');
+sound(plan, wk);
+console.log('ok: two different sales executives on each of the three shifts');
+
+// four people: the afternoon is a double for two of the morning, never the midday pair
+const four = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan', 'will'], team, history: {} });
+assert.deepStrictEqual(four.short, [], 'four people fill six seats with a gap: ' + JSON.stringify(four.assignments));
+sound(four, wk);
+assert.deepStrictEqual([four.assignments.pm, four.assignments.pm2].sort(), [four.assignments.am, four.assignments.am2].sort(), 'the morning pair come back for the afternoon');
+console.log('ok: a double shift only with a gap, morning and afternoon');
+
+// five people: only one double, and it is someone from the morning
+const five = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan', 'will', 'ben'], team, history: {} });
+sound(five, wk);
+const fiveIds = Object.keys(five.assignments).map(k => five.assignments[k]);
+assert.strictEqual(new Set(fiveIds).size, 5, 'everyone on at least once before anyone twice');
+assert.deepStrictEqual(five.short, []);
 
 // fairness: the person with fewest recent shifts goes first
-const fair = R.planDay({ shifts: [wk[0]], available: ['tomi', 'carl'], team, history: { tomi: 4, carl: 1 } });
+const fair = R.planDay({ shifts: [W('am')], available: ['tomi', 'carl'], team, history: { tomi: 4, carl: 1 } });
 assert.strictEqual(fair.assignments.am, 'carl');
 console.log('ok: the person with fewest recent reception shifts is picked');
 
-// too few people: the shift is short, not silently given to someone twice without need
+// too few people: a seat is short rather than one person doing both seats or back to back
 const thin = R.planDay({ shifts: wk, available: ['tomi'], team, history: {} });
 assert.strictEqual(thin.assignments.am, 'tomi');
-assert.strictEqual(thin.assignments.mid, null, 'nobody does a double shift: with one person in, the second shift is short');
-assert.deepStrictEqual(thin.short, ['mid', 'pm']);
+assert.strictEqual(thin.assignments.am2, null, 'one person is never in both seats');
+assert.strictEqual(thin.assignments.mid, null, 'nor back to back');
+assert.strictEqual(thin.assignments.pm, 'tomi', 'but may come back after a gap');
+assert.deepStrictEqual(thin.short, ['am2', 'mid', 'mid2', 'pm2']);
+sound(thin, wk);
 const none = R.planDay({ shifts: wk, available: [], team, history: {} });
-assert.deepStrictEqual(none.short, ['am', 'mid', 'pm']);
+assert.deepStrictEqual(none.short, ids(wk));
 const two = R.planDay({ shifts: wk, available: ['tomi', 'carl'], team, history: {} });
-const twoPeople = Object.keys(two.assignments).map(k => two.assignments[k]).filter(Boolean);
-assert.strictEqual(new Set(twoPeople).size, twoPeople.length, 'no one is on twice: ' + JSON.stringify(two.assignments));
-assert.strictEqual(two.short.length, 1, 'with two people the third shift is short, not doubled up');
-console.log('ok: nobody does a double shift; a shift with nobody free is short');
+sound(two, wk);
+assert.deepStrictEqual(two.short, ['mid', 'mid2'], 'with two people the midday shift is short: ' + JSON.stringify(two.assignments));
+console.log('ok: nobody in both seats or back to back; a seat with nobody free is short');
 
-// declined: the person who cannot cover is taken off that shift, the next fair person goes on
-const dec = R.planDay({ shifts: [wk[0]], available: ['tomi', 'carl'], team, history: {}, declined: { am: ['tomi'] } });
+// declined: the person who cannot cover is taken off that seat, the next fair person goes on
+const dec = R.planDay({ shifts: [W('am')], available: ['tomi', 'carl'], team, history: {}, declined: { am: ['tomi'] } });
 assert.strictEqual(dec.assignments.am, 'carl');
 console.log('ok: a person who cannot cover is replaced on that shift');
 
-// standing assignments are kept on a re-plan; only the open shift changes
-const keep = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan'], team, history: {}, existing: { am: 'dan' }, declined: { mid: ['carl'] } });
-assert.strictEqual(keep.assignments.am, 'dan');
-assert.notStrictEqual(keep.assignments.mid, 'carl');
-console.log('ok: a re-plan keeps the people already on and changes only the shift that needs it');
+// standing assignments are kept on a re-plan; only the open seats change, and they respect who is already on
+const keep = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan', 'will', 'ben'], team, history: {}, existing: { am: 'dan', mid: 'tomi', pm: 'carl' }, declined: { mid2: ['will'] } });
+assert.deepStrictEqual([keep.assignments.am, keep.assignments.mid, keep.assignments.pm], ['dan', 'tomi', 'carl']);
+assert.notStrictEqual(keep.assignments.mid2, 'will');
+sound(keep, wk);
+console.log('ok: a re-plan keeps the people already on and changes only the seats that need it');
+
+// a day planned before 17 November (one seat a shift): the second seats are filled around them
+const old = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan', 'will', 'ben', 'mon'], team: t6, history: {}, existing: { am: 'tomi', mid: 'carl', pm: 'dan' } });
+assert.deepStrictEqual([old.assignments.am, old.assignments.mid, old.assignments.pm], ['tomi', 'carl', 'dan']);
+assert.deepStrictEqual([old.assignments.am2, old.assignments.mid2, old.assignments.pm2].sort(), ['ben', 'mon', 'will']);
+
+// seats that have ended are skipped, not filled and not short
+const late = R.planDay({ shifts: wk, available: ['tomi', 'carl', 'dan'], team, history: {}, existing: { am: 'tomi', mid: 'carl', pm: 'dan' }, skip: ['am2', 'mid2'] });
+assert.ok(!('am2' in late.assignments) && !('mid2' in late.assignments), JSON.stringify(late.assignments));
+assert.strictEqual(late.assignments.pm2, 'tomi', 'the afternoon second seat goes to someone with a gap');
+assert.deepStrictEqual(late.short, []);
+console.log('ok: second seats fill around a day planned with one; ended seats are left alone');
+
+// fuzz: random pools, histories, declines and bookings never break the gap rule
+let seed = 7;
+const rnd = n => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed % n; };
+const names = ['tomi', 'carl', 'dan', 'will', 'ben', 'mon', 'karis', 'clive'];
+const tAll = {}; names.forEach((x, i) => { tAll[x] = { order: i }; });
+for (let i = 0; i < 3000; i++) {
+  const shifts = rnd(2) ? wk : sat;
+  const av = names.filter(() => rnd(3));
+  const hist = {}; av.forEach(x => { hist[x] = rnd(6); });
+  const dcl = {}; shifts.forEach(s => { if (rnd(5) === 0 && av.length) dcl[s.id] = [av[rnd(av.length)]]; });
+  const p = R.planDay({ shifts, available: av, team: tAll, history: hist, declined: dcl });
+  sound(p, shifts);
+  shifts.forEach(s => { const a = p.assignments[s.id]; if (a) assert.ok((dcl[s.id] || []).indexOf(a) < 0); else assert.ok(p.short.indexOf(s.id) >= 0); });
+}
+console.log('ok: 3,000 random days, never both seats or back to back');
 
 // the answers: covering, the three reasons, and Other needs words
 assert.deepStrictEqual(R.answer('covering'), { status: 'covering', reassign: false });
@@ -73,7 +139,7 @@ assert.deepStrictEqual([cust.status, cust.reassign, cust.reason, cust.reasonText
 console.log('ok: the four answers, and Other needs a reason');
 
 // the email says what Dan asked for, with tap links for covering / cannot cover
-const m = R.coverEmail('Tomi', wk[1], { date: '2026-11-02' });
+const m = R.coverEmail('Tomi', W('mid'), { date: '2026-11-02' });
 assert.ok(/You are on showroom cover\. Please cover showroom until 15:00\./.test(m.text), m.text);
 assert.ok(/12:00 to 15:00/.test(m.subject));
 assert.ok(/action=covering/.test(m.coveringUrl), m.coveringUrl);
@@ -84,7 +150,7 @@ assert.ok(/date=2026-11-02/.test(m.coveringUrl) && /shift=mid/.test(m.coveringUr
 assert.ok(/I am covering/.test(m.html) && /I cannot cover/.test(m.html), 'html has the tap buttons');
 assert.ok(m.html.indexOf(m.coveringUrl.replace(/&/g, '&amp;')) >= 0 && m.html.indexOf(m.cannotUrl.replace(/&/g, '&amp;')) >= 0, 'html links match the urls');
 assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html/.test(m.text), m.text);
-const ab = R.absentEmail('Tomi', wk[1], { date: '2026-11-02' });
+const ab = R.absentEmail('Tomi', W('mid'), { date: '2026-11-02' });
 assert.ok(/action=here/.test(ab.hereUrl) && /action=away/.test(ab.awayUrl), ab.hereUrl);
 assert.ok(/I am here/.test(ab.html) && /I cannot be in/.test(ab.html));
 const mn = R.managerNote('Carl', wk[0], 'I cannot cover right now', 'with a customer');
@@ -117,10 +183,10 @@ assert.deepStrictEqual(bi.busy.clive[0], { from: '09:56', to: '11:56' });
 assert.deepStrictEqual(bi.unknown, ['Zed'], 'unknown names are reported, not guessed');
 assert.strictEqual(R.clashes(bi.busy, 'clive', wk[0]), true, 'a 09:56 booking clashes with the 09:00 to 12:00 shift');
 assert.strictEqual(R.clashes(bi.busy, 'tomi', wk[0]), false, 'a 12:00 booking does not clash with the morning, which ends at 12:00');
-assert.strictEqual(R.clashes(bi.busy, 'tomi', wk[1]), true, 'a 12:00 booking clashes with the midday shift');
-const booked = R.planDay({ shifts: [wk[0]], available: ['clive', 'carl'], team, history: {}, busy: bi.busy });
+assert.strictEqual(R.clashes(bi.busy, 'tomi', W('mid')), true, 'a 12:00 booking clashes with the midday shift');
+const booked = R.planDay({ shifts: [W('am')], available: ['clive', 'carl'], team, history: {}, busy: bi.busy });
 assert.strictEqual(booked.assignments.am, 'carl', 'a booked person is not put on that shift');
-const allBooked = R.planDay({ shifts: [wk[0]], available: ['clive'], team, history: {}, busy: bi.busy });
+const allBooked = R.planDay({ shifts: [W('am')], available: ['clive'], team, history: {}, busy: bi.busy });
 assert.deepStrictEqual(allBooked.short, ['am'], 'with the only person booked the shift is short');
 console.log('ok: appointments block the shifts they overlap, two hours each, and unknown names are reported');
 
@@ -213,13 +279,19 @@ console.log('ok: handed-back minutes stay on the record, history lists reasons, 
     alertId: 'a6', kind: 'walk-in-taken', assignedTo: 'Danny Willis',
     team: teamNames, shifts: wk, nowMins: R.minsOf('10:00'), day: freed, handled: {}
   }), null, 'after they are freed, a later walk-in does not put them back or re-queue');
+  const second = { am: { personId: 'carl', status: 'covering', ts: 1 }, am2: { personId: 'danny', status: 'assigned', ts: 1 } };
+  const hit2 = R.walkinCoverReallocate({
+    alertId: 'a7', kind: 'walk-in-taken', assignedTo: 'Danny Willis',
+    team: teamNames, shifts: wk, nowMins: R.minsOf('10:00'), day: second, handled: {}
+  });
+  assert.ok(hit2 && hit2.shiftId === 'am2', 'the second seat is found too');
   console.log('ok: walk-in taken by the cover person queues one reallocate; other cases do nothing');
 }
 
 // the lockup calendar gives the day as a name: Saturday must get Saturday's hours, Sunday none
-assert.deepStrictEqual(R.shiftsFor('sat').map(x => x.to), ['12:00', '14:00', '17:00'], 'Saturday hours from the day name');
+assert.deepStrictEqual(R.shiftsFor('sat').map(x => x.to), ['12:00', '12:00', '14:00', '14:00', '17:00', '17:00'], 'Saturday hours from the day name');
 assert.strictEqual(R.shiftsFor('sun').length, 0);
-assert.deepStrictEqual(R.shiftsFor('fri').map(x => x.to), ['12:00', '15:00', '18:00']);
+assert.deepStrictEqual(R.shiftsFor('fri').map(x => x.to), ['12:00', '12:00', '15:00', '15:00', '18:00', '18:00']);
 console.log('ok: days given as names get the right hours, Saturday included');
 
 console.log('all reception tests passed');
@@ -229,14 +301,16 @@ console.log('all reception tests passed');
   const team = { tomi: { fullName: 'Tomiwa Adelaja' }, carl: { fullName: 'Carl Smith' } };
   const day = {
     am: { personId: 'tomi', status: 'assigned', ts: 1, note: 'secret' },
+    am2: { personId: 'carl', status: 'covering', ts: 1 },
     mid: { personId: 'carl', status: 'declined', ts: Date.UTC(2026, 10, 12, 12, 40) },
     pm: { status: 'short' }
   };
   const rows = R.publicRota(day, '2026-11-12', 4, team);
-  assert.deepStrictEqual(rows.map(r => r.initials), ['TA', null, null]);
-  assert.strictEqual(rows[1].status, 'stepped_off');
-  assert.strictEqual(rows[1].endedAt, '12:40');
-  assert.strictEqual(rows[2].status, 'short');
+  assert.deepStrictEqual(rows.map(r => r.initials), ['TA', 'CS', null, null, null, null]);
+  assert.deepStrictEqual(rows.map(r => r.shift), ['am', 'am2', 'mid', 'mid2', 'pm', 'pm2']);
+  assert.strictEqual(rows[2].status, 'stepped_off');
+  assert.strictEqual(rows[2].endedAt, '12:40');
+  assert.strictEqual(rows[4].status, 'short');
   assert.ok(!JSON.stringify(rows).includes('Tomiwa') && !JSON.stringify(rows).includes('secret'));
   assert.strictEqual(R.publicRota({}, '2026-11-15', 0, team).length, 0);
   console.log('ok: public rota shows initials, the time a shift was stepped off, and nothing private');

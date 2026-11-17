@@ -1,7 +1,8 @@
 /* scripts/reception-mail.js - showroom cover, run from scripts/lockup-mail.js
  * (every 15 minutes, Monday to Saturday, by the lockup-emails Action).
  *
- *   After 07:30 on each open day: plan the three shifts (reception-rota.js) from
+ *   After 07:30 on each open day: plan the three shifts, two seats each since
+ *   17 November 2026 (reception-rota.js), from
  *   the sales team's availability (shift calendar), write the plan to
  *   <root>/reception/<date>/<shift>, and queue one email per person:
  *   "You are on showroom cover. Please cover showroom until HH:MM."
@@ -223,8 +224,21 @@ async function run(o) {
   const existing = {};
   const mailedCover = {}; /* person|shift mailed a cover email this run — stops ensure double-sends */
   const markMailed = (shift, pid) => { if (pid) mailedCover[shift + '|' + pid] = true; };
+  /* the person already holds the other seat of this shift: one person cannot sit in both */
+  const inOtherSeat = (s, pid) => shifts.some(x => x.id !== s.id && RR.sameTime(x, s) && (today[x.id] || {}).personId === pid &&
+    ((today[x.id] || {}).status === 'assigned' || (today[x.id] || {}).status === 'covering'));
   for (const s of shifts) {
     let r = today[s.id] || {};
+    if (r.assign && r.assign.ts !== r.assignHandledTs && r.assign.personId && inOtherSeat(s, r.assign.personId)) {
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ assignHandledTs: r.assign.ts });
+      say('Not assigning ' + firstName(team[r.assign.personId], r.assign.personId) + ' to ' + s.id + ': already in the other seat');
+      r = today[s.id] = Object.assign({}, r, { assignHandledTs: r.assign.ts });
+    }
+    if (r.take && r.take.ts !== r.takeHandledTs && r.take.personId && inOtherSeat(s, r.take.personId)) {
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ takeHandledTs: r.take.ts });
+      say('Not giving ' + s.id + ' to ' + firstName(team[r.take.personId], r.take.personId) + ': already in the other seat');
+      r = today[s.id] = Object.assign({}, r, { takeHandledTs: r.take.ts });
+    }
     /* a manager reallocated the shift: the person on it is logged as a skip, and the shift is freed */
     /* a manager chose someone for a shift nobody could cover: they go on it, and are emailed as usual */
     if (r.assign && r.assign.ts !== r.assignHandledTs && r.assign.personId) {
@@ -423,9 +437,12 @@ async function run(o) {
   if (!dayMark && planAt > 0 && n.mins < planAt) return { skipped: 'before the plan time' };
   if (!dayMark || Object.keys(existing).length < shifts.length) {
     const available = Array.from(new Set(SR.staffOn(ctx, date).concat((RR.ONE_OFF_IN || {})[date] || [])));
+    /* a seat that has already ended today is left alone: never filled, never reported short. This is what
+       stops the day the second seats arrived (17 November, mid afternoon) emailing somebody for the morning. */
+    const ended = date === n.date ? shifts.filter(s => endMins(s) <= n.mins && !existing[s.id]).map(s => s.id) : [];
     const plan = RR.planDay({
       shifts, available, team, busy, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date),
-      declined: declined, existing: existing
+      declined: declined, existing: existing, skip: ended
     });
     for (const s of shifts) {
       const pid = plan.assignments[s.id];
@@ -447,9 +464,12 @@ async function run(o) {
       markMailed(s.id, pid);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid) + (cover.sendAfter ? ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')' : ' (now)'));
     }
+    const shortTold = {};
     for (const id of plan.short) {
       const s2 = shifts.filter(x => x.id === id)[0];
       if (!s2) continue;
+      /* both seats of one shift short: one note to the managers for the pair, not two */
+      const pair = plan.short.filter(k => { const x = shifts.filter(y => y.id === k)[0]; return x && RR.sameTime(x, s2); });
       if (!dry && (today[id] || {}).status !== 'short') {
         const cur = Object.assign({}, today[id] || {}, { personId: null, status: 'short', ts: Date.now() });
         today[id] = cur;
@@ -461,7 +481,9 @@ async function run(o) {
       const free = pool2.filter(pid => !RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0 && taken.indexOf(pid) < 0);
       const onOther = pool2.filter(pid => !RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0 && taken.indexOf(pid) >= 0);
       const names = {}; Object.keys(team).forEach(k => { names[k] = firstName(team[k], k); });
-      const note = RR.shortNote(s2, free, onOther, booked, names);
+      if (shortTold[s2.base || id]) continue;
+      shortTold[s2.base || id] = true;
+      const note = RR.shortNote(s2, free, onOther, booked, names, pair.length);
       qAdd(rcId('short', date, id), { to: 'managers', subject: note.subject, text: note.text,
         html: '<p>' + note.text.split('\n').map(esc).join('</p><p>') + '</p>', ts: Date.now() }, dry);
     }

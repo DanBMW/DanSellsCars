@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="stylesheet" href="team.css">
 <script src="lockup-rota.js"></script>
-<script src="reception-rota.js"></script>
+<script src="reception-rota.js?v=2"></script>
 <script src="team-identity.js"></script>
 <script src="team-session.js"></script>
 <style>
@@ -196,7 +196,7 @@ window.__backend = backend;
     $('r-kick').textContent = R.DAY_NAMES ? (R.DAY_NAMES[view.dow] + ' ' + date) : date;
     if (!shifts.length) { $('r-title').textContent = 'Closed today'; $('r-sub').textContent = 'No showroom cover on a Sunday.'; $('r-mine').innerHTML = ''; $('r-list').innerHTML = ''; MINE_HTML = LIST_HTML = null; return; }
     $('r-title').textContent = 'Showroom cover today';
-    $('r-sub').textContent = 'One person covers the showroom in each shift. Tell us here if you cannot, or take a shift if you want to sit in.';
+    $('r-sub').textContent = 'Two people cover the showroom in each shift. Tell us here if you cannot, or take a place if you want to sit in.';
 
     var mine = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && (r.status === 'assigned' || r.status === 'covering') && minsOf(s.to) > clockMins; })[0];
     var mineDone = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && r.status === 'declined'; });
@@ -241,17 +241,31 @@ window.__backend = backend;
       var note = r.absent ? '<div class="muted small" style="margin-top:4px">Nudged: ' + esc(nameOf(r.absent.personId)) + (r.absent.reply ? (r.absent.reply.status === 'here' ? '. Says they are here.' : '. Not in: ' + esc(r.absent.reply.text || '')) : '. No reply yet.') + '</div>' : '';
       var pick = '';
       if (STATE.canManage && !r.personId) {
-        var busyIds = shifts.filter(function (x) { return x.id !== s.id && (DAY[x.id] || {}).personId; }).map(function (x) { return DAY[x.id].personId; });
+        /* where else each person is today: the other place on this shift (not allowed), back to back (no gap), or later with a gap */
+        var whereOn = function (id) {
+          var w = '';
+          shifts.forEach(function (x) {
+            if (x.id === s.id || (DAY[x.id] || {}).personId !== id) return;
+            if (RR.sameTime(x, s)) w = 'same';
+            else if (RR.tooClose(x, s) && w !== 'same') w = 'next';
+            else if (!w) w = 'gap';
+          });
+          return w;
+        };
         var opts = ['<option value="">Choose someone</option>'].concat(salesIds().map(function (id) {
-          return '<option value="' + esc(id) + '">' + esc(nameOf(id)) + (busyIds.indexOf(id) >= 0 ? ' (already on another shift)' : '') + '</option>';
+          var w = whereOn(id);
+          return '<option value="' + esc(id) + '"' + (w === 'same' ? ' disabled' : '') + '>' + esc(nameOf(id)) +
+            (w === 'same' ? ' (already in the other place)' : w === 'next' ? ' (on the shift next to it, no gap)' : w === 'gap' ? ' (already on another shift)' : '') + '</option>';
         })).join('');
         pick = '<div class="rc-actions"><select id="as-' + esc(s.id) + '" style="flex:1 1 220px;min-height:44px;font-size:15px;background:#0e1626;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:8px">' + opts + '</select>' +
           '<button class="big" type="button" data-assign="' + esc(s.id) + '">Assign</button></div>';
       }
       var takeBtn = '';
-      var canTake = salesIds().indexOf(me) >= 0 && minsOf(s.to) > clockMins && r.personId !== me && (r.take || {}).personId !== me;
+      /* nobody takes the other place on a shift they are already covering */
+      var inPair = shifts.some(function (x) { return x.id !== s.id && RR.sameTime(x, s) && (DAY[x.id] || {}).personId === me && ((DAY[x.id] || {}).status === 'assigned' || (DAY[x.id] || {}).status === 'covering'); });
+      var canTake = salesIds().indexOf(me) >= 0 && minsOf(s.to) > clockMins && r.personId !== me && (r.take || {}).personId !== me && !inPair;
       if (canTake) {
-        var takeLabel = r.personId ? 'Take this shift' : 'Take the shift';
+        var takeLabel = r.personId ? 'Take this place' : 'Take the place';
         takeBtn = '<div class="rc-actions"><button class="big" type="button" data-take="' + esc(s.id) + '">' + takeLabel + '</button></div>';
       }
       return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
