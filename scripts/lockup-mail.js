@@ -234,13 +234,13 @@ async function main() {
      lockup tree is world readable, and the opt in emails of 10 November sat there
      whole with every link in them. This also scrubs those on the first run. */
   await scrubSanta(db, queue, paths, ROOT, DRY, console.log);
-  for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
-    const q = queue[id];
-    if (!q || q.sent) continue;
-    if (q.sendAfter && nowMs < q.sendAfter) { console.log('Holding', id, 'until', new Date(q.sendAfter).toISOString()); continue; }
+  /* one email Gmail refuses (18 November 13:53: 421 Temporary System Problem) used to end the whole
+     run, so every email after it waited for the next run, and so did the lockup reminders below.
+     Now that one stays unsent and is tried again next run, and the rest still go. */
+  const sendFailures = await sendQueue(queue, nowMs, async (id, q) => {
     /* cover emails (rcTest) go only to the two test addresses, whatever the live switch says */
     const to = q.rcTest ? (q.to === 'managers' ? [TEST_MGR] : [TEST_EXEC]) : q.to === 'team' ? teamList : Array.isArray(q.to) ? (TEST ? [TEST_EXEC] : q.to) : mgrList;
-    if (!to.length) { console.log('Notification', id, 'waiting, no recipients set'); continue; }
+    if (!to.length) { console.log('Notification', id, 'waiting, no recipients set'); return; }
     if (q.html) {
       const subject = (TEST || q.rcTest ? '[TEST] ' : '') + q.subject;
       const bcc = rcBccFor(id, nowMs);
@@ -255,7 +255,9 @@ async function main() {
       if (SANTA.test(id)) await db.ref(paths[id] || ROOT + '/notify/' + id).update({ sent: Date.now(), html: null, text: null });
       else await db.ref((paths[id] || ROOT + '/notify/' + id) + '/sent').set(Date.now());
     }
-  }
+  }, msg => console.error(msg));
+  /* the run still shows as failed in Actions, after everything else has gone */
+  if (sendFailures.length) process.exitCode = 1;
 
   /* Lockup completed: one email to the managers for each signed record, with
      the checklist (done and not done) and the signature images attached inline.
@@ -441,8 +443,23 @@ function completedMail(r, rid, date) {
     '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley lockup</p></div></div>';
   return { subject, text, html, attachments: att };
 }
+/* send every due queued email; deliver(id, q) sends one and marks it sent. A failure leaves that one
+   unsent for the next run and carries on. Returns the ids that failed. */
+async function sendQueue(queue, nowMs, deliver, logErr) {
+  const failed = [];
+  for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
+    const q = queue[id];
+    if (!q || q.sent) continue;
+    if (q.sendAfter && nowMs < q.sendAfter) { console.log('Holding', id, 'until', new Date(q.sendAfter).toISOString()); continue; }
+    try { await deliver(id, q); } catch (e) {
+      failed.push(id);
+      (logErr || console.error)('Send failed for ' + id + ' (left unsent, tried again next run): ' + String((e && e.message) || e).split('\n')[0]);
+    }
+  }
+  return failed;
+}
 function done(admin) { return admin.app().delete(); }
 
 /* Forecourt 08:30 reminder rides on the same workflow run (scripts/forecourt-mail.js). */
 if (require.main === module) main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
-module.exports = { completedMail, rcBccFor, RC_BCC_UNTIL, RC_BCC_ADDR, scrubSanta };
+module.exports = { sendQueue, completedMail, rcBccFor, RC_BCC_UNTIL, RC_BCC_ADDR, scrubSanta };
