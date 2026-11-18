@@ -553,9 +553,14 @@ async function run(o) {
     /* a seat that has already ended today is left alone: never filled, never reported short. This is what
        stops the day the second seats arrived (17 November, mid afternoon) emailing somebody for the morning. */
     const ended = date === n.date ? shifts.filter(s => endMins(s) <= n.mins && !existing[s.id]).map(s => s.id) : [];
+    /* a seat that has started (or ended) with somebody on it is never re-planned. planDay drops a holder who is
+       not on the day's staff list, so on 18 November, when Mon's decline on 12 to 3 re-ran the plan at 14:05,
+       Danny and Karis (put on the 9 to 12 by hand, not on the calendar list) were dropped from a shift that had
+       already finished: Mon was emailed to cover 9 to 12 and the managers were told 9 to 12 was not covered. */
+    const held = date === n.date ? shifts.filter(s => existing[s.id] && minsOf(s.from) <= n.mins).map(s => s.id) : [];
     const plan = RR.planDay({
       shifts, available, team, busy, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date),
-      declined: declined, existing: existing, skip: ended
+      declined: declined, existing: existing, skip: ended.concat(held)
     });
     for (const s of shifts) {
       const pid = plan.assignments[s.id];

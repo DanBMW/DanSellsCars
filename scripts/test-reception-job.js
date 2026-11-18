@@ -545,6 +545,36 @@ async function runAt(db, date, h, m, cfgExtra) {
     console.log('ok: the same for the person on the 12 to 3 shift');
   }
 
+  // 18 November 14:05: a decline on 12 to 3 re-ran the plan, and the finished 9 to 12 seats, held by people the
+  // plan does not count as in (put on by hand), were refilled: an email to cover 9 to 12 at 2pm, and a not covered note.
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { walkinAlerts: [] });
+    const day = db.data.lockupTest.reception[MON];
+    // the morning seats are held by people the plan does not count (no work email puts them outside the pool)
+    const teamH = Object.assign({}, team, { zed: { name: 'Zed', order: 9, active: true }, yan: { name: 'Yan', order: 10, active: true } });
+    day.am = Object.assign({}, day.am, { personId: 'zed', status: 'assigned', ts: 1 });
+    day.am2 = Object.assign({}, day.am2, { personId: 'yan', status: 'assigned', ts: 1 });
+    const midWho = day.mid.personId;
+    day.mid = Object.assign({}, day.mid, { status: 'declined', reason: 'I cannot cover right now', reasonText: 'With a customer', ts: 5 });
+    r = await runAt(db, MON, 14, 5, { team: teamH, walkinAlerts: [] });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'zed', 'a finished seat keeps its person');
+    assert.strictEqual(db.data.lockupTest.reception[MON].am2.personId, 'yan', 'a finished second seat keeps its person');
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am2.status, 'short');
+    assert.ok(!r.added.some(id => /_am2?_/.test(id) && !/_am2?_(zed|yan)$/.test(id)), 'nobody new emailed for 9 to 12: ' + r.added.join(','));
+    assert.ok(!r.added.some(id => /short_.*_am/.test(id)), 'no not covered note for 9 to 12');
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, midWho, 'the declined 12 to 3 is still refilled');
+    // a seat in progress with its person on is not swapped either
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { walkinAlerts: [] });
+    const d2 = db.data.lockupTest.reception[MON];
+    d2.am = Object.assign({}, d2.am, { personId: 'zed', status: 'covering', ts: 1 });
+    d2.am2 = Object.assign({}, d2.am2, { status: 'declined', reason: 'I cannot cover right now', reasonText: 'x', ts: 5 });
+    r = await runAt(db, MON, 10, 0, { team: teamH, walkinAlerts: [] });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'zed', 'the person covering now stays on');
+    console.log('ok: a decline later in the day never refills a seat that has started or finished with someone on it');
+  }
+
   // a planned cover email is held until 10 minutes before its shift; a reallocation sends now
   db = fakeDb();
   await runAt(db, MON, 8, 0);
