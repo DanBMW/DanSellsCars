@@ -31,3 +31,5 @@ jobs:
       - run: node scripts/test-walkin-times.js
       # The fortnightly forecourt check: allocation, no repeats, no double sends.
       - run: node scripts/test-forecourt-auto.js
+      # A sold car's scrape info is kept 30 days in sold-archive.json, then let go.
+      - run: python3 scripts/test-sold-archive.py

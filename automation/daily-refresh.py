@@ -324,7 +324,7 @@ def main():
         if rc != 0:
             REPORT.append('stock-images failed: ' + tail(out))
     commit_push(['automation/hedin-group-stock.json', 'automation/car-details.json',
-                 'automation/hedin-stock-snapshot.json'],
+                 'automation/hedin-stock-snapshot.json', 'automation/sold-archive.json'],
                 'Daily group stock, details and images')
     if desc_ok:
         commit_push(['automation/car-descriptions.json'], 'Daily car descriptions')
@@ -344,7 +344,8 @@ def main():
     rc, out = script('stock-finance.py', timeout=4 * 3600)
     REPORT.append('Stock quotes: ' + ('ok - ' + tail(out, 3) if rc == 0 else 'FAILED - ' + tail(out)))
     if rc == 0:
-        commit_push(['automation/stock-finance.json', 'automation/stock-finance-ladder.json'],
+        commit_push(['automation/stock-finance.json', 'automation/stock-finance-ladder.json',
+                     'automation/sold-archive.json'],
                     'Daily stock list finance quotes')
 
     # ---- PART 5: new car list ------------------------------------------

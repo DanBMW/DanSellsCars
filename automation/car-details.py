@@ -268,11 +268,22 @@ def main():
             print('  %3d/%d  %-9s failed: %s'
                   % (i, len(todo), c.get('reg', ''), str(e)[:70]), flush=True)
 
+    # A sold car leaves this file on a full run, but its details are kept for
+    # 30 days in sold-archive.json rather than thrown away (sold_archive.py).
     dropped = 0
     if full_run:
-        for cid in [k for k in out if k not in live]:
+        gone = {k: out[k] for k in out if k not in live}
+        for cid in gone:
             del out[cid]
-            dropped += 1
+        dropped = len(gone)
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import sold_archive
+            held, expired = sold_archive.keep('details', gone, live)
+            print('sold archive: %d cars held for 30 days%s'
+                  % (held, ', %d past 30 days dropped' % expired if expired else ''))
+        except Exception as e:
+            print('sold archive not written: %s' % str(e)[:80])
 
     with open(OUT, 'w') as fh:
         fh.write('{\n')
@@ -288,7 +299,7 @@ def main():
         print('  bad figure at source: %s' % w)
 
     print('\nfetched %d, failed %d%s, %d cars on file, %.0fs'
-          % (ok, failed, ', %d sold cars pruned' % dropped if dropped else '',
+          % (ok, failed, ', %d sold cars moved to the archive' % dropped if dropped else '',
              len(out), time.time() - t0))
     if failed and not ok and todo:
         sys.exit('every fetch failed - the listing pages were not reachable')

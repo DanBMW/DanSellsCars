@@ -307,13 +307,23 @@ def main():
     # ever grew. Pruning is limited to a full run - on --only or --limit the
     # cars that were not asked about are not gone, they are simply not in
     # today's slice, and dropping them would wipe the file.
+    # Since 18 November 2026 they are not thrown away: the quote and the
+    # ladder go to sold-archive.json for 30 days (sold_archive.py). They are
+    # never shown from there, a sold car has no payment to offer.
     dropped = 0
     if full_run:
-        for lid in [k for k in out if k not in live]:
-            del out[lid]
-            dropped += 1
-        for lid in [k for k in lad if k not in live]:
-            del lad[lid]
+        goneq = {k: out.pop(k) for k in [k for k in out if k not in live]}
+        gonel = {k: lad.pop(k) for k in [k for k in lad if k not in live]}
+        dropped = len(goneq)
+        try:
+            sys.path.insert(0, HERE)
+            import sold_archive
+            sold_archive.keep('finance', goneq, live)
+            held, expired = sold_archive.keep('ladder', gonel, live)
+            print('sold archive: %d cars held for 30 days%s'
+                  % (held, ', %d past 30 days dropped' % expired if expired else ''))
+        except Exception as e:
+            print('sold archive not written: %s' % str(e)[:80])
 
     json.dump(out, open(OUT, 'w'), indent=1, sort_keys=True)
     # One line per car, so the daily diff stays readable the way the stock
@@ -327,7 +337,7 @@ def main():
         fh.write('}\n')
     print('\nquoted %d, refused %d, errored %d%s, %.0fs total (%.1fs a car)'
           % (ok, refused, failed,
-             ', %d sold cars pruned' % dropped if dropped else '',
+             ', %d sold cars moved to the archive' % dropped if dropped else '',
              time.time()-t0, (time.time()-t0)/max(1, len(cars))))
     rungs = sum(len(e['steps']) for e in lad.values())
     print('deposit ladder: %d cars, %d lender quotes (%.1f a car)'

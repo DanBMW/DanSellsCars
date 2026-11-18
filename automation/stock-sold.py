@@ -7,7 +7,9 @@ A car missing from today's snapshot gets first_missing = today. It is only
 shown as sold once it has been missing for CONFIRM consecutive runs (default 1;
 set 2 to ride out a one day blip). If it reappears it is removed from the
 ledger at once (a car temporarily hidden, reserved then released, or a feed
-glitch). After KEEP days it is dropped. A run whose snapshot is short (under
+glitch). After KEEP days (30 since 18 November 2026, Dan: keep the scrape info
+for 30 days) it is dropped. compare.html still shows a car as SOLD for only
+SHOW days (7), read from `show_days`; the rest of the month is kept for us. A run whose snapshot is short (under
 MIN_SHARE of yesterday's live count) is refused, so a half fetch never marks
 the forecourt as sold. New cars already have this in lookup/new-stock.json
 'removed' (removed_at, 30 days); the page applies the same 7 day window there.
@@ -18,7 +20,7 @@ import json, os, subprocess, sys
 from datetime import date, datetime, timedelta, timezone
 HERE = os.path.dirname(os.path.abspath(__file__))
 SNAP, OUT = os.path.join(HERE, 'hedin-stock-snapshot.json'), os.path.join(HERE, 'stock-sold.json')
-KEEP, CONFIRM, MIN_SHARE = 7, 1, 0.6
+KEEP, SHOW, CONFIRM, MIN_SHARE = 30, 7, 1, 0.6
 KEEPF = ['id','model','series','year','reg','mileage','colour','fuel','fuelGroup','body','power','gearbox','seats','price','image']
 
 def step(led, cars, day):
@@ -54,6 +56,6 @@ if __name__ == '__main__':
     else:
         led = json.load(open(OUT)) if os.path.exists(OUT) else {}
         led = step(led, json.load(open(SNAP)), date.today())
-    led['confirm_runs'] = CONFIRM; led['keep_days'] = KEEP
+    led['confirm_runs'] = CONFIRM; led['keep_days'] = KEEP; led['show_days'] = SHOW
     json.dump(led, open(OUT, 'w'), indent=1, ensure_ascii=False)
     print('sold in window:', len(led['sold']))
