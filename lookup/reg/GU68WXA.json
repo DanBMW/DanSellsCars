@@ -16,9 +16,12 @@
  "trim": "M Sport",
  "price": "£16,000",
  "price_gbp": 16000,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d076-0a39-7847-840f-8fbffce75cbd-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d439-a81b-791d-a719-1ba830464606-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d076-0a39-7847-840f-8fbffce75cbd-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d439-a81b-791d-a719-1ba830464606-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d439-a96b-78d7-a54a-d1fc4327e856-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d439-aa55-75a3-9410-ddd38c754d6f-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d439-ab12-764b-b153-c3a5e51c9416-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/261160/pb-bmw-x2-2018",
  "listing_id": "261160",
@@ -38,7 +41,7 @@
   "payments": 45,
   "price": 16000,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-13T16:02:58.2005716+00:00",
+  "quoted_at": "2026-11-18T07:03:20.2482697+00:00",
   "reg": "GU68WXA",
   "term": 46,
   "total_payable": 20669.25,

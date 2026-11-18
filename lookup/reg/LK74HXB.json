@@ -16,9 +16,12 @@
  "trim": "M Sport",
  "price": "£23,500",
  "price_gbp": 23500,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d07c-d375-773a-866f-e3222fe957f6-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d44a-23ab-72a3-b05a-0a2a83f0e160-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d07c-d375-773a-866f-e3222fe957f6-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d44a-23ab-72a3-b05a-0a2a83f0e160-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d44a-2546-748d-8ef9-9e06d08faa28-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d44a-269e-72f5-9ed4-6b85af6f59ea-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1d44a-2797-7a0c-87ed-c114ba275102-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/261197/pb-bmw-120-2024",
  "listing_id": "261197",
@@ -38,7 +41,7 @@
   "payments": 47,
   "price": 23500,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-13T16:04:03.3730155+00:00",
+  "quoted_at": "2026-11-18T07:04:33.4433805+00:00",
   "reg": "LK74HXB",
   "term": 48,
   "total_payable": 31589.18,
