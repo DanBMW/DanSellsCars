@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-18T06:02:04.735Z",
+  "captured": "2026-11-18T10:02:13.335Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "L12AEN",
+      "appraisedAt": "2026-11-18T09:49:22.910Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "V8KPW",
       "appraisedAt": "2026-11-17T13:17:49.604Z",
