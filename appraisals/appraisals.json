@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-18T16:02:06.759Z",
+  "captured": "2026-11-18T18:02:21.401Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "RF22UPS",
+      "appraisedAt": "2026-11-18T16:28:01.148Z",
+      "make": "BMW",
+      "model": "X2",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "M1VEX",
       "appraisedAt": "2026-11-18T15:38:00.214Z",
