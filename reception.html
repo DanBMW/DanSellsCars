@@ -196,7 +196,7 @@ window.__backend = backend;
     $('r-kick').textContent = R.DAY_NAMES ? (R.DAY_NAMES[view.dow] + ' ' + date) : date;
     if (!shifts.length) { $('r-title').textContent = 'Closed today'; $('r-sub').textContent = 'No showroom cover on a Sunday.'; $('r-mine').innerHTML = ''; $('r-list').innerHTML = ''; MINE_HTML = LIST_HTML = null; return; }
     $('r-title').textContent = 'Showroom cover today';
-    $('r-sub').textContent = 'Two people cover the showroom in each shift. Tell us here if you cannot, or take a place if you want to sit in.';
+    $('r-sub').textContent = 'Two people cover the showroom in each shift. Place 1 is HALO, place 2 is Reception. Tell us here if you cannot, or take a place if you want to sit in.';
 
     var mine = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && (r.status === 'assigned' || r.status === 'covering') && minsOf(s.to) > clockMins; })[0];
     var mineDone = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && r.status === 'declined'; });
@@ -210,9 +210,14 @@ window.__backend = backend;
         '<button class="ghost" type="button" data-away="' + esc(missing.id) + '" style="margin-top:8px">Send the reason</button></div>' +
         '<p class="msg" id="r-away-msg" aria-live="polite"></p></div>';
     }
+    function locOf(s) {
+      if (!s) return RR.locationOf(1);
+      var held = shifts.filter(function (x) { return RR.sameTime(x, s); }).filter(function (x) { return RR.isHeld(DAY[x.id]); }).length;
+      return RR.locationOf(s.seat, { alone: held <= 1 });
+    }
     if (mine) {
       var r = DAY[mine.id] || {};
-      html += '<div class="card"><b>You are on showroom cover until ' + esc(mine.to) + '.</b>' +
+      html += '<div class="card"><b>You are on showroom cover at ' + esc(locOf(mine)) + ' until ' + esc(mine.to) + '.</b>' +
         '<p class="muted small" style="margin:6px 0 10px">' + (r.status === 'covering' ? 'You have said you are covering.' : 'Tap if you are covering, or tell us if you cannot.') + '</p>' +
         '<button class="big" type="button" data-ack="' + esc(mine.id) + '">I am covering</button>' +
         '<div style="margin-top:12px" class="names">' +
@@ -268,7 +273,8 @@ window.__backend = backend;
         var takeLabel = r.personId ? 'Take this place' : 'Take the place';
         takeBtn = '<div class="rc-actions"><button class="big" type="button" data-take="' + esc(s.id) + '">' + takeLabel + '</button></div>';
       }
-      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + (s.seat ? ' <span class="muted small">place ' + s.seat + ' of ' + RR.SEATS + '</span>' : '') + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
+      var loc = s.seat ? (RR.isHeld(r) ? locOf(s) : RR.locationOf(s.seat)) : '';
+      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + (s.seat ? ' <span class="muted small">place ' + s.seat + ' of ' + RR.SEATS + ', ' + esc(loc) + '</span>' : '') + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
     }).join('');
     /* same for the list: a repaint must not reset a half chosen Assign or a half typed reason */
     var listKey = date + '|' + listHtml, listChanged = listKey !== LIST_HTML;

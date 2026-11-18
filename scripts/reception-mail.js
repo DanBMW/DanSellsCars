@@ -5,7 +5,7 @@
  *   17 November 2026 (reception-rota.js), from
  *   the sales team's availability (shift calendar), write the plan to
  *   <root>/reception/<date>/<shift>, and queue one email per person:
- *   "You are on showroom cover. Please cover showroom until HH:MM."
+ *   "You are on showroom cover at HALO." or "at Reception. Please cover showroom until HH:MM."
  *   A person who answers "cannot cover" on reception.html is recorded there as
  *   declined. The next run queues a manager note with their reason, banks any
  *   time they already covered (handed_back), takes them off that shift and puts
@@ -208,9 +208,10 @@ async function run(o) {
     return t;
   };
   /* a cover email for a person: with their own link when there is one, and then only on the private queue */
-  const coverMail = async (p, pid, s, extra) => {
+  const coverMail = async (p, pid, s, extra, upcoming) => {
     const token = await linkFor(s, pid);
-    const mail = RR.coverEmail(firstName(p, pid), s, { date: date, token: token });
+    const alone = RR.heldCount(today, shifts, s, Object.assign({}, upcoming || {}, { [s.id]: pid })) <= 1;
+    const mail = RR.coverEmail(firstName(p, pid), s, { date: date, token: token, alone: alone });
     return Object.assign({ to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}, extra || {});
   };
   const absences = o.absences || {};
@@ -537,7 +538,7 @@ async function run(o) {
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
       const why = Object.keys((today[s.id] || {}).declined || {}).length ? 'reallocated' : 'planned';
       await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', reason: why, personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
-      const cover = await coverMail(p, pid, s);
+      const cover = await coverMail(p, pid, s, null, plan.assignments);
       /* planned shifts are held until 10 mins before the shift starts; a reallocation sends now */
       if (!reallocated) cover.sendAfter = coverSendAfterMs(date, s.from);
       qAdd(rcId(date, s.id, pid), cover, dry);

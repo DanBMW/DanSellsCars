@@ -17,7 +17,9 @@
  *     have not already covered a shift today, so one person does not get the
  *     whole day when someone else is free;
  *   - a person who says they cannot cover is taken off that shift and the next
- *     fair person is put on, with the reason going to the managers.
+ *     fair person is put on, with the reason going to the managers;
+ *   - each shift has two locations: place 1 is HALO, place 2 is Reception.
+ *     A shift with only one person on, in either place, is HALO.
  *
  * Shift hours are a guess until Dan confirms them: see SHIFTS below.
  */
@@ -50,6 +52,23 @@
   var SHIFTS = { weekday: seated(BASE.weekday), sat: seated(BASE.sat) };
   /* two seats at the same time (the same shift) */
   function sameTime(a, b) { return minsOf(a.from) < minsOf(b.to) && minsOf(b.from) < minsOf(a.to); }
+  /* place 1 covers HALO, place 2 covers Reception. A lone person on the shift is always at HALO. */
+  var LOCATIONS = { 1: 'HALO', 2: 'Reception' };
+  function isHeld(row) {
+    return !!(row && row.personId && (row.status === 'assigned' || row.status === 'covering'));
+  }
+  function heldCount(day, shifts, s, upcoming) {
+    upcoming = upcoming || {};
+    return shifts.filter(function (x) { return sameTime(x, s); }).filter(function (x) {
+      if (upcoming[x.id]) return true;
+      return isHeld((day || {})[x.id]);
+    }).length;
+  }
+  function locationOf(seat, opts) {
+    opts = opts || {};
+    if (opts.alone) return LOCATIONS[1];
+    return LOCATIONS[seat] || LOCATIONS[1];
+  }
   /* too close for one person to do both: the same time, or back to back with no gap */
   function tooClose(a, b) { return minsOf(a.from) <= minsOf(b.to) && minsOf(b.from) <= minsOf(a.to); }
   var REASONS = {
@@ -188,16 +207,17 @@
     opts = opts || {};
     var L = tapLinks(shift, opts);
     var covering = L.covering, cannot = L.cannot, open = L.open;
-    var subject = 'Showroom cover ' + shift.from + ' to ' + shift.to;
-    var text = 'Hi ' + name + ',\n\nYou are on showroom cover. Please cover showroom until ' + shift.to + '.\n\n' +
+    var loc = locationOf(shift.seat, opts);
+    var subject = 'Showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to;
+    var text = 'Hi ' + name + ',\n\nYou are on showroom cover at ' + loc + '. Please cover showroom until ' + shift.to + '.\n\n' +
       'I am covering:\n' + covering + '\n\n' +
       'I cannot cover:\n' + cannot + '\n\n' +
       'Open showroom cover:\n' + open;
     var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
-      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom cover ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + '</div>' +
+      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom cover at ' + escHtml(loc) + ', ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + '</div>' +
       '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
       '<p style="margin:0 0 12px">Hi ' + escHtml(name) + ',</p>' +
-      '<p style="margin:0 0 16px">You are on showroom cover. Please cover showroom until ' + escHtml(shift.to) + '.</p>' +
+      '<p style="margin:0 0 16px">You are on showroom cover at ' + escHtml(loc) + '. Please cover showroom until ' + escHtml(shift.to) + '.</p>' +
       mailBtn(covering, 'I am covering', 'primary') +
       mailBtn(cannot, 'I cannot cover', 'danger') +
       '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover</p></div></div>';
@@ -238,15 +258,20 @@
     var ok = rows.filter(function (r) { return r.state === 'covering'; }).length;
     var subject = 'Showroom ' + shift.from + ' to ' + shift.to + ': ' + (on.length ? on.map(function (r) { return r.name; }).join(' and ') : 'nobody on') + (ok === rows.length ? '' : ' (' + ok + ' of ' + rows.length + ' confirmed)');
     var lines = ['Showroom cover ' + shift.from + ' to ' + shift.to + ' starts now. Who should be in the showroom:', ''];
+    function placeOf(r, i) {
+      var seat = r.seatNum || (i + 1);
+      var loc = locationOf(seat, { alone: !!(r.name) && on.length <= 1 });
+      return 'Place ' + seat + ', ' + loc;
+    }
     rows.forEach(function (r, i) {
-      lines.push('Place ' + (i + 1) + ': ' + (r.name || 'Nobody') + ', ' + (STATE_WORDS[r.state] || r.state) + '.');
+      lines.push(placeOf(r, i) + ': ' + (r.name || 'Nobody') + ', ' + (STATE_WORDS[r.state] || r.state) + '.');
       if (r.nudgeUrl) lines.push('Not in the showroom? Nudge ' + r.name + ': ' + r.nudgeUrl);
     });
     lines.push('', 'Open showroom cover: ' + PAGE_URL);
     var rowHtml = rows.map(function (r, i) {
       var tone = r.state === 'covering' ? '#2ea56a' : (r.state === 'assigned' || r.state === 'absent') ? '#c98a00' : '#c0392b';
       return '<div style="border:1px solid #d9e3ee;border-left:6px solid ' + tone + ';border-radius:12px;padding:14px;margin:0 0 12px">' +
-        '<div style="font-size:13px;color:#6b7a8c">Place ' + (i + 1) + '</div>' +
+        '<div style="font-size:13px;color:#6b7a8c">' + escHtml(placeOf(r, i)) + '</div>' +
         '<div style="font-size:18px;font-weight:800;margin:2px 0">' + escHtml(r.name || 'Nobody') + '</div>' +
         '<div style="font-size:15px;color:' + tone + ';font-weight:700">' + escHtml(STATE_WORDS[r.state] || r.state) + '</div>' +
         (r.nudgeUrl ? '<div style="margin-top:10px">' + mailBtn(r.nudgeUrl, 'Nudge ' + r.name + ', not in the showroom', 'danger') + '</div>' : '') +
@@ -541,6 +566,6 @@ function publicRota(day, date, dow, team) {
   });
 }
 
-var api = { needsWords: needsWords, startEmail: startEmail, STATE_WORDS: STATE_WORDS, linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
+var api = { needsWords: needsWords, startEmail: startEmail, LOCATIONS: LOCATIONS, locationOf: locationOf, isHeld: isHeld, heldCount: heldCount, STATE_WORDS: STATE_WORDS, linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

@@ -80,7 +80,10 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.ok(ppl.every(p => p !== 'chloe' && p !== 'molly'));
   assert.strictEqual(r.added.length, 6, 'six cover emails: ' + r.added.join(','));
   const mail = db.data.lockupTest.notify[r.added[0]];
-  assert.ok(/You are on showroom cover\. Please cover showroom until/.test(mail.text), mail.text);
+  assert.ok(/You are on showroom cover at HALO\. Please cover showroom until/.test(mail.text), mail.text);
+  const mail2 = db.data.lockupTest.notify[r.added[1]];
+  assert.ok(/You are on showroom cover at Reception\. Please cover showroom until/.test(mail2.text), mail2.text);
+
   if (RR.TEST_ONLY) assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?test=1/.test(mail.text), mail.text);
   else assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?(?!test=)/.test(mail.text) && !/reception\.html\?test=1/.test(mail.text), mail.text);
   assert.ok(/action=cannot/.test(mail.text), mail.text);
@@ -513,7 +516,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   // a planned cover email is held until 10 minutes before its shift; a reallocation sends now
   db = fakeDb();
   await runAt(db, MON, 8, 0);
-  const heldMail = Object.values(db.data.lockupTest.notify).filter(e => /Showroom cover \d/.test(e.subject || '') && !/not covered/.test(e.subject));
+  const heldMail = Object.values(db.data.lockupTest.notify).filter(e => /Showroom cover at (HALO|Reception), \d/.test(e.subject || '') && !/not covered/.test(e.subject));
   assert.ok(heldMail.length > 0 && heldMail.every(e => typeof e.sendAfter === 'number'), 'planned cover emails are held: ' + JSON.stringify(heldMail.map(e => e.sendAfter)));
   console.log('ok: planned cover emails are held until 10 minutes before the shift');
 
@@ -735,7 +738,7 @@ async function runAt(db, date, h, m, cfgExtra) {
     assert.ok(db.data.lockupPrivate.notify[st[0]], 'with nudge links, so on the private queue');
     const n1 = team[p1].name, n2 = team[p2].name;
     assert.ok(sm.subject.indexOf(n1 + ' and ' + n2) >= 0 && /1 of 2 confirmed/.test(sm.subject), sm.subject);
-    assert.ok(/Place 1: .*Not confirmed yet/.test(sm.text) && /Place 2: .*Confirmed, covering/.test(sm.text), sm.text);
+    assert.ok(/Place 1, HALO: .*Not confirmed yet/.test(sm.text) && /Place 2, Reception: .*Confirmed, covering/.test(sm.text), sm.text);
     assert.ok(new RegExp('Nudge ' + n1 + ': https://dan-sells\\.co\\.uk/cover\\.html\\?t=[A-Za-z0-9_-]+&a=nudge').test(sm.text) && new RegExp('Nudge ' + n2 + ':').test(sm.text), sm.text);
     assert.ok(/Nudge .*not in the showroom/.test(sm.html));
     const m1 = db.data[J.IDX_ROOT][MON]['m-am_' + p1].t;

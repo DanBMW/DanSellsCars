@@ -138,10 +138,38 @@ const cust = R.answer('customer');
 assert.deepStrictEqual([cust.status, cust.reassign, cust.reason, cust.reasonText], ['declined', true, "I'm with a customer now, cannot cover", ''], 'with a customer needs no words and reallocates at once');
 console.log('ok: the four answers, and Other needs a reason');
 
-// the email says what Dan asked for, with tap links for covering / cannot cover
+// locations: place 1 is HALO, place 2 is Reception; a lone person is always at HALO
+assert.strictEqual(R.locationOf(1), 'HALO');
+assert.strictEqual(R.locationOf(2), 'Reception');
+assert.strictEqual(R.locationOf(2, { alone: true }), 'HALO');
+assert.strictEqual(R.locationOf(undefined), 'HALO');
+assert.strictEqual(R.heldCount({ am: { personId: 'tomi', status: 'assigned' } }, wk, W('am')), 1);
+assert.strictEqual(R.heldCount({ am: { personId: 'tomi', status: 'assigned' }, am2: { personId: 'carl', status: 'assigned' } }, wk, W('am')), 2);
+assert.strictEqual(R.heldCount({ am: { personId: 'tomi', status: 'assigned' } }, wk, W('am'), { am2: 'carl' }), 2);
+console.log('ok: place 1 is HALO, place 2 is Reception, a lone person is HALO');
+
+// the email says what Dan asked for, with tap links for covering / cannot cover, and the location
 const m = R.coverEmail('Tomi', W('mid'), { date: '2026-11-02' });
-assert.ok(/You are on showroom cover\. Please cover showroom until 15:00\./.test(m.text), m.text);
-assert.ok(/12:00 to 15:00/.test(m.subject));
+assert.ok(/You are on showroom cover at HALO\. Please cover showroom until 15:00\./.test(m.text), m.text);
+assert.ok(/Showroom cover at HALO, 12:00 to 15:00/.test(m.subject), m.subject);
+const m2 = R.coverEmail('Carl', W('mid2'), { date: '2026-11-02' });
+assert.ok(/You are on showroom cover at Reception\. Please cover showroom until 15:00\./.test(m2.text), m2.text);
+assert.ok(/Showroom cover at Reception, 12:00 to 15:00/.test(m2.subject), m2.subject);
+const mAlone = R.coverEmail('Carl', W('mid2'), { date: '2026-11-02', alone: true });
+assert.ok(/You are on showroom cover at HALO\. Please cover showroom until 15:00\./.test(mAlone.text), mAlone.text);
+const sm = R.startEmail({ from: '09:00', to: '12:00' }, [
+  { name: 'Tomi', state: 'assigned' },
+  { name: 'Carl', state: 'covering' }
+]);
+assert.ok(/Place 1, HALO: Tomi, Not confirmed yet\./.test(sm.text), sm.text);
+assert.ok(/Place 2, Reception: Carl, Confirmed, covering\./.test(sm.text), sm.text);
+assert.ok(/Place 1, HALO/.test(sm.html) && /Place 2, Reception/.test(sm.html), sm.html);
+const smOne = R.startEmail({ from: '09:00', to: '12:00' }, [
+  { name: '', state: 'short' },
+  { name: 'Carl', state: 'assigned' }
+]);
+assert.ok(/Place 1, HALO: Nobody, Nobody free, please choose someone\./.test(smOne.text), smOne.text);
+assert.ok(/Place 2, HALO: Carl, Not confirmed yet\./.test(smOne.text), smOne.text);
 assert.ok(/action=covering/.test(m.coveringUrl), m.coveringUrl);
 assert.ok(/action=cannot/.test(m.cannotUrl), m.cannotUrl);
 if (R.TEST_ONLY) assert.ok(/test=1/.test(m.coveringUrl), 'practice links keep test=1 while TEST_ONLY');
