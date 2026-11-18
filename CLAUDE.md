@@ -308,6 +308,20 @@ one, and the suite passes at every one of 480 three-minute slots across the
 day. **Do not "fix" a time-dependent failure here by loosening an assertion**;
 pin the clock, which is what this file is for.
 
+**Google's "server error" emails from the `refresh` trigger (18 November 2026).**
+Dan got two Apps Script failure emails: `refresh`, time based, "We're sorry, a
+server error occurred", each run hung about 8 minutes inside a Gmail call
+(17 Nov 16:41 and 18 Nov 04:24 GMT). That is Google's side, and nothing was
+lost: the cache kept the last scan and `doGet` rescans once it is 3 minutes
+old. `refresh()` is now the trigger wrapper only: a script lock (a run that
+finds another still going returns `busy`), and a failure is recorded in the
+`refresh_fail_v1` property and swallowed rather than thrown (a throw is what
+sends the email), unless scans have been failing for `FAIL_LOUD_MINS` (30),
+when it throws so a real outage still reaches him. The scan itself is
+`scanAndStore_()`, which `doGet` calls so `?refresh=1` still reports an error.
+The trigger keeps the name `refresh`, so only a paste and Save is needed in
+script.google.com. Tests: the last block of `scripts/test-walkin-parse.js`.
+
 ### The Fully Protected walkthrough - fully-protected.mp4
 
 An **AI generated** video explaining the Fully Protected Package, added
