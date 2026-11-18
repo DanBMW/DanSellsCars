@@ -1021,6 +1021,56 @@ body.haslock.hasticker .radio-fab{bottom:100px}
    and it is being read on a phone or a laptop rather than scanned off a wall. */
 @media(max-width:1199px){ .cornerqr{display:none!important} }
 
+/* ---------- Secret Santa (Dan, 18 November 2026) ----------
+   A view in the rotation until the exchange: a poem, the countdown, the budget,
+   and the two things to do. Festive but cheap for the LG: the snow and the lights
+   are transform and opacity only, and they stop whenever the view is not up. */
+.santaview{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:
+    radial-gradient(55% 50% at 50% 38%,rgba(214,40,57,.34),rgba(214,40,57,0) 70%),
+    radial-gradient(40% 40% at 15% 90%,rgba(31,138,76,.30),rgba(31,138,76,0) 70%),
+    radial-gradient(40% 40% at 85% 90%,rgba(31,138,76,.30),rgba(31,138,76,0) 70%),
+    linear-gradient(180deg,#2a0a10 0%,#12060a 55%,#06140c 100%);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:clamp(12px,2.4vh,30px);text-align:center;
+}
+.santaview.show{opacity:1;visibility:visible}
+.santaview .flake{position:absolute;top:-4vh;color:#fff;opacity:.85;font-size:var(--fs,16px);
+  animation:santaFall var(--dur,12s) linear var(--delay,0s) infinite;animation-play-state:paused;will-change:transform}
+.santaview.show .flake,.santaview.show .bulb{animation-play-state:running}
+@keyframes santaFall{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(var(--drift,20px),112vh,0) rotate(220deg)}}
+.santaview .lights{position:absolute;left:0;right:0;top:0;height:46px;display:flex;justify-content:space-around;align-items:flex-start;
+  background:linear-gradient(transparent 0 11px,rgba(255,255,255,.18) 11px 13px,transparent 13px)}
+.santaview .bulb{width:14px;height:20px;border-radius:50% 50% 50% 50%/40% 40% 60% 60%;margin-top:12px;
+  background:var(--c);box-shadow:0 0 14px 3px var(--c);animation:santaTwinkle 2.4s ease-in-out var(--d,0s) infinite;animation-play-state:paused}
+@keyframes santaTwinkle{0%,100%{opacity:1}50%{opacity:.35}}
+.santa-inner{position:relative;display:flex;flex-direction:column;align-items:center;max-width:min(980px,92vw)}
+@media(min-width:1200px){ .santa-inner{max-width:min(980px,calc(100vw - 2*(var(--qrbox) + 46px)))} }
+.santa-hat{font-size:clamp(2.2rem,6vh,4.4rem);line-height:1;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+.santa-kick{font-family:var(--display);font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#ffd36b;
+  font-size:clamp(.66rem,1.5vw,1.05rem);margin-top:6px}
+.santa-title{font-family:var(--display);font-weight:800;color:#fff;line-height:1.02;margin:4px 0 2px;
+  font-size:clamp(2rem,6.4vw,5.2rem);text-shadow:0 0 28px rgba(255,80,90,.55),0 4px 0 rgba(0,0,0,.35)}
+.santa-poem{margin:clamp(8px,2vh,22px) 0;padding:clamp(10px,2vh,22px) clamp(16px,3vw,40px);border-radius:18px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,211,107,.35);box-shadow:0 0 0 6px rgba(214,40,57,.10) inset}
+.santa-poem p{margin:0;color:#fff4dc;font-style:italic;font-weight:600;line-height:1.5;font-size:clamp(.95rem,2.2vw,1.7rem)}
+.santa-count{display:flex;align-items:baseline;justify-content:center;gap:.4em;flex-wrap:wrap}
+.santa-count b{font-family:var(--display);font-weight:800;color:#ffd36b;font-size:clamp(2.4rem,7vw,5.6rem);line-height:1;
+  text-shadow:0 0 24px rgba(255,211,107,.45)}
+.santa-count span{color:#fff;font-weight:700;font-size:clamp(.95rem,2vw,1.6rem)}
+.santa-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1vw,12px);margin-top:clamp(8px,1.6vh,16px)}
+.santa-chips span{background:rgba(31,138,76,.28);border:1px solid rgba(120,220,160,.45);color:#eafff1;border-radius:999px;
+  padding:clamp(5px,.8vh,9px) clamp(10px,1.4vw,18px);font-weight:700;font-size:clamp(.7rem,1.3vw,1.05rem)}
+.santa-do{margin-top:clamp(10px,2vh,20px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vw,18px);width:100%}
+.santa-do div{background:rgba(214,40,57,.22);border:1px solid rgba(255,140,150,.45);border-radius:14px;
+  padding:clamp(8px,1.6vh,16px) clamp(10px,1.6vw,20px);text-align:left}
+.santa-do b{display:block;color:#fff;font-family:var(--display);font-size:clamp(.9rem,1.8vw,1.4rem);margin-bottom:2px}
+.santa-do small{color:#ffe3e6;font-weight:600;font-size:clamp(.66rem,1.15vw,.92rem);line-height:1.35}
+.santa-foot{margin-top:clamp(8px,1.6vh,14px);color:#ffe8b8;font-weight:600;font-size:clamp(.62rem,1.1vw,.85rem)}
+@media(max-width:700px){ .santa-do{grid-template-columns:1fr} }
+@media(prefers-reduced-motion:reduce){ .santaview .flake{display:none} .santaview .bulb{animation:none} .santaview{transition:none} }
+
 /* ---------- birthday ---------- */
 .bdayview{
   position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
@@ -1986,6 +2036,31 @@ body.premiere .rcrota{display:none!important}
     </div>
     <div class="ed-rows" id="ed-rows"></div>
     <div class="ed-demos" id="ed-demos"></div>
+  </div>
+</div>
+
+<div class="santaview" id="santaview" aria-hidden="true">
+  <div class="lights" id="santa-lights"></div>
+  <div id="santa-snow"></div>
+  <div class="santa-inner">
+    <div class="santa-hat">&#127877;</div>
+    <div class="santa-kick">Hedin BMW Ruxley</div>
+    <div class="santa-title">Secret Santa</div>
+    <div class="santa-poem">
+      <p>The elves have drawn, the names are out,</p>
+      <p>So keep it secret, not a shout!</p>
+      <p>Update your wishlist, make it clear,</p>
+      <p>Your Santa&rsquo;s shopping, Christmas is near.</p>
+      <p>Twenty pounds, a bow on top,</p>
+      <p>The fifth is coming, time to shop!</p>
+    </div>
+    <div class="santa-count" id="santa-count"><b>&nbsp;</b><span></span></div>
+    <div class="santa-chips"><span>&#127873; &pound;20 budget</span><span>&#127876; Saturday 5 December</span><span>&#127869; At the team meal</span></div>
+    <div class="santa-do">
+      <div><b>&#9997;&#65039; Update your wishlist</b><small>Tap the link in your Secret Santa email. No sign in needed, and your Santa sees it straight away.</small></div>
+      <div><b>&#128717;&#65039; Get shopping</b><small>Check your giftee&rsquo;s wishlist on the same link, then wrap it and keep it secret.</small></div>
+    </div>
+    <div class="santa-foot">Not coming to the meal? Pop your gift in the bag and presents are given out before you leave that day.</div>
   </div>
 </div>
 
@@ -3894,6 +3969,40 @@ function viewMs(v){
   return (v.kind==='birthday'||v.kind==='forecourt') ? brief : full;
 }
 
+/* ---- Secret Santa on the wall (Dan, 18 November 2026) ----
+   Up until the end of exchange day, London time, then gone by itself: nobody has
+   to remember to take it down. It shows no names and no pairings, ever; the board
+   cannot read them and must not. The countdown is days on the London calendar. */
+var SANTA={exchange:'2026-12-05'};
+function santaToday(){
+  var p={};
+  new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'})
+    .formatToParts(new Date()).forEach(function(x){p[x.type]=x.value});
+  return p.year+'-'+p.month+'-'+p.day;
+}
+function santaLive(){ return santaToday()<=SANTA.exchange }
+function santaDays(){
+  var a=santaToday().split('-').map(Number), b=SANTA.exchange.split('-').map(Number);
+  return Math.round((Date.UTC(b[0],b[1]-1,b[2])-Date.UTC(a[0],a[1]-1,a[2]))/86400000);
+}
+var santaBuilt=false;
+function paintSanta(){
+  var d=santaDays(), c=$('santa-count');
+  if(c)c.innerHTML=d<=0?'<b>Today!</b><span>Presents at the team meal</span>'
+    :'<b>'+d+'</b><span>'+(d===1?'sleep to go':'sleeps to go')+'</span>';
+  if(santaBuilt)return;
+  santaBuilt=true;
+  var snow=$('santa-snow'), lights=$('santa-lights'), i, h='';
+  /* 26 flakes is enough to read as snow and little enough for a television */
+  for(i=0;i<26;i++){
+    h+='<span class="flake" style="left:'+((i*37)%100)+'%;--fs:'+(10+(i*7)%16)+'px;--dur:'+(9+(i*5)%9)+'s;--delay:-'+((i*1.7)%12).toFixed(1)+'s;--drift:'+(((i%5)-2)*24)+'px">&#10052;</span>';
+  }
+  if(snow)snow.innerHTML=h;
+  var cols=['#ff4d5a','#ffd36b','#3ddc84','#5aa9ff','#ff9a1f'], L='';
+  for(i=0;i<18;i++)L+='<span class="bulb" style="--c:'+cols[i%cols.length]+';--d:-'+((i*0.37)%2.4).toFixed(2)+'s"></span>';
+  if(lights)lights.innerHTML=L;
+}
+
 function views(){
   var out=[{id:'board'}];   /* index 0 is always our own board */
   if(NEWCAR.img&&sOn('newcar'))out.push({
@@ -3930,6 +4039,7 @@ function views(){
   /* who is in this week, with tonight's lockup in orange */
   if(sOn('whosin')&&whosinWeek())out.push({id:'whosin', kind:'whosin'});
   if(sOn('forecourt')&&fcCars())out.push({id:'forecourt', kind:'forecourt'});
+  if(sOn('santa')&&santaLive())out.push({id:'santa', kind:'santa'});
   /* birthdays come after the boards and screenshots, not in between them */
   if(sOn('birthdays'))liveBirthdays().forEach(function(bd){
     out.push({id:'bday-'+bd.id, kind:'birthday', bday:bd});
@@ -3964,6 +4074,8 @@ function showView(i){
   if(v.kind==='eventdeals')paintEventDeals();
   if(v.kind==='forecourt')paintForecourt();
   if(v.kind==='whosin')paintWhosIn();
+  if(v.kind==='santa')paintSanta();
+  $('santaview').classList.toggle('show',v.kind==='santa');
   $('wiscene').classList.toggle('show',v.kind==='whosin');
   $('ncscene').classList.toggle('show',!!v.img);
   $('bdayview').classList.toggle('show',v.kind==='birthday');
@@ -4031,6 +4143,7 @@ var VIEWPINS=[
   {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'},
   {id:'whosin',      name:"Who's in this week",    sub:'With tonight\u2019s lockup in orange'},
   {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'},
+  {id:'santa',        name:'Secret Santa',            sub:'Wishlists and shopping, until 5 December'},
   {id:'eventdeals',   name:'Event deals',            sub:'Highest margin first'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
@@ -4064,6 +4177,7 @@ function viewAvailable(id){
   if(id==='mugshot')return !!liveMug();
   if(id==='forecourt')return !!fcCars();
   if(id==='whosin')return !!whosinWeek();
+  if(id==='santa')return santaLive();
   return false;
 }
 
@@ -7130,7 +7244,7 @@ function paintSettingsNote(){
   var off=[];
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'premiere',
-   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','whosin','ticker',
+   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','whosin','santa','ticker',
    'seasons',
    'eventdeals','dealmargin','radio',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
