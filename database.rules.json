@@ -304,6 +304,23 @@
       ".read": "(root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true) || root.child('shiftsTest/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() !== null)",
       ".write": false
     },
+    "walkinTaken": {
+      ".read": false,
+      ".write": false,
+      "$date": {
+        ".validate": "$date.matches(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)",
+        "$id": {
+          ".write": "auth != null && !data.exists() && $id.matches(/^[A-Za-z0-9:_-]{6,80}$/)",
+          ".validate": "newData.hasChildren(['kind', 'assignedTo', 'ts']) && newData.child('ts').val() === now",
+          "kind": { ".validate": "newData.isString() && newData.val().matches(/^(walk-in-taken|walkin-taken|walkin-arrived-taken|walk-in-arrived-taken|walkin-waiting-taken|walk-in-waiting-taken)$/)" },
+          "assignedTo": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 80" },
+          "customer": { ".validate": "newData.isString() && newData.val().length <= 80" },
+          "eventAt": { ".validate": "newData.isNumber()" },
+          "ts": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        }
+      }
+    },
     "coverLink": {
       ".read": false,
       ".write": false,

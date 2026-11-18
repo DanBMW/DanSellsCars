@@ -92,6 +92,13 @@ window.__backend = backend;
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   /* Fire-and-forget: ask the worker to dispatch lockup-emails now. Failures are ignored; the 15-minute cron is the backstop. */
+  /* a refused write must not look like a signal problem: on 18 November the live rules did not cover the
+     second seats, Clive tapped cannot cover on mid2 twice, saw Try again, and nothing ever reached anyone */
+  function saveFail(e) {
+    var denied = /permission|denied/i.test(String((e && (e.code || e.message)) || ''));
+    return denied ? 'That was refused, so nothing has changed and the managers have not been told. Please tell a manager now so they can move you.'
+      : 'That did not save. Check your signal and try again.';
+  }
   function kickCover() { try { fetch(WORKER + '?target=cover-kick').catch(function () {}); } catch (e) {} }
   var WATCHING = '', DAY = {}, STATE = null, OPEN = '', DEEP = null, DEEP_DONE = '', MINE_HTML = null, LIST_HTML = null;
 
@@ -365,7 +372,7 @@ window.__backend = backend;
        banking uses status=covering + ts (see confirmMinsOf in reception-mail.js). */
     TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'covering', personId: STATE.personId, ts: Date.now() })
       .then(function () { kickCover(); $('r-msg') && (($('r-msg').textContent = 'Thanks, you are covering.')); })
-      .catch(function () { $('r-msg') && ($('r-msg').textContent = 'That did not save. Try again.'); });
+      .catch(function (e) { $('r-msg') && ($('r-msg').textContent = saveFail(e)); });
   }
 
   function takeShift(shiftId, date) {
@@ -385,7 +392,7 @@ window.__backend = backend;
     var RL = RLROOT();
     TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
       .then(function () { kickCover(); $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told, and the next person is being put on.'; })
-      .catch(function () { $('r-msg').textContent = 'That did not save. Try again.'; });
+      .catch(function (e) { $('r-msg').textContent = saveFail(e); });
   }
 
   function askWhy(kind, shiftId, date) {
@@ -404,7 +411,7 @@ window.__backend = backend;
       var RL = RLROOT();
       TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
         .then(function () { kickCover(); $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told.'; })
-        .catch(function () { $('r-send').disabled = false; $('r-msg').textContent = 'That did not save. Try again.'; });
+        .catch(function (e) { $('r-send').disabled = false; $('r-msg').textContent = saveFail(e); });
     };
   }
 

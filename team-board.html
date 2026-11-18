@@ -8313,8 +8313,35 @@ function walkinMapOfficeAlert(a, i){
    active cover shift, scripts/reception-mail.js (lockup-emails) writes the same
    reallocate the Unable button uses, so the next fair person is put on. The board
    only displays the card; the mail job reads this same office-alerts feed. */
+/* The feed forgets an alert within minutes and the job only runs every few, so most walk-ins
+   taken by the cover person were never seen by it (18 November: Mon took one and the rota did
+   not move). The board sees every alert, so it keeps each walk-in taken under walkinTaken/<date>
+   (write once per alert id) and kicks the job, which then reallocates within a minute or two. */
+var walkinKept = Object.create(null);
+function walkinKeepTaken(raw){
+  (raw || []).forEach(function(a){
+    if(!a || !a.id) return;
+    var kind = String(a.kind||'').toLowerCase().replace(/[\s_]+/g,'-');
+    if(!/^(walk-?in-taken|walk-?in-(arrived|waiting)-taken)$/.test(kind)) return;
+    var id = String(a.id);
+    /* kept: done. A failed try (not signed in yet, or another board kept it first) is tried again a minute later */
+    if(walkinKept[id]===true || (walkinKept[id] && Date.now()-walkinKept[id] < 60000) || !/^[A-Za-z0-9:_-]{6,80}$/.test(id)) return;
+    var who = walkinStrip(a.salesExecutiveName||a.assignedTo||a.bookedWith||'');
+    if(!who || typeof window.keepWalkinTaken !== 'function') return;
+    walkinKept[id] = Date.now();
+    var at = a.eventAt||a.arrivedAt||null;
+    if(typeof at==='string'){ var p=Date.parse(at); at=isNaN(p)?null:p }
+    if(typeof at==='number' && at<1e12) at=at*1000;
+    Promise.resolve(window.keepWalkinTaken(id, {
+      kind: kind, assignedTo: who.slice(0,80),
+      customer: walkinStrip(a.customerName||a.customer||a.name||'').slice(0,80),
+      eventAt: (typeof at==='number' && isFinite(at)) ? at : null
+    })).then(function(ok){ if(ok) walkinKept[id] = true; });
+  });
+}
 function walkinDeliverOfficeAlerts(j){
   var raw = (j && j.alerts) || [];
+  try{ walkinKeepTaken(raw); }catch(e){ console.warn('walk-in keep failed', e && e.message); }
   var rows = raw.map(walkinMapOfficeAlert).filter(Boolean);
   /* Empty polls mark ready. Non-empty alerts skip the silent first-snapshot
      seed (that swallowed TV tests on reload) and use announce-once storage. */
@@ -8439,7 +8466,7 @@ if(!startOfficeAlerts()) startWalkinAlerts();
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, update, remove, get, set }
+import { getDatabase, ref, onValue, push, update, remove, get, set, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { ensureSignedIn, guard } from "./staff-auth.js";
 import { makeBackend } from "./team-backend.js";
@@ -8453,6 +8480,19 @@ const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 /* Writes need a Firebase sign-in once the locked rules are published - see staff-auth.js. */
 ensureSignedIn(app);
+/* showroom cover: keep a walk-in taken alert for the cover job (see walkinKeepTaken above).
+   Write once per alert id, so a second board writing the same alert is refused and that is fine. */
+window.keepWalkinTaken=function(id, a){
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const rec={ kind:a.kind, assignedTo:a.assignedTo, ts:serverTimestamp() };
+  if(a.customer) rec.customer=a.customer;
+  if(typeof a.eventAt==='number') rec.eventAt=a.eventAt;
+  const go=()=>set(ref(db,'walkinTaken/'+p+'/'+id), rec).then(()=>{
+    try{ fetch('https://vehicleproxy.danielcane1992.workers.dev?target=cover-kick').catch(()=>{}); }catch(e){}
+    return true;
+  }).catch(()=>false);
+  return Promise.resolve(ensureSignedIn(app)).then(go, go);
+};
 const STAFF=guard(app,'staff');   /* office TV control / admin: staff Google account */
 const SIGNED=guard(app,'signed'); /* colleague features: quiet anonymous sign-in */
 /* Deals take a manager's team login (the PIN or Google sign in on team.html),

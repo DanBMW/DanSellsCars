@@ -179,6 +179,23 @@ async function main() {
     }
     await rq.flush();
   } catch (e) { console.error('showroom cover failed', e); }
+  /* the live database rules must be the ones on main (scripts/rules-drift.js): Dan is emailed once per version when not */
+  try {
+    const RD = require('./rules-drift.js');
+    const rd = await RD.check({
+      dbUrl: 'https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app',
+      getToken: async () => (await admin.app().options.credential.getAccessToken()).access_token,
+      repoText: require('fs').readFileSync(require('path').join(__dirname, '..', 'database.rules.json'), 'utf8')
+    });
+    if (rd.error) console.log('Rules check: could not read the live rules (' + rd.error + ')');
+    else if (rd.same) console.log('Rules check: live rules match main');
+    else {
+      console.log('Rules check: live rules differ from main: ' + rd.diffs.join('; '));
+      const m = RD.driftMail(rd, 'daniel.cane@hedinautomotive.co.uk');
+      const qid = m.id; delete m.id;
+      if (!DRY && !((await db.ref(ROOT + '/notify/' + qid).get()).val())) await db.ref(ROOT + '/notify/' + qid).set(Object.assign({ kind: 'rules' }, m));
+    }
+  } catch (e) { console.error('rules check failed', e); }
 
   const queue = (await db.ref(ROOT + '/notify').get()).val() || {};
   for (const id of seededNow) {

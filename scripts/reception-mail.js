@@ -123,6 +123,31 @@ async function fetchWalkinAlerts(fetchImpl) {
   } catch (e) { return []; }
 }
 
+/* walk-in taken alerts the team board kept (it sees every one; the feed forgets them in minutes) */
+const WALKIN_ROOT = 'walkinTaken';
+async function readStoredWalkins(db, root, date) {
+  try {
+    const v = (await db.ref(root + '/' + date).get()).val() || {};
+    return Object.keys(v).map(id => {
+      const a = v[id] || {};
+      const at = typeof a.eventAt === 'number' ? a.eventAt : (typeof a.ts === 'number' ? a.ts : null);
+      return { id: String(id), kind: String(a.kind || 'walk-in-taken'), assignedTo: a.assignedTo || '', customer: a.customer || '', eventAt: at, ts: at };
+    });
+  } catch (e) { return []; }
+}
+/* one list, one entry an alert id: the feed first, then anything the board kept that the feed has dropped */
+function mergeWalkins(feed, stored) {
+  const seen = {}, out = [];
+  (feed || []).concat(stored || []).forEach(a => {
+    if (!a) return;
+    const id = a.id ? String(a.id) : '';
+    if (id && seen[id]) return;
+    if (id) seen[id] = true;
+    out.push(a);
+  });
+  return out;
+}
+
 /* UK clock minutes from an epoch ms timestamp. */
 function ukMinsFromTs(ts) {
   if (!ts) return null;
@@ -227,7 +252,12 @@ async function run(o) {
   /* 0. walk-in taken by the person on the active cover shift → same reallocate as Unable */
   const walkinHandled = Object.assign({}, ((today._day || {}).walkinHandled) || {});
   let walkinHandledDirty = false;
-  const walkinAlerts = o.walkinAlerts != null ? o.walkinAlerts : await fetchWalkinAlerts(o.fetch);
+  const feedAlerts = o.walkinAlerts != null ? o.walkinAlerts : await fetchWalkinAlerts(o.fetch);
+  /* the feed only holds an alert for a short while, so a run every few minutes missed most of them
+     (18 November: Mon took a walk-in on cover and the rota never moved). The team board polls the feed
+     every 10 seconds and keeps each walk-in taken it sees under walkinTaken/<date>; read those too. */
+  const storedAlerts = o.walkinStored != null ? o.walkinStored : await readStoredWalkins(db, o.walkinRoot || WALKIN_ROOT, date);
+  const walkinAlerts = mergeWalkins(feedAlerts, storedAlerts);
   for (const a of walkinAlerts || []) {
     const aid = a && a.id ? String(a.id) : '';
     const action = RR.walkinCoverReallocate({
@@ -741,4 +771,4 @@ async function readBusy(date, fetchImpl) {
   } catch (e) { return null; }
 }
 
-module.exports = { LINK_ROOT, IDX_ROOT, NAG_MS, NAG_MANAGERS_AT, run, load, makeQueue, readBusy, APPT_FEED, OFFICE_ALERTS_URL, fetchWalkinAlerts, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };
+module.exports = { LINK_ROOT, IDX_ROOT, NAG_MS, NAG_MANAGERS_AT, run, load, makeQueue, readBusy, APPT_FEED, OFFICE_ALERTS_URL, fetchWalkinAlerts, readStoredWalkins, mergeWalkins, WALKIN_ROOT, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };

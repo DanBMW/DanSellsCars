@@ -511,6 +511,38 @@ async function runAt(db, date, h, m, cfgExtra) {
     assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'danny', 'before the shift window, cover stays');
     assert.ok(db.data.lockupTest.reception[MON]._day.walkinHandled['w-early']);
     console.log('ok: walk-in taken by the cover person reallocates like Unable; other cases leave cover alone');
+
+    // 18 November: the feed had already dropped Mon's alert by the time the job ran. The team board keeps
+    // every walk-in taken under walkinTaken/<date>, and the job acts on that even when the feed is empty.
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { team: teamW, walkinAlerts: [] });
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { personId: 'danny', status: 'covering', coveringMins: 9 * 60, ts: 1 });
+    db.data.walkinTaken = { [MON]: { 'kept-danny-1': { kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Mrs Board', ts: 1 } } };
+    r = await runAt(db, MON, 10, 20, { team: teamW, walkinAlerts: [] });
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, 'danny', 'a kept walk-in takes Danny off cover with an empty feed');
+    assert.ok(db.data.lockupTest.reception[MON].am.declined.danny);
+    assert.ok(db.data.lockupTest.reception[MON]._day.walkinHandled['kept-danny-1'], 'kept alert marked handled');
+    const kskip = Object.values(db.data.receptionLogTest || {}).filter(e => e.kind === 'skip' && e.personId === 'danny');
+    assert.strictEqual(kskip.length, 1);
+    assert.ok(/Mrs Board/.test(kskip[0].reasonText), kskip[0].reasonText);
+    // the same alert in the feed and kept: handled once
+    const onNow = db.data.lockupTest.reception[MON].am.personId;
+    r = await runAt(db, MON, 10, 30, { team: teamW, walkinAlerts: [{ id: 'kept-danny-1', kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Mrs Board' }] });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, onNow, 'no second reallocation');
+    assert.deepStrictEqual(J.mergeWalkins([{ id: 'a' }, { id: 'b' }], [{ id: 'b', x: 1 }, { id: 'c' }]).map(a => a.id), ['a', 'b', 'c']);
+    console.log('ok: a walk-in the board kept reallocates even after the feed has dropped it, once');
+
+    // second seat, as Mon on mid today: a walk-in kept for the person on mid reallocates mid
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { team: teamW, walkinAlerts: [] });
+    const midWas = db.data.lockupTest.reception[MON].mid.personId;
+    const midName = teamW[midWas].fullName || teamW[midWas].name;
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, { status: 'covering', ts: 1 });
+    db.data.walkinTaken = { [MON]: { 'kept-mid-1': { kind: 'walk-in-taken', assignedTo: midName, ts: 1 } } };
+    r = await runAt(db, MON, 13, 10, { team: teamW, walkinAlerts: [] });
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, midWas, 'the mid cover person is taken off after a kept walk-in');
+    assert.ok(db.data.lockupTest.reception[MON].mid.declined[midWas]);
+    console.log('ok: the same for the person on the 12 to 3 shift');
   }
 
   // a planned cover email is held until 10 minutes before its shift; a reallocation sends now
