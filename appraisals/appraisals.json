@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-18T10:02:13.335Z",
+  "captured": "2026-11-18T12:02:17.067Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "YF69NZW",
+      "appraisedAt": "2026-11-18T10:54:20.047Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--hCzcXkOn--/c_fill,h_300,w_300/v1794999282/Live/Appraisals/9653858/6dd2de89-9758-4923-a5fd-fe14e3b45549.jpg"
+    },
+    {
+      "registration": "LV72JVA",
+      "appraisedAt": "2026-11-18T10:51:05.435Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "L12AEN",
       "appraisedAt": "2026-11-18T09:49:22.910Z",
