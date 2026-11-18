@@ -13,9 +13,9 @@ const DATES = ['2026-12-21', '2026-12-22', '2026-12-23', '2026-12-24', '2026-12-
 const PIC = {
   dan:    'O I I I O O O O I I O O',
   carl:   'O O I I O O O I O I I O',
-  clive:  'I O I I O O O I I O O O',
+  clive:  'I O I I O O O I O I O O',
   danny:  'I I O O O O O I I O I O',
-  karis:  'I I O I O O O I O I O O',
+  karis:  'I I O I O O O I I O O O',
   mon:    'I I O O O O O I I I I O',
   patryk: 'I I I O O O O O I I I O',
   tomi:   'I I I O O O O O I I I O',
@@ -65,7 +65,8 @@ DATES.forEach((d, i) => {
   ok(!k.noRota, d + ' never says no bank holiday rota');
 });
 eq(S.personDay(c, 'chloe', '2026-12-29'), { on: true, why: 'rota-in' }, 'Chloe in on a weekday she normally never works');
-eq(S.personDay(c, 'clive', '2026-12-29').on, true, 'Clive in on his usual day off');
+eq(S.personDay(c, 'mon', '2026-12-31'), { on: true, why: 'rota-in' }, 'Mon in on his usual day off (Thursday, New Year\u2019s Eve)');
+eq(S.personDay(c, 'clive', '2026-12-29'), { on: false, why: 'rota' }, 'Clive off on the 29th, swapped with Karis (18 November)');
 eq(S.personDay(c, 'dan', '2026-12-24'), { on: true, why: 'rota-in' }); eq(S.personDay(c, 'tomi', '2026-12-24'), { on: false, why: 'rota' });
 eq(S.personDay(c, 'dan', '2026-12-31'), { on: false, why: 'rota' }); eq(S.personDay(c, 'tomi', '2026-12-31').on, true, 'Tomi in on New Year\u2019s Eve');
 eq(S.countDay(c, '2026-12-24').min, 4, 'Christmas Eve minimum is the rota itself');
