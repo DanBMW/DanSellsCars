@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-18T14:02:22.953Z",
+  "captured": "2026-11-18T16:02:06.759Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "M1VEX",
+      "appraisedAt": "2026-11-18T15:38:00.214Z",
+      "make": "MERCEDES-BENZ",
+      "model": "E Class",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "DA73HWU",
+      "appraisedAt": "2026-11-18T15:22:18.569Z",
+      "make": "SKODA",
+      "model": "Superb",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "BJ72XLM",
       "appraisedAt": "2026-11-18T12:46:50.993Z",
