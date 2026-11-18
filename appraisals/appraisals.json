@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-18T12:02:17.067Z",
+  "captured": "2026-11-18T14:02:22.953Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "BJ72XLM",
+      "appraisedAt": "2026-11-18T12:46:50.993Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--A-HfZqWc--/c_fill,h_300,w_300/v1795006027/Live/Appraisals/9654313/d638ab93-d5a3-4d4a-8859-7d23a69a67eb.jpg"
+    },
+    {
+      "registration": "LX73HYM",
+      "appraisedAt": "2026-11-18T12:13:36.814Z",
+      "make": "BMW",
+      "model": "4 Series Gran Coupe",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--WmJ_0-zI--/c_fill,h_300,w_300/v1795004050/Live/Appraisals/9654183/52a5ddd0-4e44-4b19-a9f5-6639ac2553db.jpg"
+    },
     {
       "registration": "YF69NZW",
       "appraisedAt": "2026-11-18T10:54:20.047Z",
@@ -109,16 +129,6 @@
       "appraisedAt": "2026-11-16T14:57:39.957Z",
       "make": "BMW",
       "model": "5 Series",
-      "status": "Valued",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "BJ72XLM",
-      "appraisedAt": "2026-11-16T12:13:27.562Z",
-      "make": "BMW",
-      "model": "3 Series",
       "status": "Valued",
       "price": null,
       "condition": "Excellent",
@@ -2041,16 +2051,6 @@
       "appraisedAt": "2026-10-13T11:05:37.369Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "LX73HYM",
-      "appraisedAt": "2026-10-13T10:50:38.624Z",
-      "make": "BMW",
-      "model": "4 Series Gran Coupe",
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
