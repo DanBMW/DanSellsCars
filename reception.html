@@ -266,15 +266,16 @@ window.__backend = backend;
         };
         var opts = ['<option value="">Choose someone</option>'].concat(salesIds().map(function (id) {
           var w = whereOn(id);
-          return '<option value="' + esc(id) + '"' + (w === 'same' ? ' disabled' : '') + '>' + esc(nameOf(id)) +
-            (w === 'same' ? ' (already in the other place)' : w === 'next' ? ' (on the shift next to it, no gap)' : w === 'gap' ? ' (already on another shift)' : '') + '</option>';
+          return '<option value="' + esc(id) + '"' + (w === 'same' || w === 'next' ? ' disabled' : '') + '>' + esc(nameOf(id)) +
+            (w === 'same' ? ' (already in the other place)' : w === 'next' ? ' (on the shift next to it, not allowed)' : w === 'gap' ? ' (already on another shift)' : '') + '</option>';
         })).join('');
         pick = '<div class="rc-actions"><select id="as-' + esc(s.id) + '" style="flex:1 1 220px;min-height:44px;font-size:15px;background:#0e1626;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:8px">' + opts + '</select>' +
           '<button class="big" type="button" data-assign="' + esc(s.id) + '">Assign</button></div>';
       }
       var takeBtn = '';
       /* nobody takes the other place on a shift they are already covering */
-      var inPair = shifts.some(function (x) { return x.id !== s.id && RR.sameTime(x, s) && (DAY[x.id] || {}).personId === me && ((DAY[x.id] || {}).status === 'assigned' || (DAY[x.id] || {}).status === 'covering'); });
+      /* not the other place of this shift, and not a shift next to it: two shifts a day only with a gap */
+      var inPair = shifts.some(function (x) { return x.id !== s.id && RR.tooClose(x, s) && (DAY[x.id] || {}).personId === me && ((DAY[x.id] || {}).status === 'assigned' || (DAY[x.id] || {}).status === 'covering'); });
       var canTake = salesIds().indexOf(me) >= 0 && minsOf(s.to) > clockMins && r.personId !== me && (r.take || {}).personId !== me && !inPair;
       if (canTake) {
         var takeLabel = r.personId ? 'Take this place' : 'Take the place';

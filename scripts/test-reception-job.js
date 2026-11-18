@@ -409,18 +409,32 @@ async function runAt(db, date, h, m, cfgExtra) {
     db = fakeDb();
     await runAt(db, MON, 8, 0);
     const prev = db.data.lockupTest.reception[MON].am.personId;
+    /* Ben is on 12 to 3, back to back with 9 to 12, so his take is refused (Dan, 18 November: two shifts only with a gap) */
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid2.personId, 'ben');
     db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
-      status: 'covering', coveringMins: 9 * 60, take: { personId: 'ben', by: 'ben', ts: 14000 }
+      status: 'covering', coveringMins: 9 * 60, take: { personId: 'ben', by: 'ben', ts: 13000 }
+    });
+    r = await runAt(db, MON, 10, 15);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, prev, 'no back to back take');
+    /* a manager's pick back to back is refused the same way */
+    const pmWho = db.data.lockupTest.reception[MON].pm.personId;
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, { personId: null, status: 'short', assign: { personId: pmWho, by: 'dan', ts: 13500 } });
+    r = await runAt(db, MON, 10, 20);
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, pmWho, 'a manager cannot put the 3 to 6 person on 12 to 3');
+    /* the person on 3 to 6 has a gap before 9 to 12, so they can take it */
+    const vol = pmWho;
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
+      take: { personId: vol, by: vol, ts: 14000 }
     });
     r = await runAt(db, MON, 10, 30);
-    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'ben');
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, vol);
     const handed = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'cover' && e.reason === 'handed_back' && e.personId === prev);
     assert.strictEqual(handed.length, 1, JSON.stringify(handed));
     assert.deepStrictEqual([handed[0].from, handed[0].to, handed[0].minutes], ['09:00', '10:30', 90]);
-    const took = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'took_over' && e.personId === 'ben');
+    const took = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'took_over' && e.personId === vol);
     assert.strictEqual(took[0].from, '10:30', took[0].from);
     assert.strictEqual(took[0].to, '12:00');
-    console.log('ok: mid-shift take banks the previous cover and starts the volunteer from now');
+    console.log('ok: mid-shift take banks the previous cover and starts the volunteer from now; no back to back take or pick');
   }
 
   // take an open/short shift

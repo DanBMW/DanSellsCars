@@ -339,18 +339,20 @@ async function run(o) {
   const mailedCover = {}; /* person|shift mailed a cover email this run — stops ensure double-sends */
   const markMailed = (shift, pid) => { if (pid) mailedCover[shift + '|' + pid] = true; };
   /* the person already holds the other seat of this shift: one person cannot sit in both */
-  const inOtherSeat = (s, pid) => shifts.some(x => x.id !== s.id && RR.sameTime(x, s) && (today[x.id] || {}).personId === pid &&
+  /* or holds a shift next to it with no gap (Dan, 18 November 2026: "people can do 2 shifts in a day but not
+     back to back"). The plan already kept to this; a volunteer's take and a manager's pick did not. */
+  const inOtherSeat = (s, pid) => shifts.some(x => x.id !== s.id && RR.tooClose(x, s) && (today[x.id] || {}).personId === pid &&
     ((today[x.id] || {}).status === 'assigned' || (today[x.id] || {}).status === 'covering'));
   for (const s of shifts) {
     let r = today[s.id] || {};
     if (r.assign && r.assign.ts !== r.assignHandledTs && r.assign.personId && inOtherSeat(s, r.assign.personId)) {
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ assignHandledTs: r.assign.ts });
-      say('Not assigning ' + firstName(team[r.assign.personId], r.assign.personId) + ' to ' + s.id + ': already in the other seat');
+      say('Not assigning ' + firstName(team[r.assign.personId], r.assign.personId) + ' to ' + s.id + ': already in the other seat or back to back');
       r = today[s.id] = Object.assign({}, r, { assignHandledTs: r.assign.ts });
     }
     if (r.take && r.take.ts !== r.takeHandledTs && r.take.personId && inOtherSeat(s, r.take.personId)) {
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ takeHandledTs: r.take.ts });
-      say('Not giving ' + s.id + ' to ' + firstName(team[r.take.personId], r.take.personId) + ': already in the other seat');
+      say('Not giving ' + s.id + ' to ' + firstName(team[r.take.personId], r.take.personId) + ': already in the other seat or back to back');
       r = today[s.id] = Object.assign({}, r, { takeHandledTs: r.take.ts });
     }
     /* a manager reallocated the shift: the person on it is logged as a skip, and the shift is freed */
