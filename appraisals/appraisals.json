@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-17T14:02:06.931Z",
+  "captured": "2026-11-18T06:02:04.735Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -349,7 +349,7 @@
       "appraisedAt": "2026-11-10T16:06:02.427Z",
       "make": "MASERATI",
       "model": "Grecale",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--J1xZacqF--/c_fill,h_300,w_300/v1794326763/Live/Appraisals/9639178/f891e58f-b20b-4711-8bcc-214d897872f1.jpg"
@@ -359,7 +359,7 @@
       "appraisedAt": "2026-11-10T16:00:46.323Z",
       "make": "BMW",
       "model": "X2",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -369,7 +369,7 @@
       "appraisedAt": "2026-11-10T11:37:59.664Z",
       "make": "VOLVO",
       "model": "XC60",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--WpjrjrKR--/c_fill,h_300,w_300/v1794310682/Live/Appraisals/9638121/dd8055c0-29cc-48db-9cd8-57d899f28b33.png"
@@ -379,7 +379,7 @@
       "appraisedAt": "2026-11-10T11:10:34.086Z",
       "make": "BMW",
       "model": "X5",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--1lGoAtiC--/c_fill,h_300,w_300/v1794309044/Live/Appraisals/9638014/c343cbad-c3ad-46a2-83df-1bfda884a99c.jpg"
@@ -389,7 +389,7 @@
       "appraisedAt": "2026-11-10T10:26:51.994Z",
       "make": "BMW",
       "model": "1 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--a78lEYPZ--/c_fill,h_300,w_300/v1794306468/Live/Appraisals/9637846/c495b318-940e-4362-a216-ba86d1db76b6.jpg"
@@ -399,7 +399,7 @@
       "appraisedAt": "2026-11-10T10:25:56.677Z",
       "make": "BMW",
       "model": "3 Series",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--VnvSymDI--/c_fill,h_300,w_300/v1794306388/Live/Appraisals/9637839/4cc22814-570e-4707-8639-93d931f90b8f.jpg"
@@ -5245,7 +5245,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-18T06:02:04.735Z"
     },
     {
       "registration": "WF66OLU",
@@ -5255,7 +5256,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-18T06:02:04.735Z"
     },
     {
       "registration": "GJ66ZLK",
@@ -5265,7 +5267,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--6P1Boyai--/c_fill,h_300,w_300/v1786978732/Live/Appraisals/9428188/2efbb68c-dd91-4c98-be5e-1dcea0b9e99a.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--6P1Boyai--/c_fill,h_300,w_300/v1786978732/Live/Appraisals/9428188/2efbb68c-dd91-4c98-be5e-1dcea0b9e99a.jpg",
+      "droppedAt": "2026-11-18T06:02:04.735Z"
     },
     {
       "registration": "R6GDP",
@@ -5275,7 +5278,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-18T06:02:04.735Z"
     },
     {
       "registration": "LX20HTC",
