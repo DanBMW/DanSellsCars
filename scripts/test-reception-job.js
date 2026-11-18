@@ -199,7 +199,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   const whereAre = r.added.filter(id => id.indexOf(rcPfx() + '_absent_') === 0);
   assert.strictEqual(whereAre.length, 1, 'one where-are-you email: ' + r.added.join(','));
   const wm = db.data.lockupTest.notify[whereAre[0]];
-  assert.ok(/Where are you\?/.test(wm.subject) && /reception\.html/.test(wm.text) && /I am here/.test(wm.text), wm.text);
+  assert.ok(/Where are you\?/.test(wm.subject) && /reception\.html/.test(wm.text) && /I am here/.test(wm.text) && /on showroom cover at HALO, 15:00 to 18:00/.test(wm.text), wm.text);
   assert.deepStrictEqual(wm.to, ['daniel.cane@hedinautomotive.co.uk'], 'testExec routes the cover email to Dan');
   db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, { absent: Object.assign({}, db.data.lockupTest.reception[MON].pm.absent, { reply: { status: 'here', ts: 6000 } }) });
   r = await runAt(db, MON, 10, 15);
@@ -520,6 +520,36 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.ok(heldMail.length > 0 && heldMail.every(e => typeof e.sendAfter === 'number'), 'planned cover emails are held: ' + JSON.stringify(heldMail.map(e => e.sendAfter)));
   console.log('ok: planned cover emails are held until 10 minutes before the shift');
 
+  // unsent planned cover emails are refreshed before they are sent: old wording, and a lone person is HALO
+  {
+    const allMail = d => Object.assign({}, d.data.lockupTest.notify || {}, (d.data.lockupPrivate || {}).notify || {});
+    db = fakeDb();
+    r = await runAt(db, MON, 8, 0);
+    const p1 = db.data.lockupTest.reception[MON].am.personId;
+    const p2 = db.data.lockupTest.reception[MON].am2.personId;
+    const id1 = rcPfx() + '_' + MON + '_am_' + p1;
+    const id2 = rcPfx() + '_' + MON + '_am2_' + p2;
+    const sendAfter = allMail(db)[id2].sendAfter;
+    assert.ok(/at Reception/.test(allMail(db)[id2].text), allMail(db)[id2].text);
+    // wording queued before locations existed is rewritten in place, still held
+    db.data.lockupTest.notify[id1].subject = '[Beta] Showroom cover 09:00 to 12:00';
+    db.data.lockupTest.notify[id1].text = 'Hi X,\n\nYou are on showroom cover. Please cover showroom until 12:00.';
+    r = await runAt(db, MON, 8, 15);
+    assert.ok(/You are on showroom cover at HALO\. Please cover showroom until 12:00\./.test(allMail(db)[id1].text), allMail(db)[id1].text);
+    assert.ok(/Showroom cover at HALO, 09:00 to 12:00/.test(allMail(db)[id1].subject), allMail(db)[id1].subject);
+    assert.strictEqual(allMail(db)[id1].sendAfter, sendAfter, 'still held to the same time');
+    // place 1 drops off and cannot be refilled: place 2's unsent email becomes HALO
+    db.data.lockupTest.reception[MON].am = { personId: null, status: 'open', ts: Date.now() };
+    const away = {};
+    Object.keys(team).forEach(id => { if (id !== p2) away['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
+    r = await runAt(db, MON, 8, 20, { absences: away });
+    assert.ok(/You are on showroom cover at HALO\. Please cover showroom until 12:00\./.test(allMail(db)[id2].text), allMail(db)[id2].text);
+    assert.ok(/Showroom cover at HALO, 09:00 to 12:00/.test(allMail(db)[id2].subject), allMail(db)[id2].subject);
+    assert.strictEqual(allMail(db)[id2].sendAfter, sendAfter);
+    assert.ok(!allMail(db)[id2].sent, 'still unsent');
+    console.log('ok: unsent cover emails are refreshed with the current location before they are sent');
+  }
+
   // off on the team calendar after the day was planned: taken off a shift that has not ended,
   // the shift refilled now, the managers told once, a shift that has ended left as it was,
   // and a manager's own pick left alone (Dan, 13 November 2026: Danny marked away at 09:33
@@ -646,7 +676,7 @@ async function runAt(db, date, h, m, cfgExtra) {
     let nags = r.added.filter(id => /_nag_/.test(id));
     assert.deepStrictEqual(nags.map(id => id.replace(/^.*_nag_[0-9-]+_/, '')).sort(), ['am2_' + db.data.lockupTest.reception[MON].am2.personId + '_1', 'am_' + amWho + '_1'].sort(), 'reminder 1 for both morning seats: ' + nags.join(','));
     const nag1 = db.data.lockupPrivate.notify[nags.find(id => id.indexOf('_am_') > 0)];
-    assert.ok(/Reminder: are you covering the showroom 09:00 to 12:00\?/.test(nag1.subject) && nag1.text.indexOf('t=' + tok + '&a=covering') > 0, nag1.subject);
+    assert.ok(/Reminder: are you covering the showroom at HALO, 09:00 to 12:00\?/.test(nag1.subject) && nag1.text.indexOf('t=' + tok + '&a=covering') > 0, nag1.subject);
     r = await runAt(db, MON, 9, 12, L);
     assert.strictEqual(r.added.filter(id => /_nag_/.test(id)).length, 0, 'not again inside the 15 minutes');
     r = await runAt(db, MON, 9, 21, L);

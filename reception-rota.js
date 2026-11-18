@@ -229,10 +229,11 @@
   function nagEmail(name, shift, opts) {
     opts = opts || {};
     var L = tapLinks(shift, opts), n = opts.n || 1;
-    var subject = (n >= 3 ? 'Still waiting: ' : 'Reminder: ') + 'are you covering the showroom ' + shift.from + ' to ' + shift.to + '?';
+    var loc = locationOf(shift.seat, opts);
+    var subject = (n >= 3 ? 'Still waiting: ' : 'Reminder: ') + 'are you covering the showroom at ' + loc + ', ' + shift.from + ' to ' + shift.to + '?';
     var line = n >= 3
-      ? 'Hi ' + name + ', this is reminder ' + n + '. You still have not said whether you are covering the showroom until ' + shift.to + ', and the managers have been told.'
-      : 'Hi ' + name + ', you are on showroom cover until ' + shift.to + ' and have not confirmed yet.';
+      ? 'Hi ' + name + ', this is reminder ' + n + '. You still have not said whether you are covering the showroom at ' + loc + ' until ' + shift.to + ', and the managers have been told.'
+      : 'Hi ' + name + ', you are on showroom cover at ' + loc + ' until ' + shift.to + ' and have not confirmed yet.';
     var ask = 'Please tap one of these now. You will get this every 15 minutes until you do.';
     var text = line + '\n\n' + ask + '\n\nI am covering:\n' + L.covering + '\n\nI cannot cover:\n' + L.cannot;
     var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
@@ -285,9 +286,11 @@
       '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover. The Nudge links are for managers only, please do not forward.</p></div></div>';
     return { subject: subject, text: lines.join('\n'), html: html };
   }
-  function unconfirmedNote(name, shift, mins) {
-    var line = name + ' has not confirmed showroom cover ' + shift.from + ' to ' + shift.to + ' after ' + mins + ' minutes of reminders. They are still being asked every 15 minutes.';
-    return { subject: name + ' has not confirmed showroom cover ' + shift.from + ' to ' + shift.to, text: line };
+  function unconfirmedNote(name, shift, mins, opts) {
+    opts = opts || {};
+    var loc = locationOf(shift.seat, opts);
+    var line = name + ' has not confirmed showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to + ' after ' + mins + ' minutes of reminders. They are still being asked every 15 minutes.';
+    return { subject: name + ' has not confirmed showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to, text: line };
   }
 
   /* "where are you" nudge: tap I am here, or say you cannot be in */
@@ -296,7 +299,8 @@
     /* with a personal link: I am here, or the cannot cover reasons, with no sign in */
     var here = opts.token ? linkUrl(opts.token, 'here', opts.test) : coverPageUrl({ date: opts.date, shift: shift.id, action: 'here' });
     var away = opts.token ? linkUrl(opts.token, 'cannot', opts.test) : coverPageUrl({ date: opts.date, shift: shift.id, action: 'away' });
-    var line = 'Hi ' + name + ', you are not in the showroom. You are on showroom cover ' + shift.from + ' to ' + shift.to + '.';
+    var loc = locationOf(shift.seat, opts);
+    var line = 'Hi ' + name + ', you are not in the showroom. You are on showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to + '.';
     var text = line + '\n\nI am here:\n' + here + '\n\nI cannot be in:\n' + away;
     var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
       '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Where are you? &#128064;</div>' +

@@ -214,6 +214,7 @@ async function run(o) {
     const mail = RR.coverEmail(firstName(p, pid), s, { date: date, token: token, alone: alone });
     return Object.assign({ to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}, extra || {});
   };
+  const locOptsFor = (s, pid) => ({ alone: RR.heldCount(today, shifts, s, pid ? { [s.id]: pid } : {}) <= 1 });
   const absences = o.absences || {};
   const ctx = shiftCtx({ team, managers, absences, shiftCfg: o.shiftCfg, bh: o.bh, holidays: o.holidays, closed: o.closed, n });
   if (SR.dayKind(ctx, date) === 'closed') return { skipped: 'closed' };
@@ -412,7 +413,7 @@ async function run(o) {
       if (ap.email) {
         const first = firstName(ap, ab.personId);
         const token = await linkFor(s, ab.personId);
-        const mail = RR.absentEmail(first, s, { date: date, token: token });
+        const mail = RR.absentEmail(first, s, Object.assign({ date: date, token: token }, locOptsFor(s, ab.personId)));
         qAdd(rcId('absent', date, s.id, ab.ts), Object.assign({ to: [testExec || ap.email], subject: mail.subject,
           text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}), dry);
       }
@@ -596,6 +597,31 @@ async function run(o) {
     if (qAdd(rcId(date, s.id, pid), cover, dry)) { markMailed(s.id, pid); say('Queued cover ' + s.id + ' for ' + firstName(p, pid) + ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')'); }
   }
 
+  /* 2b2. unsent planned cover emails: refresh the location from who is on the
+     shift now, so a lone person is HALO, and wording queued before this change
+     is updated before it is sent. lockup-mail.js sends the queue after this job
+     in the same Action, so this is the location at send time. */
+  for (const s of shifts) {
+    const r = today[s.id] || {};
+    const pid = r.personId;
+    if (!pid || (r.status !== 'assigned' && r.status !== 'covering')) continue;
+    const id = rcId(date, s.id, pid);
+    const old = notifyMap[id];
+    if (!old || old.sent) continue;
+    const p = team[pid] || {};
+    const fresh = await coverMail(p, pid, s, { sendAfter: old.sendAfter, ts: old.ts });
+    const patch = { subject: '[Beta] ' + fresh.subject, text: fresh.text, html: fresh.html };
+    if (old.subject === patch.subject && old.text === patch.text && old.html === patch.html) continue;
+    let path = 'lockupPrivate/notify/' + id;
+    if (!(await db.ref(path).get()).val()) {
+      path = root + '/notify/' + id;
+      if (!(await db.ref(path).get()).val()) continue;
+    }
+    Object.assign(old, patch);
+    if (!dry) await db.ref(path).update(patch);
+    say('Updated the queued cover email for ' + s.id + ' to ' + firstName(p, pid));
+  }
+
   /* 2c. not confirmed yet (Dan, 17 November 2026: "up the ante"): every 15 minutes from the first
      cover email (10 minutes before the shift, or the moment they were put on if later) until they
      tap I am covering or I cannot cover, for as long as the shift runs. The ids carry the reminder
@@ -614,12 +640,12 @@ async function run(o) {
       const id = rcId('nag', date, s.id, pid, k);
       if (notifyHas(id)) continue;
       const token = await linkFor(s, pid);
-      const mail = RR.nagEmail(firstName(p, pid), s, { date: date, token: token, n: k });
+      const mail = RR.nagEmail(firstName(p, pid), s, Object.assign({ date: date, token: token, n: k }, locOptsFor(s, pid)));
       if (qAdd(id, Object.assign({ to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}), dry)) {
         say('Reminder ' + k + ' to ' + firstName(p, pid) + ' for ' + s.id);
       }
       if (k >= NAG_MANAGERS_AT) {
-        const note = RR.unconfirmedNote(firstName(p, pid), s, Math.round((nowMs - base) / 60000) + 10);
+        const note = RR.unconfirmedNote(firstName(p, pid), s, Math.round((nowMs - base) / 60000) + 10, locOptsFor(s, pid));
         qAdd(rcId('nagMgr', date, s.id, pid), { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
       }
     }
