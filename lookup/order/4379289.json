@@ -17,8 +17,8 @@
  "monthly": "£1,244.44",
  "monthly_gbp": 1244.44,
  "apr": 4.9,
- "lead_time_weeks_min": 2,
- "lead_time_weeks_max": 4,
+ "lead_time_weeks_min": 1,
+ "lead_time_weeks_max": 3,
  "on_hold": false,
  "options": [
   "BMW Kidney Iconic Glow",

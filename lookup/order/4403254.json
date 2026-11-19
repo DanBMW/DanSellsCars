@@ -17,8 +17,8 @@
  "monthly": "£601.07",
  "monthly_gbp": 601.07,
  "apr": 4.9,
- "lead_time_weeks_min": 2,
- "lead_time_weeks_max": 4,
+ "lead_time_weeks_min": 1,
+ "lead_time_weeks_max": 3,
  "on_hold": false,
  "options": [
   "Folding Wing Mirrors with Auto-dimming",
