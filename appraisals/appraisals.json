@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-19T14:02:07.766Z",
+  "captured": "2026-11-19T16:02:07.681Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "YH25ARU",
+      "appraisedAt": "2026-11-19T14:05:07.538Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "MF02CEX",
       "appraisedAt": "2026-11-19T13:16:06.282Z",
