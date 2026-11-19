@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-19T12:02:43.263Z",
+  "captured": "2026-11-19T14:02:07.766Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "MF02CEX",
+      "appraisedAt": "2026-11-19T13:16:06.282Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "KJ23XHK",
+      "appraisedAt": "2026-11-19T12:53:29.745Z",
+      "make": "MERCEDES-BENZ",
+      "model": "A Class",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "YIB95",
       "appraisedAt": "2026-11-19T11:42:39.966Z",
