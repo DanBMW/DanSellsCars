@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-19T06:02:07.116Z",
+  "captured": "2026-11-19T10:02:32.844Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "GD15EEU",
+      "appraisedAt": "2026-11-19T09:58:34.251Z",
+      "make": "BMW",
+      "model": "4 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "TH20LEY",
+      "appraisedAt": "2026-11-19T09:43:38.933Z",
+      "make": "BMW",
+      "model": "4 Series Gran Coupe",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "GX20HHG",
+      "appraisedAt": "2026-11-19T09:25:30.606Z",
+      "make": "FORD",
+      "model": "Fiesta",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "RF22UPS",
       "appraisedAt": "2026-11-18T16:28:01.148Z",
@@ -1481,7 +1511,7 @@
       "appraisedAt": "2026-10-23T14:24:36.559Z",
       "make": "BMW",
       "model": "1 Series",
-      "status": "SaleInProgress",
+      "status": "Returned",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -2185,16 +2215,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--QqMI8rgh--/c_fill,h_300,w_300/v1791809075/Live/Appraisals/9572899/efe4b1bd-f7cf-48aa-a047-c165ccb913d2.jpg"
-    },
-    {
-      "registration": "GD15EEU",
-      "appraisedAt": "2026-10-12T11:30:53.158Z",
-      "make": "BMW",
-      "model": "4 Series",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "AV24WJO",
