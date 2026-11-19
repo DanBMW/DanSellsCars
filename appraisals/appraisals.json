@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-19T10:02:32.844Z",
+  "captured": "2026-11-19T12:02:43.263Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "YIB95",
+      "appraisedAt": "2026-11-19T11:42:39.966Z",
+      "make": "BMW",
+      "model": "X5",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "BU21FKL",
+      "appraisedAt": "2026-11-19T11:17:50.831Z",
+      "make": "BMW",
+      "model": "X7",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
+    {
+      "registration": "LV26FKW",
+      "appraisedAt": "2026-11-19T10:56:02.482Z",
+      "make": "VOLVO",
+      "model": "XC60",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--KMPPq8-M--/c_fill,h_300,w_300/v1795085774/Live/Appraisals/9655811/5f2905f9-7367-4d38-8093-60b88e1a5153.jpg"
+    },
     {
       "registration": "GD15EEU",
       "appraisedAt": "2026-11-19T09:58:34.251Z",
@@ -463,16 +493,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "LV26FKW",
-      "appraisedAt": "2026-11-10T11:37:59.664Z",
-      "make": "VOLVO",
-      "model": "XC60",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--WpjrjrKR--/c_fill,h_300,w_300/v1794310682/Live/Appraisals/9638121/dd8055c0-29cc-48db-9cd8-57d899f28b33.png"
     },
     {
       "registration": "FD75VXR",
