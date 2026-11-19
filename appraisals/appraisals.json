@@ -1,6 +1,6 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-18T18:02:21.401Z",
+  "captured": "2026-11-19T06:02:07.116Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
@@ -369,7 +369,7 @@
       "appraisedAt": "2026-11-11T16:46:40.851Z",
       "make": "BMW",
       "model": "2 Series Gran Coupe",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -379,7 +379,7 @@
       "appraisedAt": "2026-11-11T14:05:22.589Z",
       "make": "TOYOTA",
       "model": "C-HR",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Average",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
@@ -389,7 +389,7 @@
       "appraisedAt": "2026-11-11T13:14:49.322Z",
       "make": "BMW",
       "model": "X1",
-      "status": "Valued",
+      "status": "Expired",
       "price": null,
       "condition": "Average",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--NIuEf7YU--/c_fill,h_300,w_300/v1794403078/Live/Appraisals/9640446/d3d7900e-73e3-4bc0-8db8-44e4108dece3.jpg"
@@ -5255,7 +5255,8 @@
       "status": "Returned",
       "price": null,
       "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jNQxCqS_--/c_fill,h_300,w_300/v1787069148/Live/Appraisals/9430870/b993b79b-3214-482e-bdda-8ec522b290f4.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jNQxCqS_--/c_fill,h_300,w_300/v1787069148/Live/Appraisals/9430870/b993b79b-3214-482e-bdda-8ec522b290f4.jpg",
+      "droppedAt": "2026-11-19T06:02:07.115Z"
     },
     {
       "registration": "SF69WBT",
@@ -5265,7 +5266,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png",
+      "droppedAt": "2026-11-19T06:02:07.115Z"
     },
     {
       "registration": "S33DEF",
@@ -5275,7 +5277,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--a9d6j7aN--/c_fill,h_300,w_300/v1787060200/Live/Appraisals/9430219/e3e0f202-e0f6-44a5-8919-b35a4322669e.png"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--a9d6j7aN--/c_fill,h_300,w_300/v1787060200/Live/Appraisals/9430219/e3e0f202-e0f6-44a5-8919-b35a4322669e.png",
+      "droppedAt": "2026-11-19T06:02:07.115Z"
     },
     {
       "registration": "LS71RZA",
@@ -5285,7 +5288,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Average",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--z8tna__0--/c_fill,h_300,w_300/v1787054022/Live/Appraisals/9429820/09e52d76-b634-4096-b996-062b220b9cb2.jpg"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--z8tna__0--/c_fill,h_300,w_300/v1787054022/Live/Appraisals/9429820/09e52d76-b634-4096-b996-062b220b9cb2.jpg",
+      "droppedAt": "2026-11-19T06:02:07.115Z"
     },
     {
       "registration": "YG68MOE",
@@ -5295,7 +5299,8 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--dgG2ei4v--/c_fill,h_300,w_300/v1787042188/Live/Appraisals/9429025/346c4f87-61a4-4895-a4ad-3d9157042376.png"
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--dgG2ei4v--/c_fill,h_300,w_300/v1787042188/Live/Appraisals/9429025/346c4f87-61a4-4895-a4ad-3d9157042376.png",
+      "droppedAt": "2026-11-19T06:02:07.115Z"
     },
     {
       "registration": "YL69HVT",
