@@ -44,6 +44,11 @@
   "last_seen": "2026-11-19",
   "removed_at": null
  },
+ "BL73JVU": {
+  "first_seen": "2026-11-19",
+  "last_seen": "2026-11-19",
+  "removed_at": null
+ },
  "BM23OKW": {
   "first_seen": "2026-11-10",
   "last_seen": "2026-11-19",
@@ -1407,7 +1412,7 @@
  "LX75FLC": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-19",
-  "removed_at": null
+  "removed_at": "2026-11-19"
  },
  "LX75FOM": {
   "first_seen": "2026-10-07",
