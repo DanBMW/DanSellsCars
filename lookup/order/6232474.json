@@ -17,8 +17,8 @@
  "monthly": "£543.70",
  "monthly_gbp": 543.7,
  "apr": 2.9,
- "lead_time_weeks_min": 4,
- "lead_time_weeks_max": 6,
+ "lead_time_weeks_min": 3,
+ "lead_time_weeks_max": 5,
  "on_hold": false,
  "options": [
   "Sun Protection Glass",
