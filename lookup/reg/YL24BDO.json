@@ -16,9 +16,12 @@
  "trim": "M Sport",
  "price": "£26,000",
  "price_gbp": 26000,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1f89c-12a9-7df9-9638-72f30d2ea262-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1f8e8-a38c-7093-9bd4-8419920f1196-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1f89c-12a9-7df9-9638-72f30d2ea262-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1f8e8-a38c-7093-9bd4-8419920f1196-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1f8e8-a431-757a-8c59-1a39b71543a0-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1f8e8-a4da-7fe8-a426-57b8c0ccaea6-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1f8e8-a564-7fa7-97f5-93cae035f987-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/262276/pb-bmw-320-2024",
  "listing_id": "262276",
@@ -38,7 +41,7 @@
   "payments": 47,
   "price": 26000,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-20T12:05:28.79416+00:00",
+  "quoted_at": "2026-11-20T16:04:54.1722431+00:00",
   "reg": "YL24BDO",
   "term": 48,
   "total_payable": 34609.01,
