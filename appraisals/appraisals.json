@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-20T12:02:13.423Z",
+  "captured": "2026-11-20T14:02:12.022Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "GM67EYZ",
+      "appraisedAt": "2026-11-20T13:15:57.754Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--NgG7n45Y--/c_fill,h_300,w_300/v1795180666/Live/Appraisals/9658245/194eac83-98e4-4b9e-ac9a-d3edd2679657.jpg"
+    },
     {
       "registration": "KP70OZT",
       "appraisedAt": "2026-11-20T11:50:34.203Z",
@@ -673,16 +683,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "GM67EYZ",
-      "appraisedAt": "2026-11-08T12:56:05.003Z",
-      "make": "BMW",
-      "model": "X1",
-      "status": "Expired",
-      "price": null,
-      "condition": "Good",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--B1EIGDbf--/c_fill,h_300,w_300/v1794142589/Live/Appraisals/9634736/9225c794-c6af-464b-ad8f-e6e744c33b1d.jpg"
     },
     {
       "registration": "LV23GGE",
