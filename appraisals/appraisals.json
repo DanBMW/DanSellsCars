@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-20T14:02:12.022Z",
+  "captured": "2026-11-20T16:02:11.664Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LV23EPO",
+      "appraisedAt": "2026-11-20T14:17:40.445Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Average",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--l5_KmNsg--/c_fill,h_300,w_300/v1795184347/Live/Appraisals/9658456/489644ef-717a-48cd-920b-5906eb75dd15.jpg"
+    },
     {
       "registration": "GM67EYZ",
       "appraisedAt": "2026-11-20T13:15:57.754Z",
