@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-20T16:02:11.664Z",
+  "captured": "2026-11-20T18:02:02.397Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "MP66PAR",
+      "appraisedAt": "2026-11-20T17:55:09.746Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
+    },
     {
       "registration": "LV23EPO",
       "appraisedAt": "2026-11-20T14:17:40.445Z",
