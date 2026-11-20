@@ -586,8 +586,8 @@
  },
  "LL75XGM": {
   "first_seen": "2026-10-07",
-  "last_seen": "2026-11-18",
-  "removed_at": "2026-11-18"
+  "last_seen": "2026-11-20",
+  "removed_at": null
  },
  "LM23AGO": {
   "first_seen": "2026-10-31",
@@ -712,7 +712,7 @@
  "LR75TZK": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-20",
-  "removed_at": null
+  "removed_at": "2026-11-20"
  },
  "LS23NXV": {
   "first_seen": "2026-10-31",
@@ -1452,7 +1452,7 @@
  "LY25BUA": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-20",
-  "removed_at": null
+  "removed_at": "2026-11-20"
  },
  "LY25GXB": {
   "first_seen": "2026-10-08",
@@ -1936,6 +1936,11 @@
  },
  "YK75BDG": {
   "first_seen": "2026-11-19",
+  "last_seen": "2026-11-20",
+  "removed_at": null
+ },
+ "YL24BDO": {
+  "first_seen": "2026-11-20",
   "last_seen": "2026-11-20",
   "removed_at": null
  },
