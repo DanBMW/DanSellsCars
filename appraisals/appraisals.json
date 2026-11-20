@@ -1,9 +1,19 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-20T08:02:11.178Z",
+  "captured": "2026-11-20T10:02:13.112Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "FJ70RVL",
+      "appraisedAt": "2026-11-20T08:51:09.833Z",
+      "make": "MINI",
+      "model": "Hatch",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Fair",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--ftjYSor0--/c_fill,h_300,w_300/v1795164774/Live/Appraisals/9657273/b9a51592-bea4-4e29-ac1c-bd62a171f9c4.jpg"
+    },
     {
       "registration": "YH25ARU",
       "appraisedAt": "2026-11-19T14:05:07.538Z",
@@ -702,16 +712,6 @@
       "status": "Expired",
       "price": null,
       "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
-    },
-    {
-      "registration": "FJ70RVL",
-      "appraisedAt": "2026-11-07T12:27:45.175Z",
-      "make": "MINI",
-      "model": "Hatch",
-      "status": "Expired",
-      "price": null,
-      "condition": "Fair",
       "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
