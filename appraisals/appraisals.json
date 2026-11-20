@@ -1,9 +1,39 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-20T10:02:13.112Z",
+  "captured": "2026-11-20T12:02:13.423Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "KP70OZT",
+      "appraisedAt": "2026-11-20T11:50:34.203Z",
+      "make": "BMW",
+      "model": "3 Series",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--OxsItAnc--/c_fill,h_300,w_300/v1795175444/Live/Appraisals/9657905/a714d687-be2f-4812-ab6c-ca680fbb37d0.jpg"
+    },
+    {
+      "registration": "YG74UHT",
+      "appraisedAt": "2026-11-20T11:03:53.793Z",
+      "make": "BMW",
+      "model": "X1",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--FtbmnkZy--/c_fill,h_300,w_300/v1795172650/Live/Appraisals/9657717/4efde7b1-da79-4903-bb6c-20ab13b52ed1.jpg"
+    },
+    {
+      "registration": "Y3MUR",
+      "appraisedAt": "2026-11-20T11:03:29.477Z",
+      "make": "BMW",
+      "model": "X3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--n_1VX3rB--/c_fill,h_300,w_300/v1795172820/Live/Appraisals/9657714/a8a4e4d9-ea15-4323-90f4-c8822fa7bcc0.jpg"
+    },
     {
       "registration": "FJ70RVL",
       "appraisedAt": "2026-11-20T08:51:09.833Z",
@@ -1460,7 +1490,7 @@
       "appraisedAt": "2026-10-26T15:23:01.202Z",
       "make": "BMW",
       "model": "1 Series",
-      "status": "SaleInProgress",
+      "status": "SaleCompleted",
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--D8B_ZDnh--/c_fill,h_300,w_300/v1793028194/Live/Appraisals/9603800/0ba2b9d2-2c16-4782-a751-97878c17634e.jpg"
