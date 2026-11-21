@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-21T06:02:08.863Z",
+  "captured": "2026-11-21T10:02:04.539Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "LX73JUW",
+      "appraisedAt": "2026-11-21T09:44:47.722Z",
+      "make": "BMW",
+      "model": "1 Series",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Good",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--d54scWip--/c_fill,h_300,w_300/v1795254295/Live/Appraisals/9659421/ce3c4095-7bb1-415c-b103-3fa7c63b0766.jpg"
+    },
+    {
+      "registration": "777KO",
+      "appraisedAt": "2026-11-21T09:03:55.809Z",
+      "make": "BMW",
+      "model": "M3",
+      "status": "ManualValuationPending",
+      "price": null,
+      "condition": "",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jcVG4NMQ--/c_fill,h_300,w_300/v1795251846/Live/Appraisals/9659295/d3732421-717f-421a-8fe7-314dc4816db1.jpg"
+    },
     {
       "registration": "MP66PAR",
       "appraisedAt": "2026-11-20T17:55:09.746Z",
@@ -423,16 +443,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--7oCWq8ga--/c_fill,h_300,w_300/v1794500459/Live/Appraisals/9642979/72904c56-d93e-40ed-bc52-60bef81a1cd1.jpg"
-    },
-    {
-      "registration": "LX73JUW",
-      "appraisedAt": "2026-11-12T15:28:37.468Z",
-      "make": "BMW",
-      "model": "1 Series",
-      "status": "Expired",
-      "price": null,
-      "condition": "Excellent",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "LX11OBC",
