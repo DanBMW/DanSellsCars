@@ -1,9 +1,29 @@
 {
   "source": "https://www.evaautomotive.co.uk/",
-  "captured": "2026-11-21T16:02:04.658Z",
+  "captured": "2026-11-21T18:02:09.325Z",
   "monthsBack": 3,
   "retainDays": 30,
   "appraisals": [
+    {
+      "registration": "777KO",
+      "appraisedAt": "2026-11-21T17:06:00.746Z",
+      "make": "BMW",
+      "model": "M3",
+      "status": "Valued",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jcVG4NMQ--/c_fill,h_300,w_300/v1795251846/Live/Appraisals/9659295/d3732421-717f-421a-8fe7-314dc4816db1.jpg"
+    },
+    {
+      "registration": "D16BYY",
+      "appraisedAt": "2026-11-21T16:13:34.375Z",
+      "make": "AUDI",
+      "model": "Q5",
+      "status": "SaleInProgress",
+      "price": null,
+      "condition": "Excellent",
+      "image": "https://res.cloudinary.com/evavaluations/image/private/s--NMif2Fr2--/c_fill,h_300,w_300/v1795277634/Live/Appraisals/9661249/ed560471-ef4f-4373-b1df-80871bd24408.jpg"
+    },
     {
       "registration": "RE21PBV",
       "appraisedAt": "2026-11-21T15:38:41.698Z",
@@ -63,16 +83,6 @@
       "price": null,
       "condition": "Good",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--d54scWip--/c_fill,h_300,w_300/v1795254295/Live/Appraisals/9659421/ce3c4095-7bb1-415c-b103-3fa7c63b0766.jpg"
-    },
-    {
-      "registration": "777KO",
-      "appraisedAt": "2026-11-21T09:03:55.809Z",
-      "make": "BMW",
-      "model": "M3",
-      "status": "ManualValuationPending",
-      "price": null,
-      "condition": "",
-      "image": "https://res.cloudinary.com/evavaluations/image/private/s--jcVG4NMQ--/c_fill,h_300,w_300/v1795251846/Live/Appraisals/9659295/d3732421-717f-421a-8fe7-314dc4816db1.jpg"
     },
     {
       "registration": "MP66PAR",
@@ -463,16 +473,6 @@
       "price": null,
       "condition": "Excellent",
       "image": "https://res.cloudinary.com/evavaluations/image/private/s--dGgVhuZu--/c_fill,h_300,w_300/v1794653480/Live/Appraisals/9646002/98b3ee88-1475-4e61-8d30-90b67196cfc8.jpg"
-    },
-    {
-      "registration": "D16BYY",
-      "appraisedAt": "2026-11-14T09:54:19.556Z",
-      "make": "AUDI",
-      "model": "Q5",
-      "status": "Valued",
-      "price": null,
-      "condition": "Good",
-      "image": "https://www.evaautomotive.co.uk/assets/no-image-Ds7Q_8fq.png"
     },
     {
       "registration": "LY24DJX",
