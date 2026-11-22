@@ -17,8 +17,8 @@
  "monthly": "£859.56",
  "monthly_gbp": 859.56,
  "apr": 3.9,
- "lead_time_weeks_min": 6,
- "lead_time_weeks_max": 8,
+ "lead_time_weeks_min": 5,
+ "lead_time_weeks_max": 7,
  "on_hold": false,
  "options": [
   "Black Sapphire"

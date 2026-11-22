@@ -17,8 +17,8 @@
  "monthly": "£997.10",
  "monthly_gbp": 997.1,
  "apr": 4.9,
- "lead_time_weeks_min": 5,
- "lead_time_weeks_max": 7,
+ "lead_time_weeks_min": 4,
+ "lead_time_weeks_max": 6,
  "on_hold": false,
  "options": [
   "21\" 1037 M Light Star-spoke Bicolour Alloy Wheels",

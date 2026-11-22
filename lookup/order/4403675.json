@@ -16,8 +16,8 @@
  "monthly": "£1,914.59",
  "monthly_gbp": 1914.59,
  "apr": 2.9,
- "lead_time_weeks_min": 3,
- "lead_time_weeks_max": 5,
+ "lead_time_weeks_min": 2,
+ "lead_time_weeks_max": 4,
  "on_hold": false,
  "options": [
   "20\"/21\" 951 M Light Alloy Wheels Black with mixed tyres",
