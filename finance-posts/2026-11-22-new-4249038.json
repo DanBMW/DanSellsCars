@@ -33,10 +33,10 @@
     "excess_pence": 12.15,
     "apr": 2.9,
     "valid_to": "2027-01-04T23:59:59",
-    "quoted_at": "2026-11-22T07:30:32.7850919+00:00",
-    "fetched_at": "2026-11-22T07:30:35.120Z"
+    "quoted_at": "2026-11-22T12:29:26.4816133+00:00",
+    "fetched_at": "2026-11-22T12:29:28.773Z"
   },
   "rep": "47 monthly payments of \u00a3531.57. Cash price \u00a347,475.00. Customer deposit \u00a35,500.00. Total amount of credit \u00a341,975.00. Optional final payment \u00a320,592.46. Total amount payable \u00a351,076.25. Total charge for credit \u00a33,601.25. Duration 48 months. 10,000 miles a year, 12.15p per excess mile. 2.9% APR representative. Lender BMW Group Financial Services. Finance subject to status, 18+, UK residents.",
-  "quotes_generated_at": "2026-11-22T08:08:09.647Z",
+  "quotes_generated_at": "2026-11-22T13:06:56.625Z",
   "quote_rejected": false
 }
