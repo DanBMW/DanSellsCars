@@ -12,10 +12,10 @@
  "seats": 5,
  "engine_cc": 1998,
  "zero_to_62": 7.8,
- "price": "£59,620.00",
- "price_gbp": 59620,
- "monthly": "£816.04",
- "monthly_gbp": 816.04,
+ "price": "£52,754.20",
+ "price_gbp": 52754,
+ "monthly": "£655.53",
+ "monthly_gbp": 655.53,
  "apr": 4.9,
  "lead_time_weeks_min": 1,
  "lead_time_weeks_max": 3,
@@ -55,7 +55,7 @@
   "M high-gloss Shadowline",
   "Comfort Access"
  ],
- "retailer_price": false,
+ "retailer_price": true,
  "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbVoBMXl9aV015toFnqItSuaoLCV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVfcs52E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdZvWfIj8gbdVAYCHwu6ZjsczNnB5CWhvBpuzcL3tm1n6hQ50rFpr3UiePzsA5%25VyJvmjikIZatpcV2YbG0YSI7sufwRNY4WnANa9sMLpjBG4WTQ1CmxjLRUFcrdQQ9%25DhPUtUSkl3J%259%25O2x5aILk67oiG8i2E4dVfC27KMgIxm%254qTwYoPUMXRNsdwRT89BWgNMRHSmLwBV9zOrQNZTSv6PULATOtEJ%25Q6v60KakUJ8EeqG2%25adKyXf7kg0qZ8A42riXbHjMs0E8uzCTWFFHnvcRLKDzpth9QTkv103SUWbtFe5OKoX0Dyi6qW7elZVEXypyxbIK80%25ZouYqH8TbdnsXzHuugpW8vtZnw1LHtzcpNFQz0v71BDUveOnFml%25tXHKDrxk08e5lPo2eHynxJd7yzZO",
  "images": [
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWbVoBMXl9aV015toFnqItSuaoLCV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVfcs52E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdZvWfIj8gbdVAYCHwu6ZjsczNnB5CWhvBpuzcL3tm1n6hQ50rFpr3UiePzsA5%25VyJvmjikIZatpcV2YbG0YSI7sufwRNY4WnANa9sMLpjBG4WTQ1CmxjLRUFcrdQQ9%25DhPUtUSkl3J%259%25O2x5aILk67oiG8i2E4dVfC27KMgIxm%254qTwYoPUMXRNsdwRT89BWgNMRHSmLwBV9zOrQNZTSv6PULATOtEJ%25Q6v60KakUJ8EeqG2%25adKyXf7kg0qZ8A42riXbHjMs0E8uzCTWFFHnvcRLKDzpth9QTkv103SUWbtFe5OKoX0Dyi6qW7elZVEXypyxbIK80%25ZouYqH8TbdnsXzHuugpW8vtZnw1LHtzcpNFQz0v71BDUveOnFml%25tXHKDrxk08e5lPo2eHynxJd7yzZO",

@@ -17,8 +17,8 @@
  "monthly": "£758.20",
  "monthly_gbp": 758.2,
  "apr": 3.9,
- "lead_time_weeks_min": 5,
- "lead_time_weeks_max": 7,
+ "lead_time_weeks_min": 2,
+ "lead_time_weeks_max": 4,
  "on_hold": false,
  "options": [
   "M Adaptive Suspension",
