@@ -17,8 +17,8 @@
  "monthly": "£318.48",
  "monthly_gbp": 318.48,
  "apr": 2.9,
- "lead_time_weeks_min": 2,
- "lead_time_weeks_max": 4,
+ "lead_time_weeks_min": 1,
+ "lead_time_weeks_max": 3,
  "on_hold": false,
  "options": [
   "Skyscraper Grey"
