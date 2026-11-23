@@ -194,6 +194,11 @@
   "last_seen": "2026-11-09",
   "removed_at": "2026-11-09"
  },
+ "FD23KYU": {
+  "first_seen": "2026-11-23",
+  "last_seen": "2026-11-23",
+  "removed_at": null
+ },
  "FD23ORJ": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-10",
@@ -1597,12 +1602,12 @@
  "MM73UAE": {
   "first_seen": "2026-11-06",
   "last_seen": "2026-11-23",
-  "removed_at": null
+  "removed_at": "2026-11-23"
  },
  "MP23KWN": {
   "first_seen": "2026-11-10",
-  "last_seen": "2026-11-20",
-  "removed_at": "2026-11-21"
+  "last_seen": "2026-11-23",
+  "removed_at": null
  },
  "MT70VUF": {
   "first_seen": "2026-11-21",
