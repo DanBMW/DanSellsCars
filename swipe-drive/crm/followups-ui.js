@@ -174,10 +174,10 @@
   /* progress sheet: update the ticks any time after purchase and resend the updated link */
   function progress(id) { var r = recs.find(function (x) { return x.id === id; }); progRestore(r).then(function (rec) {
     var m = modal('<div class="fx-h">Purchase progress for ' + e(rec.firstName) + '</div><div class="fx-sub">' + e(rec.car || '') + '</div>' + progHtml(rec.progress)
-      + '<div class="fx-actions"><button class="fx-btn" id="fx-pmail">Copy and open congratulations email</button>' + waBtn(rec) + '<button class="fx-ghost" id="fx-pcopy">Copy message</button><button class="fx-ghost" data-close>Close</button></div>');
+      + '<div class="fx-actions"><button class="fx-btn" id="fx-pmail">Copy and open Outlook</button>' + waBtn(rec) + '<button class="fx-ghost" id="fx-pcopy">Copy message</button><button class="fx-ghost" data-close>Close</button></div>');
     progBind(m, rec, function () { m.querySelector('#fx-wa').href = F.waLink(rec, rec.phone); });
     m.querySelector('#fx-pmail').onclick = function () { var buy = F.stagesFor(rec.term || 48).filter(function (x) { return x.kind === 'purchase'; })[0], mail = F.build(rec, F.suggestVariant(rec) % 3, buy);
-      (navigator.clipboard && window.ClipboardItem ? navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([mail.html], { type: 'text/html' }), 'text/plain': new Blob([mail.text], { type: 'text/plain' }) })]) : Promise.reject()).then(null, function () {}).then(function () { location.href = F.mailto(mail); }); };
+      window.EmailSignature.openEmail(mail).then(function (ok) { m.querySelector('#fx-pmsg') && (m.querySelector('#fx-pmsg').textContent = ok ? EmailSignature.TOAST : EmailSignature.TOAST_FAIL); }); };
     m.querySelector('#fx-pcopy').onclick = function () { if (navigator.clipboard) navigator.clipboard.writeText(F.waText(rec)).then(function () { m.querySelector('#fx-pmsg').textContent = 'Copied.'; }); }; }); }
   var sendDate = null, pending = null;
   function send(id, onDate) { sel = recs.find(function (x) { return x.id === id; }); sendDate = onDate || today(); variant = F.suggestVariant(sel); var k = F.nextStage(sel); draw(); if (k && k.kind === 'purchase') { var was = JSON.stringify(sel.progress || null), me = sel; progRestore(sel).then(function () { if (sel === me && JSON.stringify(sel.progress || null) !== was && document.getElementById('fx-prog')) draw(); }); } }
@@ -186,13 +186,15 @@
       + vs.map(function (v, i) { var b = F.build(sel, i); return '<button class="fx-var' + (i === variant ? ' on' : '') + '" data-v="' + i + '"><span class="fx-vn">Option ' + (i + 1) + (i === F.suggestVariant(sel) ? ' &middot; suggested' : '') + '</span><b>' + e(b.subject) + '</b><small>' + e(b.text.split('\n\n')[2].slice(0, 110)) + '...</small></button>'; }).join('')
       + '</div>' + (stg.kind === 'purchase' ? progHtml(sel.progress) : '') + '<div class="fx-meta"><b>To:</b> ' + e(mail.to) + '<br><b>Cc:</b> ' + e(mail.cc) + '<br><b>Subject:</b> ' + e(mail.subject) + '</div><div class="fx-prev">' + mail.html + '</div>'
       + (stg.kind === 'initial' && !mail.products && window.dashOpen ? '<p class="fx-hint">Tip: send the Product presentation email too. <a href="#p=presentation">Open it</a></p>' : '')
-      + '<p class="fx-msg" id="fx-smsg">Nothing sends from here. Copy and open email opens a new message, then you press Send.</p>'
-      + '<div class="fx-actions"><button class="fx-btn" id="fx-open">Copy and open email</button>' + (stg.kind === 'purchase' ? waBtn(sel) : '') + '<button class="fx-ok" id="fx-done">Mark as sent</button><button class="fx-ghost" data-close>Close</button></div>');
+      + '<p class="fx-msg" id="fx-smsg">Nothing sends from here. The email is copied, then Outlook opens a new message. Long press in the body and tap Paste, then press Send.</p>'
+      + '<div class="fx-actions"><button class="fx-btn" id="fx-open">Copy and open Outlook</button>' + (stg.kind === 'purchase' ? waBtn(sel) : '') + '<button class="fx-ok" id="fx-done">Mark as sent</button><button class="fx-ghost" data-close>Close</button></div>');
     m.querySelectorAll('[data-v]').forEach(function (b) { b.onclick = function () { variant = +b.getAttribute('data-v'); draw(); }; });
     if (stg.kind === 'purchase') progBind(m, sel, function () { mail = F.build(sel, variant); m.querySelector('.fx-prev').innerHTML = mail.html; m.querySelector('#fx-wa').href = F.waLink(sel, sel.phone); });
-    document.getElementById('fx-open').onclick = function () { var go = function () { location.href = F.mailto(mail); };
-      (navigator.clipboard && window.ClipboardItem ? navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([mail.html], { type: 'text/html' }), 'text/plain': new Blob([mail.text], { type: 'text/plain' }) })]) : Promise.reject())
-        .then(function () { document.getElementById('fx-smsg').textContent = 'Copied. The email opens with the text filled in. Once sent, press Mark as sent.'; }, function () {}).then(go); };
+    document.getElementById('fx-open').onclick = function () {
+      window.EmailSignature.openEmail(mail).then(function (ok) {
+        var el = document.getElementById('fx-smsg');
+        if (el) el.textContent = (ok ? EmailSignature.TOAST : EmailSignature.TOAST_FAIL) + ' Once sent, press Mark as sent.';
+      }); };
     document.getElementById('fx-done').onclick = function () { var n = F.markSent(sel, sendDate, variant); save(n).then(function () { render('app', 'Marked as sent. ' + (n.due ? 'Next for ' + n.firstName + ': ' + stageLabel(n).toLowerCase() + ' on ' + nice(n.due) + '.' : n.firstName + ' has completed the journey.')); }); };
   }
 

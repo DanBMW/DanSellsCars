@@ -58,11 +58,13 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
       assert.ok(!/[-\u2010-\u2015]/.test(visible), "dash in " + st.id + i + ": " + visible);
       assert.ok(m.text.includes("Kind regards,\n\n" + SIG.TEXT) && m.text.endsWith(SIG.TEXT)); assert.ok(m.text.includes("https://wa.me/447827138197"));
       assert.ok(m.html.includes("<strong>Daniel Cane</strong>") && m.html.includes(SIG.LOGO) && m.html.includes("tel:+442083026431") && m.html.includes("mailto:Daniel.Cane@hedinautomotive.co.uk"));
-      assert.ok(F.mailto(m).includes("%0D%0A") && decodeURIComponent(F.mailto(m).split("&body=")[1]).includes(SIG.TEXT.replace(/\n/g, "\r\n")));
+      assert.ok(!/[?&]body=/.test(F.mailto(m)) && !/[?&]body=/.test(F.compose(m)));
+      assert.ok(SIG.composeUrl({ to: m.to, cc: m.cc, subject: m.subject, mobile: true }).startsWith("ms-outlook://compose?to=jo%40example.com"));
       assert.ok(!/£|\$|per month|monthly|%|Dan Cane/i.test(visible)); assert.ok(!/\{\w+\}/.test(m.text + m.subject));
       if (st.m) assert.ok(!/\b(?!6\b|\d{4,}\b)\d+\b/.test(visible.replace(new RegExp("\\b" + st.m + "\\b", "g"), "")), "stray number " + st.id + i);
       assert.ok(!m.html.includes("<b>") && m.html.includes("Jo &lt;b&gt;"));
       assert.ok(F.mailto(m).startsWith("mailto:jo%40example.com?cc=Sergio.Garaguso%40hedinautomotive.co.uk&subject="));
+      assert.ok(m.html.includes("margin:0") && SIG.HTML.includes('width="180"') && !/_/.test(SIG.TEXT) && !/\n{3,}/.test(m.text));
     }
   }
   // purchase vs initial: purchase date and collection date
@@ -99,8 +101,9 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
   // email signature: once, replaces a bare Dan sign off, not added to WhatsApp
   assert.strictEqual(SIG.withSignature("Hello\n\nDan"), "Hello\n\n" + SIG.TEXT);
   assert.strictEqual(SIG.withSignature("Hello\n\n" + SIG.TEXT), "Hello\n\n" + SIG.TEXT);
-  assert.ok(!F.waText(rec).includes("Daniel Cane") && !F.waText(rec).includes("______________________________")); n++;
-  assert.ok(!SIG.TEXT.includes("http") && !SIG.TEXT.includes("<img")); n++;
+  assert.ok(!F.waText(rec).includes("Daniel Cane") && !F.waText(rec).includes("BMW Sales Executive")); n++;
+  assert.ok(!SIG.TEXT.includes("http") && !SIG.TEXT.includes("<img") && !/_/.test(SIG.TEXT) && !/\n{3,}/.test(SIG.TEXT)); n++;
+  assert.ok(F.build(rec, 0).html.includes('width="180"') && /line-height:1px/.test(SIG.HTML)); n++;
   assert.throws(() => F.build(rec, 3));
   console.log("followups tests passed:", n);
 })().catch(e => { console.error(e); process.exit(1); });

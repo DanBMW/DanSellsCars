@@ -586,7 +586,7 @@ a{color:inherit;text-decoration:none}
     <!-- ── EMAIL TEMPLATES ── -->
     <div class="section-title">Email Templates</div>
     <div class="tmpl-intro">
-      Tap a template to expand it. <strong>&#x2709; Outlook</strong> opens a new draft with the subject and body already filled in, just personalise the <strong>[bracketed]</strong> bits and send. <strong>Copy</strong> puts the body on your clipboard to paste into Copilot or an existing reply.<br><br>
+      Tap a template to expand it. <strong>&#x2709; Outlook</strong> copies the formatted email, then opens a new message with the subject filled in. Long press in the body and tap Paste, personalise the <strong>[bracketed]</strong> bits and send. <strong>Copy</strong> puts the body on your clipboard to paste into Copilot or an existing reply.<br><br>
       Before sending, always add the 3: <strong>customer name</strong>, <strong>exact model</strong>, and <strong>1 specific detail</strong> from your conversation.
     </div>
     <div id="tmpl-list"></div>
@@ -1018,7 +1018,7 @@ function emailRampLink() {
     'See you soon,\n\n' +
     'Dan';
   rrLogAdd('Email');
-  window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  openSignedEmail({ subject: subject, text: body });
 }
 
 // ── Ramp Report sent-log (localStorage, this device only) ──
@@ -1162,7 +1162,7 @@ function emailVipLink() {
     'Looking forward to seeing you,\n\n' +
     'Dan';
   vipLogAdd('Email');
-  window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  openSignedEmail({ subject: subject, text: body });
 }
 
 // ── VIP invite log (localStorage, this device only) ──
@@ -1384,6 +1384,17 @@ function selectFollowUp(key) {
   });
 }
 
+function emailToast(ok) {
+  (window.axSnack || alert)(ok ? EmailSignature.TOAST : EmailSignature.TOAST_FAIL, 5500);
+}
+
+function openSignedEmail(opts) {
+  opts = opts || {};
+  opts.text = EmailSignature.withSignature(opts.text || opts.body || '');
+  opts.html = opts.html || EmailSignature.toHtml(opts.text);
+  EmailSignature.openEmail(opts).then(emailToast);
+}
+
 function emailFollowUp() {
   if (!fuChosen) { (window.axSnack||alert)('Please choose a follow up duration.'); return; }
   const t = TEMPLATES.find(function(tpl){ return tpl.name.indexOf(FOLLOWUP_DURATIONS[fuChosen]) !== -1; });
@@ -1394,7 +1405,7 @@ function emailFollowUp() {
   let subject = t.subject, body = t.body;
   if (name)  { subject = subject.split('[Name]').join(name); body = body.split('[Name]').join(name); }
   if (model) { subject = subject.split('[Model]').join(model); body = body.split('[Model]').join(model); }
-  window.location.href = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(EmailSignature.withSignature(body).replace(/\n/g, '\r\n'));
+  openSignedEmail({ to: email, subject: subject, text: body });
 }
 
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1438,8 +1449,7 @@ function toggleTmpl(head) {
 
 function openOutlook(i) {
   const t = TEMPLATES[i];
-  const text = EmailSignature.withSignature(t.body);
-  window.location.href = 'mailto:?subject=' + encodeURIComponent(t.subject) + '&body=' + encodeURIComponent(text.replace(/\n/g, '\r\n'));
+  openSignedEmail({ subject: t.subject, text: t.body });
 }
 
 function copyTmpl(i, btn) {
@@ -1499,9 +1509,8 @@ function peCopyFallback(){
 function peCopy(btn){if(!peLast)return;peCopyRich().then(function(){document.getElementById('pe-msg').textContent='Copied. Paste it into the email body.';},function(){document.getElementById('pe-msg').textContent='Copy was blocked. Select the preview and copy it by hand.';});}
 function peSend(){
   if(!peLast)return;
-  var go=function(){location.href='mailto:'+encodeURIComponent(peLast.to)+'?cc='+encodeURIComponent(peLast.cc)+'&subject='+encodeURIComponent(peLast.subject);};
-  peCopyRich().then(function(){document.getElementById('pe-msg').textContent='Copied. In the new email, click in the body, paste (Ctrl+V) and press Send.';go();},
-    function(){document.getElementById('pe-msg').textContent='Copy was blocked. Select the preview and copy it by hand, then paste into the email.';go();});
+  EmailSignature.openEmail({to:peLast.to,cc:peLast.cc,subject:peLast.subject,html:peLast.html,text:ProductEmail.toText(peLast.html)})
+    .then(function(ok){document.getElementById('pe-msg').textContent=ok?EmailSignature.TOAST:EmailSignature.TOAST_FAIL;});
 }
 </script>
 <script src="quote-email.js"></script>
@@ -1604,8 +1613,7 @@ function qCopyRich(){var html=qLast.html,text=ProductEmail.toText(html);
 function qFallback(){var el=document.getElementById('q-preview'),r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);
   var ok=false;try{ok=document.execCommand('copy');}catch(e){}s.removeAllRanges();if(!ok)throw new Error('copy failed');}
 function qCopy(){if(!qLast)return;qCopyRich().then(function(){document.getElementById('q-msg').textContent='Copied. Paste it into the email body.';},function(){document.getElementById('q-msg').textContent='Copy was blocked. Select the preview and copy it by hand.';});}
-function qSend(){if(!qLast)return;var go=function(){location.href='mailto:'+encodeURIComponent(qLast.to)+'?cc='+encodeURIComponent(qLast.cc)+'&subject='+encodeURIComponent(qLast.subject);};
-  qCopyRich().then(function(){document.getElementById('q-msg').textContent='Copied. In the new email, click in the body, paste (Ctrl+V) and press Send.';go();},function(){document.getElementById('q-msg').textContent='Copy was blocked. Select the preview and copy it by hand.';go();});}
+function qSend(){if(!qLast)return;EmailSignature.openEmail({to:qLast.to,cc:qLast.cc,subject:qLast.subject,html:qLast.html,text:ProductEmail.toText(qLast.html)}).then(function(ok){document.getElementById('q-msg').textContent=ok?EmailSignature.TOAST:EmailSignature.TOAST_FAIL;});}
 </script>
 <script src="swipe-drive/config.js"></script>
 <script src="swipe-drive/crm/followups-core.js"></script>

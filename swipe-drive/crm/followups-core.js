@@ -204,14 +204,16 @@
     } else if (stage.kind === 'initial' && Array.isArray(rec.products)) ps = productSection(rec);
     var vp = pm0 ? v.p.slice(0, -1).concat([pm0], v.p.slice(-1)) : v.p;
     var paras = vp.concat(['Kind regards,']), at = paras.length - 2;
-    var html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#111;max-width:600px"><p style="margin:0 0 14px">Hi ' + escH(rec.firstName) + ',</p>'
-      + paras.map(function (p, i) { return (ps && i === at ? ps.html : '') + '<p style="margin:0 0 14px">' + fill(p, rec, stage, true) + '</p>'; }).join('') + sig().HTML + '</div>';
+    var pStyle = sig().FONT + 'margin:0;padding:0';
+    var html = '<div style="' + pStyle + ';max-width:600px"><p style="' + pStyle + '">Hi ' + escH(rec.firstName) + ',</p>'
+      + paras.map(function (p, i) { return (ps && i === at ? ps.html : '') + '<br><p style="' + pStyle + '">' + fill(p, rec, stage, true) + '</p>'; }).join('') + '<br>' + sig().HTML + '</div>';
     var tp = paras.map(function (p) { return fill(p, rec, stage, false); }); if (ps) tp.splice(at, 0, ps.text);
     var text = sig().withSignature(['Hi ' + rec.firstName + ','].concat(tp).join('\n\n'));
     var subj = fill(v.s, rec, stage, false); subj = subj.charAt(0).toUpperCase() + subj.slice(1);
     return { to: rec.email, cc: CC, subject: subj, html: html, text: text, stage: stage, products: ps };
   }
-  function mailto(m) { return 'mailto:' + encodeURIComponent(m.to) + '?cc=' + encodeURIComponent(m.cc) + '&subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(String(m.text).replace(/\n/g, '\r\n')); }
+  function mailto(m) { return sig().composeUrl({ to: m.to, cc: m.cc, subject: m.subject, mobile: false }); }
+  function compose(m) { return sig().composeUrl({ to: m.to, cc: m.cc, subject: m.subject }); }
 
   /* ---------- encrypted backup: records stay encrypted, plus the vault salt so it can be reopened with the passphrase ---------- */
   function exportBackup(vault, rows) { return JSON.stringify({ kind: 'dan-sells-followups-backup', v: 1, exported: new Date().toISOString(), vault: vault, rows: rows.map(function (r) { return { id: r.id, iv: r.iv, ct: r.ct }; }) }); }
@@ -220,5 +222,5 @@
 
   return { ITER: ITER, CC: CC, WA: WA, WORDING: W, newSalt: newSalt, deriveKey: deriveKey, encrypt: encrypt, decrypt: decrypt, makeVault: makeVault, openVault: openVault,
     KINDS: KINDS, stagesFor: stagesFor, nextStage: nextStage, dueDate: dueDate, withDue: withDue, timeline: timeline, stageById: stageById, addMonths: addMonths, addDays: addDays, planDate: planDate, status: status, dueNow: dueNow, sortByDue: sortByDue, markSent: markSent, newRecord: newRecord, iso: iso,
-    variants: variants, productSection: productSection, suggestVariant: suggestVariant, build: build, mailto: mailto, normProgress: normProgress, PCHIPS: PCHIPS, productMention: productMention, newToken: newToken, validToken: validToken, progressCode: progressCode, tyLink: tyLink, progressSummary: progressSummary, waText: waText, waLink: waLink, exportBackup: exportBackup, readBackup: readBackup };
+    variants: variants, productSection: productSection, suggestVariant: suggestVariant, build: build, mailto: mailto, compose: compose, normProgress: normProgress, PCHIPS: PCHIPS, productMention: productMention, newToken: newToken, validToken: validToken, progressCode: progressCode, tyLink: tyLink, progressSummary: progressSummary, waText: waText, waLink: waLink, exportBackup: exportBackup, readBackup: readBackup };
 });
