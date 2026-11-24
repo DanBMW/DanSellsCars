@@ -1,0 +1,33 @@
+{
+ "reg": "LK24JGY",
+ "model": "BMW 420 2.0 420i M Sport Auto Euro 6 (s/s) 2dr",
+ "series": "4 Series",
+ "year": 2024,
+ "mileage": "36,367 miles",
+ "mileage_miles": 36367,
+ "colour": "Grey",
+ "fuel": "Petrol",
+ "body": "Coupe",
+ "gearbox": "Automatic",
+ "drive": "RearWheel",
+ "seats": 4,
+ "doors": 2,
+ "power": "182 hp",
+ "trim": "M Sport",
+ "price": "£29,431",
+ "price_gbp": 29431,
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ee2e-586d-74b2-81e8-e0da56fbebaa-preview.jpg",
+ "images": [
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ee2e-586d-74b2-81e8-e0da56fbebaa-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ee2e-5933-7c75-a5e6-c00766cbf2fa-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ee2e-59cc-7178-8d13-04b478f53a13-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1ee2e-5a5f-7720-a042-10ea264c8ecd-enlarged.jpg"
+ ],
+ "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/261530/pb-bmw-420-2024",
+ "listing_id": "261530",
+ "source": "group",
+ "finance": null,
+ "status": "removed",
+ "removed_at": "2026-11-24",
+ "available_until": "2026-12-24"
+}

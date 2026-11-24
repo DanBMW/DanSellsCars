@@ -887,7 +887,7 @@ async function receptionScenarios(browser, base) {
     const p = await open(browser, base, null, '/reception.html', U.tomi, { data: seeded('assigned'), clock: CLOCK });
     await p.waitForSelector('#v-main:not([hidden])', { timeout: 8000 });
     await p.waitForTimeout(500);
-    check('cover: the person on the morning shift is told they are on cover until 12:00', /on showroom cover until 12:00/.test(await txt(p, '#r-mine')), await txt(p, '#r-mine'));
+    check('cover: the person on the morning shift is told they are on cover at HALO until 12:00', /on showroom cover at HALO until 12:00/.test(await txt(p, '#r-mine')), await txt(p, '#r-mine'));
     const kicks = [];
     await p.route('**/vehicleproxy.danielcane1992.workers.dev/**', async (r) => {
       kicks.push(r.request().url());

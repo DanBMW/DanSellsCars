@@ -149,6 +149,8 @@ async function main() {
       await db.ref(RROOT + '/reception/' + n.date).remove();
       const allNotify = (await db.ref(ROOT + '/notify').get()).val() || {};
       for (const id of Object.keys(allNotify)) if (/^rc/.test(id) && id.indexOf(n.date) >= 0) await db.ref(ROOT + '/notify/' + id).remove();
+      const allPriv = (await db.ref('lockupPrivate/notify').get()).val() || {};
+      for (const id of Object.keys(allPriv)) if (/^rc/.test(id) && id.indexOf(n.date) >= 0) await db.ref('lockupPrivate/notify/' + id).remove();
       if (rc.reception) delete rc.reception[n.date];
       console.log('Cover reset for', n.date, '(plan and cover emails cleared)');
     }
@@ -158,10 +160,14 @@ async function main() {
     const needTomorrow = n.mins >= 17 * 60 + 30 && !tomMark.plannedAt;
     const feedToday = needToday ? await RC.readBusy(n.date) : null;
     const feedTomorrow = needTomorrow ? await RC.readBusy(tom) : null;
-    const notifySnap = (await db.ref(ROOT + '/notify').get()).val() || {};
+    /* cover emails with a personal link sit on the private queue (lockupPrivate/notify), so
+       both queues count when deciding whether an email has already been queued */
+    const notifySnap = Object.assign({}, (await db.ref(ROOT + '/notify').get()).val() || {}, TEST ? {} : ((await db.ref('lockupPrivate/notify').get()).val() || {}));
     const rq = RC.makeQueue(db, ROOT, notifySnap);
     const base = { db, root: RROOT, logRoot: RR.RECEPTION_LOG, n, dry: DRY, team: team0, managers: cfg.managers || {}, cfg,
       testExec: TEST ? TEST_EXEC : null, queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log,
+      /* personal no sign in links (cover.html) only in live mode, where the private queue is sent */
+      links: !TEST, nowMs,
       reception: rc.reception, absences, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {},
       notify: notifySnap };
     const rToday = await RC.run(Object.assign({}, base, { date: n.date, planAt: 7 * 60 + 30, recheck: !!feedToday,
@@ -173,6 +179,23 @@ async function main() {
     }
     await rq.flush();
   } catch (e) { console.error('showroom cover failed', e); }
+  /* the live database rules must be the ones on main (scripts/rules-drift.js): Dan is emailed once per version when not */
+  try {
+    const RD = require('./rules-drift.js');
+    const rd = await RD.check({
+      dbUrl: 'https://forecourt-1b6bc-default-rtdb.europe-west1.firebasedatabase.app',
+      getToken: async () => (await admin.app().options.credential.getAccessToken()).access_token,
+      repoText: require('fs').readFileSync(require('path').join(__dirname, '..', 'database.rules.json'), 'utf8')
+    });
+    if (rd.error) console.log('Rules check: could not read the live rules (' + rd.error + ')');
+    else if (rd.same) console.log('Rules check: live rules match main');
+    else {
+      console.log('Rules check: live rules differ from main: ' + rd.diffs.join('; '));
+      const m = RD.driftMail(rd, 'daniel.cane@hedinautomotive.co.uk');
+      const qid = m.id; delete m.id;
+      if (!DRY && !((await db.ref(ROOT + '/notify/' + qid).get()).val())) await db.ref(ROOT + '/notify/' + qid).set(Object.assign({ kind: 'rules' }, m));
+    }
+  } catch (e) { console.error('rules check failed', e); }
 
   const queue = (await db.ref(ROOT + '/notify').get()).val() || {};
   for (const id of seededNow) {
@@ -211,13 +234,13 @@ async function main() {
      lockup tree is world readable, and the opt in emails of 10 November sat there
      whole with every link in them. This also scrubs those on the first run. */
   await scrubSanta(db, queue, paths, ROOT, DRY, console.log);
-  for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
-    const q = queue[id];
-    if (!q || q.sent) continue;
-    if (q.sendAfter && nowMs < q.sendAfter) { console.log('Holding', id, 'until', new Date(q.sendAfter).toISOString()); continue; }
+  /* one email Gmail refuses (18 November 13:53: 421 Temporary System Problem) used to end the whole
+     run, so every email after it waited for the next run, and so did the lockup reminders below.
+     Now that one stays unsent and is tried again next run, and the rest still go. */
+  const sendFailures = await sendQueue(queue, nowMs, async (id, q) => {
     /* cover emails (rcTest) go only to the two test addresses, whatever the live switch says */
     const to = q.rcTest ? (q.to === 'managers' ? [TEST_MGR] : [TEST_EXEC]) : q.to === 'team' ? teamList : Array.isArray(q.to) ? (TEST ? [TEST_EXEC] : q.to) : mgrList;
-    if (!to.length) { console.log('Notification', id, 'waiting, no recipients set'); continue; }
+    if (!to.length) { console.log('Notification', id, 'waiting, no recipients set'); return; }
     if (q.html) {
       const subject = (TEST || q.rcTest ? '[TEST] ' : '') + q.subject;
       const bcc = rcBccFor(id, nowMs);
@@ -232,7 +255,9 @@ async function main() {
       if (SANTA.test(id)) await db.ref(paths[id] || ROOT + '/notify/' + id).update({ sent: Date.now(), html: null, text: null });
       else await db.ref((paths[id] || ROOT + '/notify/' + id) + '/sent').set(Date.now());
     }
-  }
+  }, msg => console.error(msg));
+  /* the run still shows as failed in Actions, after everything else has gone */
+  if (sendFailures.length) process.exitCode = 1;
 
   /* Lockup completed: one email to the managers for each signed record, with
      the checklist (done and not done) and the signature images attached inline.
@@ -418,8 +443,23 @@ function completedMail(r, rid, date) {
     '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley lockup</p></div></div>';
   return { subject, text, html, attachments: att };
 }
+/* send every due queued email; deliver(id, q) sends one and marks it sent. A failure leaves that one
+   unsent for the next run and carries on. Returns the ids that failed. */
+async function sendQueue(queue, nowMs, deliver, logErr) {
+  const failed = [];
+  for (const id of Object.keys(queue).sort((a, b) => (queue[a].ts || 0) - (queue[b].ts || 0))) {
+    const q = queue[id];
+    if (!q || q.sent) continue;
+    if (q.sendAfter && nowMs < q.sendAfter) { console.log('Holding', id, 'until', new Date(q.sendAfter).toISOString()); continue; }
+    try { await deliver(id, q); } catch (e) {
+      failed.push(id);
+      (logErr || console.error)('Send failed for ' + id + ' (left unsent, tried again next run): ' + String((e && e.message) || e).split('\n')[0]);
+    }
+  }
+  return failed;
+}
 function done(admin) { return admin.app().delete(); }
 
 /* Forecourt 08:30 reminder rides on the same workflow run (scripts/forecourt-mail.js). */
 if (require.main === module) main().then(() => require('./forecourt-mail.js').run()).catch(e => { console.error(e); process.exit(1); });
-module.exports = { completedMail, rcBccFor, RC_BCC_UNTIL, RC_BCC_ADDR, scrubSanta };
+module.exports = { sendQueue, completedMail, rcBccFor, RC_BCC_UNTIL, RC_BCC_ADDR, scrubSanta };

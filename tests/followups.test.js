@@ -1,4 +1,4 @@
-const assert = require("assert"); const F = require("../swipe-drive/crm/followups-core.js"); let n = 0;
+const assert = require("assert"); const F = require("../swipe-drive/crm/followups-core.js"); const SIG = require("../email-signature.js"); let n = 0;
 (async () => {
   // crypto round trip, wrong passphrase, tamper, iterations
   assert.ok(F.ITER >= 600000);
@@ -54,13 +54,17 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
     for (let i = 0; i < 3; i++) for (const car of ["BMW X1 xDrive", ""]) {
       const m = F.build({ ...rec, path: st.kind === "kit" ? "kit" : "journey", car, firstName: "Jo <b>" }, i, st); n++;
       assert.strictEqual(m.cc, "Sergio.Garaguso@hedinautomotive.co.uk"); assert.strictEqual(m.to, "jo@example.com");
-      const visible = (m.subject + " " + m.text).replace(/https:\/\/[^\s]+/g, "");
+      const visible = (m.subject + " " + m.text.replace(SIG.TEXT, "")).replace(/https:\/\/[^\s]+/g, "");
       assert.ok(!/[-\u2010-\u2015]/.test(visible), "dash in " + st.id + i + ": " + visible);
-      assert.ok(m.text.endsWith("Kind regards,")); assert.ok(m.text.includes("https://wa.me/447827138197"));
+      assert.ok(m.text.includes("Kind regards,\n\n" + SIG.TEXT) && m.text.endsWith(SIG.TEXT)); assert.ok(m.text.includes("https://wa.me/447827138197"));
+      assert.ok(m.html.includes("<strong>Daniel Cane</strong>") && m.html.includes(SIG.LOGO) && m.html.includes("tel:+442083026431") && m.html.includes("mailto:Daniel.Cane@hedinautomotive.co.uk"));
+      assert.ok(!/[?&]body=/.test(F.mailto(m)) && !/[?&]body=/.test(F.compose(m)));
+      assert.ok(SIG.composeUrl({ to: m.to, cc: m.cc, subject: m.subject, mobile: true }).startsWith("ms-outlook://compose?to=jo%40example.com"));
       assert.ok(!/£|\$|per month|monthly|%|Dan Cane/i.test(visible)); assert.ok(!/\{\w+\}/.test(m.text + m.subject));
       if (st.m) assert.ok(!/\b(?!6\b|\d{4,}\b)\d+\b/.test(visible.replace(new RegExp("\\b" + st.m + "\\b", "g"), "")), "stray number " + st.id + i);
       assert.ok(!m.html.includes("<b>") && m.html.includes("Jo &lt;b&gt;"));
       assert.ok(F.mailto(m).startsWith("mailto:jo%40example.com?cc=Sergio.Garaguso%40hedinautomotive.co.uk&subject="));
+      assert.ok(m.html.includes("margin:0") && SIG.HTML.includes('width="180"') && !/_/.test(SIG.TEXT) && !/\n{3,}/.test(m.text));
     }
   }
   // purchase vs initial: purchase date and collection date
@@ -81,7 +85,7 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
       for (const p of PE.PRODUCTS) assert.ok(m.html.includes(PE.VID + p.slug + ".html"));
       assert.strictEqual((m.html.match(/INCLUDED WITH YOUR CAR/g) || []).length, has.length);
       assert.strictEqual((m.html.match(/AVAILABLE TO ADD/g) || []).length, 5 - has.length);
-      assert.ok(!/0% finance|£/.test(m.text)); assert.ok(m.text.endsWith("Kind regards,")); assert.ok(m.text.indexOf("AI generated") < m.text.indexOf("wa.me"));
+      assert.ok(!/0% finance|£/.test(m.text)); assert.ok(m.text.endsWith(SIG.TEXT) && m.text.includes("Kind regards,")); assert.ok(m.text.indexOf("AI generated") < m.text.indexOf("wa.me"));
       const intro = m.text.split("\n\n")[3]; assert.ok(!/[-\u2010-\u2015]/.test(intro), intro); } }
   // products only on month 0; no products field = plain congrats
   // congratulations (buy) now carries the product videos; with nothing ticked they show neutrally, no included tags
@@ -93,6 +97,13 @@ const assert = require("assert"); const F = require("../swipe-drive/crm/followup
   // mid journey entry keeps products in the encrypted record
   const midP = F.newRecord({ firstName: "Sam", email: "sam@example.com", stage: "m12", sentDate: "2026-10-29", products: ["gap", "warranty"] }, "2026-10-29");
   assert.deepStrictEqual((await F.decrypt(key, await F.encrypt(key, midP))).products, ["gap", "warranty"]); assert.strictEqual(F.nextStage(midP).id, "m12"); n++;
+
+  // email signature: once, replaces a bare Dan sign off, not added to WhatsApp
+  assert.strictEqual(SIG.withSignature("Hello\n\nDan"), "Hello\n\n" + SIG.TEXT);
+  assert.strictEqual(SIG.withSignature("Hello\n\n" + SIG.TEXT), "Hello\n\n" + SIG.TEXT);
+  assert.ok(!F.waText(rec).includes("Daniel Cane") && !F.waText(rec).includes("BMW Sales Executive")); n++;
+  assert.ok(!SIG.TEXT.includes("http") && !SIG.TEXT.includes("<img") && !/_/.test(SIG.TEXT) && !/\n{3,}/.test(SIG.TEXT)); n++;
+  assert.ok(F.build(rec, 0).html.includes('width="180"') && /line-height:1px/.test(SIG.HTML)); n++;
   assert.throws(() => F.build(rec, 3));
   console.log("followups tests passed:", n);
 })().catch(e => { console.error(e); process.exit(1); });

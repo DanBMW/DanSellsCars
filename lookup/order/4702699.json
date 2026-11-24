@@ -16,24 +16,6 @@
  "monthly": "£838.69",
  "monthly_gbp": 838.69,
  "apr": 5.9,
- "finance_example": {
-  "product": "BMW Select (PCP)",
-  "lender": "BMW Financial Services (GB) Limited",
-  "apr": 5.9,
-  "monthly": 838.69,
-  "payments": 47,
-  "term_months": 48,
-  "deposit": 4500,
-  "cash_price": 59974.99,
-  "amount_of_credit": 55474.99,
-  "final_payment": 25472.09,
-  "total_payable": 69390.52,
-  "charge_for_credit": 9415.53,
-  "annual_mileage": 8000,
-  "contract_mileage": 32000,
-  "excess_pence": null,
-  "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
- },
  "lead_time_weeks_min": 2,
  "lead_time_weeks_max": 4,
  "on_hold": false,
@@ -72,7 +54,7 @@
  "retailer_name": "Hedin Automotive Enfield",
  "first_seen": "2026-10-29",
  "first_seen_seed": true,
- "status": "in_stock",
- "removed_at": null,
- "available_until": null
+ "removed_at": "2026-11-18",
+ "status": "removed",
+ "available_until": "2026-12-18"
 }

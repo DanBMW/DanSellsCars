@@ -1,4 +1,4 @@
-const assert = require("assert"); const F = require("../swipe-drive/crm/followups-core.js"); let n = 0;
+const assert = require("assert"); const F = require("../swipe-drive/crm/followups-core.js"); const SIG = require("../email-signature.js"); let n = 0;
 const TY = "https://dan-sells.co.uk/purchase-thankyou.html?";
 assert.strictEqual(F.progressCode({}), "000"); n++;
 assert.strictEqual(F.progressCode({ deposit: true, finance: "yes", order: true }), "111"); n++;
@@ -12,12 +12,13 @@ assert.strictEqual(F.tyLink({ firstName: "Ann", progress: { type: "lease" } }), 
 const desk = { purchase_progress: { deposit: true, finance: "yes", order: false, type: "stock", seen: "yes", updated_at: "2026-10-30T10:00:00Z", updated_by_name: "Dan" } };
 const r = F.newRecord({ firstName: "Ann", email: "ann@example.com", car: "BMW X1", phone: "07700 900123", progress: desk.purchase_progress }, "2026-10-30");
 assert.strictEqual(r.progress.updated_by_name, "Dan"); assert.strictEqual(F.progressCode(r.progress), "110"); n++;
-const m = F.build(r, 0); assert.ok(m.text.includes(TY + "c=110&name=Ann&type=stock")); assert.ok(m.text.trim().endsWith("Kind regards,")); assert.strictEqual(m.cc, F.CC); n++;
+const m = F.build(r, 0); assert.ok(m.text.includes(TY + "c=110&name=Ann&type=stock")); assert.ok(m.text.endsWith(SIG.TEXT) && m.text.includes("Kind regards,")); assert.strictEqual(m.cc, F.CC); n++;
 assert.ok(!/Dan Cane|Best wishes/.test(m.text)); n++;
 const wt = F.waText(r); assert.ok(wt.startsWith("Congratulations Ann on your purchase with BMW Ruxley, please find some useful information and FAQ's within the link below.\n\n" + TY + "c=110")); n++;
 assert.ok(F.waLink(r, r.phone).startsWith("https://wa.me/447700900123?text=")); n++;
 assert.ok(F.waLink(r, "").startsWith("https://wa.me/?text=")); n++;
-assert.ok(decodeURIComponent(F.waLink(r, "").split("text=")[1]) === wt); n++;
+assert.ok(decodeURIComponent(F.waLink(r, "").split("text=")[1]) === wt);
+assert.ok(!wt.includes("Daniel Cane") && !wt.includes("______________________________")); n++;
 assert.ok(!/[\u2013\u2014]/.test(F.progressSummary({ finance: "na" }).join(" "))); n++;
 const rp = F.newRecord({ firstName: "Ann", email: "ann@example.com", car: "BMW X1", progress: { products: ["gap", "ceramic", "bogus"] } }, "2026-10-30");
 assert.deepStrictEqual(rp.progress.products, ["gap", "ceramic"]); n++;
@@ -26,5 +27,5 @@ assert.ok(F.waText(rp).endsWith(mp)); n++;   // WhatsApp keeps the one line ment
 { const m = F.build(rp, 0); assert.ok(!m.text.includes(mp) && /Watch the video/i.test(m.text + m.html) && /INCLUDED WITH YOUR CAR/.test(m.html) && /NOT INCLUDED, AVAILABLE TO ADD/.test(m.html)); n++; }   // congratulations email: video cards replace the one line mention
 assert.ok(/Tyre & Alloy Insurance, GAP Insurance, Hedin Club Care SMART Protection, Williams Racing Ceramic Coating and Extended Warranty\.$/.test(F.productMention({}))); assert.ok(F.build(r, 0).text.includes("Extended Warranty") && F.waText(r).includes("GAP Insurance")); n++;
 assert.strictEqual(F.productMention({ products: ["tyreAlloy", "gap", "hedinCare", "ceramic", "warranty"] }), ""); n++;
-assert.ok(F.build(rp, 0).text.trim().endsWith("Kind regards,")); n++;
+assert.ok(F.build(rp, 0).text.endsWith(SIG.TEXT) && F.build(rp, 0).text.includes("Kind regards,")); n++;
 console.log("purchase progress tests passed: " + n);

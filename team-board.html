@@ -1021,6 +1021,56 @@ body.haslock.hasticker .radio-fab{bottom:100px}
    and it is being read on a phone or a laptop rather than scanned off a wall. */
 @media(max-width:1199px){ .cornerqr{display:none!important} }
 
+/* ---------- Secret Santa (Dan, 18 November 2026) ----------
+   A view in the rotation until the exchange: a poem, the countdown, the budget,
+   and the two things to do. Festive but cheap for the LG: the snow and the lights
+   are transform and opacity only, and they stop whenever the view is not up. */
+.santaview{
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:
+    radial-gradient(55% 50% at 50% 38%,rgba(214,40,57,.34),rgba(214,40,57,0) 70%),
+    radial-gradient(40% 40% at 15% 90%,rgba(31,138,76,.30),rgba(31,138,76,0) 70%),
+    radial-gradient(40% 40% at 85% 90%,rgba(31,138,76,.30),rgba(31,138,76,0) 70%),
+    linear-gradient(180deg,#2a0a10 0%,#12060a 55%,#06140c 100%);
+  opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;
+  pointer-events:none;padding:clamp(12px,2.4vh,30px);text-align:center;
+}
+.santaview.show{opacity:1;visibility:visible}
+.santaview .flake{position:absolute;top:-4vh;color:#fff;opacity:.85;font-size:var(--fs,16px);
+  animation:santaFall var(--dur,12s) linear var(--delay,0s) infinite;animation-play-state:paused;will-change:transform}
+.santaview.show .flake,.santaview.show .bulb{animation-play-state:running}
+@keyframes santaFall{from{transform:translate3d(0,0,0) rotate(0)}to{transform:translate3d(var(--drift,20px),112vh,0) rotate(220deg)}}
+.santaview .lights{position:absolute;left:0;right:0;top:0;height:46px;display:flex;justify-content:space-around;align-items:flex-start;
+  background:linear-gradient(transparent 0 11px,rgba(255,255,255,.18) 11px 13px,transparent 13px)}
+.santaview .bulb{width:14px;height:20px;border-radius:50% 50% 50% 50%/40% 40% 60% 60%;margin-top:12px;
+  background:var(--c);box-shadow:0 0 14px 3px var(--c);animation:santaTwinkle 2.4s ease-in-out var(--d,0s) infinite;animation-play-state:paused}
+@keyframes santaTwinkle{0%,100%{opacity:1}50%{opacity:.35}}
+.santa-inner{position:relative;display:flex;flex-direction:column;align-items:center;max-width:min(980px,92vw)}
+@media(min-width:1200px){ .santa-inner{max-width:min(980px,calc(100vw - 2*(var(--qrbox) + 46px)))} }
+.santa-hat{font-size:clamp(2.2rem,6vh,4.4rem);line-height:1;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+.santa-kick{font-family:var(--display);font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#ffd36b;
+  font-size:clamp(.66rem,1.5vw,1.05rem);margin-top:6px}
+.santa-title{font-family:var(--display);font-weight:800;color:#fff;line-height:1.02;margin:4px 0 2px;
+  font-size:clamp(2rem,6.4vw,5.2rem);text-shadow:0 0 28px rgba(255,80,90,.55),0 4px 0 rgba(0,0,0,.35)}
+.santa-poem{margin:clamp(8px,2vh,22px) 0;padding:clamp(10px,2vh,22px) clamp(16px,3vw,40px);border-radius:18px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,211,107,.35);box-shadow:0 0 0 6px rgba(214,40,57,.10) inset}
+.santa-poem p{margin:0;color:#fff4dc;font-style:italic;font-weight:600;line-height:1.5;font-size:clamp(.95rem,2.2vw,1.7rem)}
+.santa-count{display:flex;align-items:baseline;justify-content:center;gap:.4em;flex-wrap:wrap}
+.santa-count b{font-family:var(--display);font-weight:800;color:#ffd36b;font-size:clamp(2.4rem,7vw,5.6rem);line-height:1;
+  text-shadow:0 0 24px rgba(255,211,107,.45)}
+.santa-count span{color:#fff;font-weight:700;font-size:clamp(.95rem,2vw,1.6rem)}
+.santa-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1vw,12px);margin-top:clamp(8px,1.6vh,16px)}
+.santa-chips span{background:rgba(31,138,76,.28);border:1px solid rgba(120,220,160,.45);color:#eafff1;border-radius:999px;
+  padding:clamp(5px,.8vh,9px) clamp(10px,1.4vw,18px);font-weight:700;font-size:clamp(.7rem,1.3vw,1.05rem)}
+.santa-do{margin-top:clamp(10px,2vh,20px);display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.4vw,18px);width:100%}
+.santa-do div{background:rgba(214,40,57,.22);border:1px solid rgba(255,140,150,.45);border-radius:14px;
+  padding:clamp(8px,1.6vh,16px) clamp(10px,1.6vw,20px);text-align:left}
+.santa-do b{display:block;color:#fff;font-family:var(--display);font-size:clamp(.9rem,1.8vw,1.4rem);margin-bottom:2px}
+.santa-do small{color:#ffe3e6;font-weight:600;font-size:clamp(.66rem,1.15vw,.92rem);line-height:1.35}
+.santa-foot{margin-top:clamp(8px,1.6vh,14px);color:#ffe8b8;font-weight:600;font-size:clamp(.62rem,1.1vw,.85rem)}
+@media(max-width:700px){ .santa-do{grid-template-columns:1fr} }
+@media(prefers-reduced-motion:reduce){ .santaview .flake{display:none} .santaview .bulb{animation:none} .santaview{transition:none} }
+
 /* ---------- birthday ---------- */
 .bdayview{
   position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
@@ -1989,6 +2039,31 @@ body.premiere .rcrota{display:none!important}
   </div>
 </div>
 
+<div class="santaview" id="santaview" aria-hidden="true">
+  <div class="lights" id="santa-lights"></div>
+  <div id="santa-snow"></div>
+  <div class="santa-inner">
+    <div class="santa-hat">&#127877;</div>
+    <div class="santa-kick">Hedin BMW Ruxley</div>
+    <div class="santa-title">Secret Santa</div>
+    <div class="santa-poem">
+      <p>The elves have drawn, the names are out,</p>
+      <p>So keep it secret, not a shout!</p>
+      <p>Update your wishlist, make it clear,</p>
+      <p>Your Santa&rsquo;s shopping, Christmas is near.</p>
+      <p>Twenty pounds, a bow on top,</p>
+      <p>The fifth is coming, time to shop!</p>
+    </div>
+    <div class="santa-count" id="santa-count"><b>&nbsp;</b><span></span></div>
+    <div class="santa-chips"><span>&#127873; &pound;20 budget</span><span>&#127876; Saturday 5 December</span><span>&#127869; At the team meal</span></div>
+    <div class="santa-do">
+      <div><b>&#9997;&#65039; Update your wishlist</b><small>Tap the link in your Secret Santa email. No sign in needed, and your Santa sees it straight away.</small></div>
+      <div><b>&#128717;&#65039; Get shopping</b><small>Check your giftee&rsquo;s wishlist on the same link, then wrap it and keep it secret.</small></div>
+    </div>
+    <div class="santa-foot">Not coming to the meal? Pop your gift in the bag and presents are given out before you leave that day.</div>
+  </div>
+</div>
+
 <div class="wiscene" id="wiscene" aria-hidden="true">
   <div class="wi-inner">
     <div class="wi-kicker" id="wi-kicker">Who&rsquo;s in this week</div>
@@ -2150,7 +2225,7 @@ body.premiere .rcrota{display:none!important}
 <script src="staff-gate.js"></script>
 <script src="lockup-rota.js"></script>
 <script src="shifts-rota.js"></script>
-<script src="reception-rota.js"></script>
+<script src="reception-rota.js?v=4"></script>
 <script src="team-identity.js"></script><script src="team-session.js"></script>
 <script>
 /* ============================================================
@@ -3666,15 +3741,21 @@ function paintCoverRota(shifts, day, team){
   const el=document.getElementById('rcrota'), rows=document.getElementById('rcrota-rows');
   if(!el||!rows)return;
   if(!shifts||!shifts.length){ el.hidden=true; rows.innerHTML=''; return; }
-  rows.innerHTML=shifts.map(function(s){
-    const r=day[s.id]||{};
-    const short=r.status==='short';
-    const open=short||r.status==='declined'||!r.personId;
-    const covering=!open && r.status==='covering';
-    const name=short?'No one':(open?'Nobody yet':((team[r.personId]&&team[r.personId].name)||r.personId));
-    const st=covering?'Covering':(short?'Not covered':(open?(r.status==='declined'?'Cannot cover':'Open'):'On'));
-    const cls=covering?'covering':(short?'short':(open?'open':''));
-    return '<div class="rcrota-row '+cls+'"><span class="rcrota-t">'+coverEsc(s.from)+'\u2013'+coverEsc(s.to)+'</span><span class="rcrota-n">'+coverEsc(name)+'</span><span class="rcrota-s">'+coverEsc(st)+'</span></div>';
+  /* two places a shift since 17 November: one row a shift, both names on it */
+  const groups=[];
+  shifts.forEach(function(s){ const g=groups.filter(function(x){ return x.from===s.from && x.to===s.to; })[0]; if(g) g.seats.push(s); else groups.push({from:s.from,to:s.to,seats:[s]}); });
+  rows.innerHTML=groups.map(function(g){
+    const recs=g.seats.map(function(s){ return day[s.id]||{}; });
+    const isOpen=function(r){ return r.status==='short'||r.status==='declined'||!r.personId; };
+    const on=recs.filter(function(r){ return !isOpen(r); });
+    const allShort=recs.every(function(r){ return r.status==='short'; });
+    const names=on.map(function(r){ return (team[r.personId]&&team[r.personId].name)||r.personId; });
+    const missing=recs.length-on.length;
+    const name=!on.length?(allShort?'No one':'Nobody yet'):names.join(' & ')+(missing?' + '+missing+' needed':'');
+    const covering=!missing && on.every(function(r){ return r.status==='covering'; });
+    const st=covering?'Covering':(!missing?'On':(allShort?'Not covered':(on.length?'One short':'Open')));
+    const cls=covering?'covering':(allShort?'short':(missing?'open':''));
+    return '<div class="rcrota-row '+cls+'"><span class="rcrota-t">'+coverEsc(g.from)+'\u2013'+coverEsc(g.to)+'</span><span class="rcrota-n">'+coverEsc(name)+'</span><span class="rcrota-s">'+coverEsc(st)+'</span></div>';
   }).join('');
   el.hidden=false;
 }
@@ -3786,10 +3867,14 @@ function paintCover(){
     if(n.mins>=HEAD_FROM && n.mins<start){ now=first; heads=true; }
   }
   if(!now){ b.hidden=true; b.classList.remove('heads','open','covering'); return; }
-  const r=day[now.id]||{};
-  const short=r.status==='short';
-  const open=short||r.status==='declined'||!r.personId;
-  const covering=!open && r.status==='covering';
+  /* both places on the shift that is on (two people a shift since 17 November): the badge shows whoever is on */
+  const seats=shifts.filter(function(s){ return s.from===now.from && s.to===now.to; });
+  const isOpenRec=function(x){ return x.status==='short'||x.status==='declined'||!x.personId; };
+  const filled=seats.map(function(s){ return day[s.id]||{}; }).filter(function(x){ return !isOpenRec(x); });
+  const r=filled[0]||day[now.id]||{};
+  const short=!filled.length && seats.every(function(s){ return (day[s.id]||{}).status==='short'; });
+  const open=!filled.length;
+  const covering=!open && filled.length===seats.length && filled.every(function(x){ return x.status==='covering'; });
   b.classList.toggle('open',open);
   b.classList.toggle('covering',covering);
   b.classList.toggle('heads',heads);
@@ -3813,7 +3898,9 @@ function paintCover(){
     if(pic) img.src=pic; else ph.textContent=(name||'?').charAt(0).toUpperCase();
     ph.textContent=(name||'?').charAt(0).toUpperCase();
     document.getElementById('rcsmall').textContent=heads?('Showroom from '+now.from):'On showroom cover';
-    document.getElementById('rcname').textContent=name;
+    const others=filled.slice(1).map(function(x){ return (team[x.personId]&&team[x.personId].name)||x.personId; });
+    const gap=seats.length-filled.length;
+    document.getElementById('rcname').textContent=[name].concat(others).join(' & ')+(gap?' + '+gap+' needed':'');
   }
   document.getElementById('rctime').textContent=now.from+' to '+now.to;
   b.hidden=false;
@@ -3929,6 +4016,40 @@ function viewMs(v){
   return (v.kind==='birthday'||v.kind==='forecourt') ? brief : full;
 }
 
+/* ---- Secret Santa on the wall (Dan, 18 November 2026) ----
+   Up until the end of exchange day, London time, then gone by itself: nobody has
+   to remember to take it down. It shows no names and no pairings, ever; the board
+   cannot read them and must not. The countdown is days on the London calendar. */
+var SANTA={exchange:'2026-12-05'};
+function santaToday(){
+  var p={};
+  new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'})
+    .formatToParts(new Date()).forEach(function(x){p[x.type]=x.value});
+  return p.year+'-'+p.month+'-'+p.day;
+}
+function santaLive(){ return santaToday()<=SANTA.exchange }
+function santaDays(){
+  var a=santaToday().split('-').map(Number), b=SANTA.exchange.split('-').map(Number);
+  return Math.round((Date.UTC(b[0],b[1]-1,b[2])-Date.UTC(a[0],a[1]-1,a[2]))/86400000);
+}
+var santaBuilt=false;
+function paintSanta(){
+  var d=santaDays(), c=$('santa-count');
+  if(c)c.innerHTML=d<=0?'<b>Today!</b><span>Presents at the team meal</span>'
+    :'<b>'+d+'</b><span>'+(d===1?'sleep to go':'sleeps to go')+'</span>';
+  if(santaBuilt)return;
+  santaBuilt=true;
+  var snow=$('santa-snow'), lights=$('santa-lights'), i, h='';
+  /* 26 flakes is enough to read as snow and little enough for a television */
+  for(i=0;i<26;i++){
+    h+='<span class="flake" style="left:'+((i*37)%100)+'%;--fs:'+(10+(i*7)%16)+'px;--dur:'+(9+(i*5)%9)+'s;--delay:-'+((i*1.7)%12).toFixed(1)+'s;--drift:'+(((i%5)-2)*24)+'px">&#10052;</span>';
+  }
+  if(snow)snow.innerHTML=h;
+  var cols=['#ff4d5a','#ffd36b','#3ddc84','#5aa9ff','#ff9a1f'], L='';
+  for(i=0;i<18;i++)L+='<span class="bulb" style="--c:'+cols[i%cols.length]+';--d:-'+((i*0.37)%2.4).toFixed(2)+'s"></span>';
+  if(lights)lights.innerHTML=L;
+}
+
 function views(){
   var out=[{id:'board'}];   /* index 0 is always our own board */
   if(NEWCAR.img&&sOn('newcar'))out.push({
@@ -3967,6 +4088,7 @@ function views(){
   if(sOn('forecourt')&&fcCars())out.push({id:'forecourt', kind:'forecourt'});
   /* six cars from the stock sheet at a time, a fresh six each go round */
   if(sOn('offers')&&offerCars().length)out.push({id:'offers', kind:'offers'});
+  if(sOn('santa')&&santaLive())out.push({id:'santa', kind:'santa'});
   /* birthdays come after the boards and screenshots, not in between them */
   if(sOn('birthdays'))liveBirthdays().forEach(function(bd){
     out.push({id:'bday-'+bd.id, kind:'birthday', bday:bd});
@@ -4002,6 +4124,8 @@ function showView(i){
   if(v.kind==='forecourt')paintForecourt();
   if(v.kind==='offers')paintOffers();
   if(v.kind==='whosin')paintWhosIn();
+  if(v.kind==='santa')paintSanta();
+  $('santaview').classList.toggle('show',v.kind==='santa');
   $('wiscene').classList.toggle('show',v.kind==='whosin');
   $('ncscene').classList.toggle('show',!!v.img);
   $('bdayview').classList.toggle('show',v.kind==='birthday');
@@ -4070,6 +4194,7 @@ var VIEWPINS=[
   {id:'whosin',      name:"Who's in this week",    sub:'With tonight\u2019s lockup in orange'},
   {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'},
   {id:'offers',      name:'Offers from the stock sheet', sub:'Six cars at a time, with the monthly'},
+  {id:'santa',        name:'Secret Santa',            sub:'Wishlists and shopping, until 5 December'},
   {id:'eventdeals',   name:'Event deals',            sub:'Highest margin first'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
@@ -4104,6 +4229,7 @@ function viewAvailable(id){
   if(id==='forecourt')return !!fcCars();
   if(id==='offers')return offerCars().length>0;
   if(id==='whosin')return !!whosinWeek();
+  if(id==='santa')return santaLive();
   return false;
 }
 
@@ -7170,7 +7296,7 @@ function paintSettingsNote(){
   var off=[];
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'premiere',
-   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','offers','whosin','ticker',
+   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','offers','whosin','santa','ticker',
    'seasons',
    'eventdeals','dealmargin','radio',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
@@ -8239,8 +8365,35 @@ function walkinMapOfficeAlert(a, i){
    active cover shift, scripts/reception-mail.js (lockup-emails) writes the same
    reallocate the Unable button uses, so the next fair person is put on. The board
    only displays the card; the mail job reads this same office-alerts feed. */
+/* The feed forgets an alert within minutes and the job only runs every few, so most walk-ins
+   taken by the cover person were never seen by it (18 November: Mon took one and the rota did
+   not move). The board sees every alert, so it keeps each walk-in taken under walkinTaken/<date>
+   (write once per alert id) and kicks the job, which then reallocates within a minute or two. */
+var walkinKept = Object.create(null);
+function walkinKeepTaken(raw){
+  (raw || []).forEach(function(a){
+    if(!a || !a.id) return;
+    var kind = String(a.kind||'').toLowerCase().replace(/[\s_]+/g,'-');
+    if(!/^(walk-?in-taken|walk-?in-(arrived|waiting)-taken)$/.test(kind)) return;
+    var id = String(a.id);
+    /* kept: done. A failed try (not signed in yet, or another board kept it first) is tried again a minute later */
+    if(walkinKept[id]===true || (walkinKept[id] && Date.now()-walkinKept[id] < 60000) || !/^[A-Za-z0-9:_-]{6,80}$/.test(id)) return;
+    var who = walkinStrip(a.salesExecutiveName||a.assignedTo||a.bookedWith||'');
+    if(!who || typeof window.keepWalkinTaken !== 'function') return;
+    walkinKept[id] = Date.now();
+    var at = a.eventAt||a.arrivedAt||null;
+    if(typeof at==='string'){ var p=Date.parse(at); at=isNaN(p)?null:p }
+    if(typeof at==='number' && at<1e12) at=at*1000;
+    Promise.resolve(window.keepWalkinTaken(id, {
+      kind: kind, assignedTo: who.slice(0,80),
+      customer: walkinStrip(a.customerName||a.customer||a.name||'').slice(0,80),
+      eventAt: (typeof at==='number' && isFinite(at)) ? at : null
+    })).then(function(ok){ if(ok) walkinKept[id] = true; });
+  });
+}
 function walkinDeliverOfficeAlerts(j){
   var raw = (j && j.alerts) || [];
+  try{ walkinKeepTaken(raw); }catch(e){ console.warn('walk-in keep failed', e && e.message); }
   var rows = raw.map(walkinMapOfficeAlert).filter(Boolean);
   /* Empty polls mark ready. Non-empty alerts skip the silent first-snapshot
      seed (that swallowed TV tests on reload) and use announce-once storage. */
@@ -8365,7 +8518,7 @@ if(!startOfficeAlerts()) startWalkinAlerts();
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, update, remove, get, set }
+import { getDatabase, ref, onValue, push, update, remove, get, set, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { ensureSignedIn, guard } from "./staff-auth.js";
 import { makeBackend } from "./team-backend.js";
@@ -8379,6 +8532,19 @@ const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 /* Writes need a Firebase sign-in once the locked rules are published - see staff-auth.js. */
 ensureSignedIn(app);
+/* showroom cover: keep a walk-in taken alert for the cover job (see walkinKeepTaken above).
+   Write once per alert id, so a second board writing the same alert is refused and that is fine. */
+window.keepWalkinTaken=function(id, a){
+  const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const rec={ kind:a.kind, assignedTo:a.assignedTo, ts:serverTimestamp() };
+  if(a.customer) rec.customer=a.customer;
+  if(typeof a.eventAt==='number') rec.eventAt=a.eventAt;
+  const go=()=>set(ref(db,'walkinTaken/'+p+'/'+id), rec).then(()=>{
+    try{ fetch('https://vehicleproxy.danielcane1992.workers.dev?target=cover-kick').catch(()=>{}); }catch(e){}
+    return true;
+  }).catch(()=>false);
+  return Promise.resolve(ensureSignedIn(app)).then(go, go);
+};
 const STAFF=guard(app,'staff');   /* office TV control / admin: staff Google account */
 const SIGNED=guard(app,'signed'); /* colleague features: quiet anonymous sign-in */
 /* Deals take a manager's team login (the PIN or Google sign in on team.html),

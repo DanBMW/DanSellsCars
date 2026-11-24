@@ -21,7 +21,7 @@
   .shift:last-child { border-bottom: 0; }
   .time { color: var(--muted); font-variant-numeric: tabular-nums; }
   .who { font-weight: 700; font-size: 18px; letter-spacing: .04em; }
-  .who.none { color: var(--bad); font-weight: 600; font-size: 15px; letter-spacing: 0; }
+  .who.none, .who .none { color: var(--bad); font-weight: 600; font-size: 15px; letter-spacing: 0; }
   .note { font-size: 13px; color: var(--warn); margin-top: 2px; }
   .closed { padding: 10px 14px; color: var(--muted); }
   .status { font-size: 13px; color: var(--muted); padding: 12px 0 0; }
@@ -37,7 +37,7 @@
   <p class="foot">Times are UK time. "Stepped off" shows the time the shift was handed back. Updates live.</p>
 </main>
 
-<script src="reception-rota.js"></script>
+<script src="reception-rota.js?v=4"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -80,13 +80,14 @@ function paint() {
       out.push(`<section class="day"><h2>${esc(title)}</h2><div class="closed">Closed</div></section>`);
       continue;
     }
-    const shifts = rows.map(r => {
-      let who;
-      if (r.initials) who = `<div class="who">${esc(r.initials)}</div>`;
-      else who = `<div class="who none">No one</div>`;
-      let note = "";
-      if (r.status === "stepped_off") note = `<div class="note">Stepped off at ${esc(r.endedAt || "")}</div>`;
-      return `<div class="shift"><div class="time">${esc(r.from)} to ${esc(r.to)}</div><div>${who}${note}</div></div>`;
+    /* two places a shift since 17 November: one line a shift, both people on it */
+    const groups = [];
+    rows.forEach(r => { const g = groups.find(x => x.from === r.from && x.to === r.to); if (g) g.rows.push(r); else groups.push({ from: r.from, to: r.to, rows: [r] }); });
+    const shifts = groups.map(g => {
+      const on = g.rows.filter(r => r.initials).map(r => esc(r.initials));
+      const who = on.length ? `<div class="who">${on.join(" &amp; ")}${on.length < g.rows.length ? ` <span class="none">+ ${g.rows.length - on.length} needed</span>` : ""}</div>` : `<div class="who none">No one</div>`;
+      const note = g.rows.filter(r => r.status === "stepped_off").map(r => `<div class="note">Stepped off at ${esc(r.endedAt || "")}</div>`).join("");
+      return `<div class="shift"><div class="time">${esc(g.from)} to ${esc(g.to)}</div><div>${who}${note}</div></div>`;
     }).join("");
     out.push(`<section class="day${i === 0 ? " today" : ""}"><h2>${esc(title)}</h2>${shifts}</section>`);
   }

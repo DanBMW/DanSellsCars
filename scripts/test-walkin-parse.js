@@ -300,5 +300,38 @@ ok('every event carries a name to announce',
    events.every(e => e.customerName && !/^(Walk-in|Appointment|customer)$/i.test(e.customerName)),
    events.map(e => e.customerName).join(', '));
 
+/* The minute trigger (18 November 2026): a one-off Google "server error" in
+   a Gmail call must not email Dan, a hung run must not pile the next ones up,
+   and a failure that lasts FAIL_LOUD_MINS must still throw, which is what
+   emails him. */
+{
+  const t = load(SAMPLES);
+  let boom = true, locked = false;
+  const realSearch = t.GmailApp.search;
+  t.GmailApp.search = q => { if (boom) throw new Error("We're sorry, a server error occurred."); return realSearch(q); };
+  t.LockService = { getScriptLock: () => ({ tryLock: () => !locked, releaseLock() {} }) };
+  t.console = { warn() {} };
+  store.refresh_fail_v1 = '';
+  let threw = false, r;
+  try { r = t.refresh(); } catch (e) { threw = true; }
+  ok('a one-off Gmail server error does not throw (no failure email)', !threw && r === 'failed');
+  ok('...and is recorded', JSON.parse(store.refresh_fail_v1 || '{}').count === 1);
+  locked = true;
+  ok('a run that finds another still going steps aside', t.refresh() === 'busy');
+  locked = false;
+  const f = JSON.parse(store.refresh_fail_v1); f.since = Date.now() - 31 * 60000;
+  store.refresh_fail_v1 = JSON.stringify(f);
+  threw = false; try { t.refresh(); } catch (e) { threw = /failing for 3\d minutes/.test(e.message); }
+  ok('failing for over 30 minutes throws, so Dan is emailed', threw);
+  boom = false;
+  r = t.refresh();
+  ok('a good scan clears the record', typeof r === 'number' && !store.refresh_fail_v1);
+  boom = true;
+  const g = load(SAMPLES);
+  g.GmailApp.search = () => { throw new Error('server error'); };
+  const body = JSON.parse(g.doGet({ parameter: { refresh: '1', token: store.TOKEN || '' } }).getContent());
+  ok('a board asking ?refresh=1 still hears the error', /server error/.test(body.error || ''));
+}
+
 console.log(bad ? '\n' + bad + ' FAILED\n' : '\nall checks pass\n');
 process.exit(bad ? 1 : 0);

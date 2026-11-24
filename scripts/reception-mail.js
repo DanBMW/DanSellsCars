@@ -1,10 +1,11 @@
 /* scripts/reception-mail.js - showroom cover, run from scripts/lockup-mail.js
  * (every 15 minutes, Monday to Saturday, by the lockup-emails Action).
  *
- *   After 07:30 on each open day: plan the three shifts (reception-rota.js) from
+ *   After 07:30 on each open day: plan the three shifts, two seats each since
+ *   17 November 2026 (reception-rota.js), from
  *   the sales team's availability (shift calendar), write the plan to
  *   <root>/reception/<date>/<shift>, and queue one email per person:
- *   "You are on showroom cover. Please cover showroom until HH:MM."
+ *   "You are on showroom cover at HALO." or "at Reception. Please cover showroom until HH:MM."
  *   A person who answers "cannot cover" on reception.html is recorded there as
  *   declined. The next run queues a manager note with their reason, banks any
  *   time they already covered (handed_back), takes them off that shift and puts
@@ -34,7 +35,19 @@ const RR = require('../reception-rota.js');
 const SR = require('../shifts-rota.js');
 const LR = require('../lockup-rota.js');
 
+const crypto = require('crypto');
 const PLAN_FROM = 7 * 60 + 30; /* 07:30 UK */
+/* personal no sign in links (cover.html). coverLink/<token> is readable only by its exact
+   token and the person may write one answer to it; coverLinkIdx is server only. Neither
+   sits under lockup, which is world readable. */
+const LINK_ROOT = RR.TEST_ONLY ? 'coverLinkTest' : 'coverLink';
+const IDX_ROOT = RR.TEST_ONLY ? 'coverLinkIdxTest' : 'coverLinkIdx';
+/* what a person may answer on their own link, and what a manager's nudge link may do */
+const LINK_KINDS = /^(covering|cannot|notin|offsite|customer|other|here)$/;
+const NUDGE_KIND = 'nudge';
+/* until they answer: a reminder every 15 minutes, and the managers told once at the third */
+const NAG_MS = 15 * 60 * 1000;
+const NAG_MANAGERS_AT = 3;
 const KEEP_DAYS = 14;
 
 function hm(mins) { return String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0'); }
@@ -110,6 +123,31 @@ async function fetchWalkinAlerts(fetchImpl) {
   } catch (e) { return []; }
 }
 
+/* walk-in taken alerts the team board kept (it sees every one; the feed forgets them in minutes) */
+const WALKIN_ROOT = 'walkinTaken';
+async function readStoredWalkins(db, root, date) {
+  try {
+    const v = (await db.ref(root + '/' + date).get()).val() || {};
+    return Object.keys(v).map(id => {
+      const a = v[id] || {};
+      const at = typeof a.eventAt === 'number' ? a.eventAt : (typeof a.ts === 'number' ? a.ts : null);
+      return { id: String(id), kind: String(a.kind || 'walk-in-taken'), assignedTo: a.assignedTo || '', customer: a.customer || '', eventAt: at, ts: at };
+    });
+  } catch (e) { return []; }
+}
+/* one list, one entry an alert id: the feed first, then anything the board kept that the feed has dropped */
+function mergeWalkins(feed, stored) {
+  const seen = {}, out = [];
+  (feed || []).concat(stored || []).forEach(a => {
+    if (!a) return;
+    const id = a.id ? String(a.id) : '';
+    if (id && seen[id]) return;
+    if (id) seen[id] = true;
+    out.push(a);
+  });
+  return out;
+}
+
 /* UK clock minutes from an epoch ms timestamp. */
 function ukMinsFromTs(ts) {
   if (!ts) return null;
@@ -176,6 +214,32 @@ async function run(o) {
   /* the management log (skips, absence tags, and every shift someone was put on): admin writes only */
   const logWrite = async (key, entry) => { if (!dry) await db.ref(logRoot + '/' + key).set(entry); };
   const date = date0, dow = SR.dowOf(date);
+  /* now, on the same clock as n (so tests that pin n pin this too) */
+  const nowMs = o.nowMs || ukTimeToMs(n.date, hm(n.mins));
+  /* personal links: only where the private queue is sent (live mode), never in a dry run */
+  const links = !!o.links && !dry;
+  const idx = links ? Object.assign({}, (await db.ref(IDX_ROOT + '/' + date).get()).val() || {}) : {};
+  /* a person's own link is <seat>_<person>; a managers' nudge link for that person is m-<seat>_<person> */
+  const linkKey = (sid, pid, manager) => (manager ? 'm-' : '') + sid + '_' + pid;
+  const linkFor = async (s, pid, manager) => {
+    if (!links || !pid) return null;
+    const k = linkKey(s.id, pid, manager);
+    if (idx[k] && idx[k].t) return idx[k].t;
+    const t = crypto.randomBytes(24).toString('base64url');
+    const p = team[pid] || {};
+    await db.ref(LINK_ROOT + '/' + t).set(Object.assign({ date, shift: s.id, personId: pid, name: firstName(p, pid), from: s.from, to: s.to, ts: Date.now() }, manager ? { role: 'manager' } : {}));
+    idx[k] = { t };
+    await db.ref(IDX_ROOT + '/' + date + '/' + k).set(idx[k]);
+    return t;
+  };
+  /* a cover email for a person: with their own link when there is one, and then only on the private queue */
+  const coverMail = async (p, pid, s, extra, upcoming) => {
+    const token = await linkFor(s, pid);
+    const alone = RR.heldCount(today, shifts, s, Object.assign({}, upcoming || {}, { [s.id]: pid })) <= 1;
+    const mail = RR.coverEmail(firstName(p, pid), s, { date: date, token: token, alone: alone });
+    return Object.assign({ to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}, extra || {});
+  };
+  const locOptsFor = (s, pid) => ({ alone: RR.heldCount(today, shifts, s, pid ? { [s.id]: pid } : {}) <= 1 });
   const absences = o.absences || {};
   const ctx = shiftCtx({ team, managers, absences, shiftCfg: o.shiftCfg, bh: o.bh, holidays: o.holidays, closed: o.closed, n });
   if (SR.dayKind(ctx, date) === 'closed') return { skipped: 'closed' };
@@ -188,7 +252,12 @@ async function run(o) {
   /* 0. walk-in taken by the person on the active cover shift → same reallocate as Unable */
   const walkinHandled = Object.assign({}, ((today._day || {}).walkinHandled) || {});
   let walkinHandledDirty = false;
-  const walkinAlerts = o.walkinAlerts != null ? o.walkinAlerts : await fetchWalkinAlerts(o.fetch);
+  const feedAlerts = o.walkinAlerts != null ? o.walkinAlerts : await fetchWalkinAlerts(o.fetch);
+  /* the feed only holds an alert for a short while, so a run every few minutes missed most of them
+     (18 November: Mon took a walk-in on cover and the rota never moved). The team board polls the feed
+     every 10 seconds and keeps each walk-in taken it sees under walkinTaken/<date>; read those too. */
+  const storedAlerts = o.walkinStored != null ? o.walkinStored : await readStoredWalkins(db, o.walkinRoot || WALKIN_ROOT, date);
+  const walkinAlerts = mergeWalkins(feedAlerts, storedAlerts);
   for (const a of walkinAlerts || []) {
     const aid = a && a.id ? String(a.id) : '';
     const action = RR.walkinCoverReallocate({
@@ -218,13 +287,74 @@ async function run(o) {
     await db.ref(dayPath).update({ walkinHandled: walkinHandled });
   }
 
+  /* 0b. answers given on a personal link (cover.html): applied exactly as if the person had tapped
+     on reception.html, so a decline is handled by step 1 below in this same run. An answer for a
+     seat the person no longer holds is marked handled and changes nothing. */
+  for (const k of Object.keys(idx)) {
+    const e = idx[k];
+    if (!e || !e.t) continue;
+    const ans = (await db.ref(LINK_ROOT + '/' + e.t + '/answer').get()).val();
+    const mgr = k.indexOf('m-') === 0, kk = mgr ? k.slice(2) : k;
+    /* a manager's link can only nudge, and a person's link can never nudge */
+    if (!ans || typeof ans.ts !== 'number' || ans.ts === e.h || (mgr ? ans.kind !== NUDGE_KIND : !LINK_KINDS.test(String(ans.kind || '')))) continue;
+    const sid = kk.split('_')[0], pid = kk.slice(sid.length + 1);
+    idx[k] = Object.assign({}, e, { h: ans.ts });
+    await db.ref(IDX_ROOT + '/' + date + '/' + k + '/h').set(ans.ts);
+    const r = today[sid] || {};
+    if (!shifts.some(x => x.id === sid) || r.personId !== pid || (r.status !== 'assigned' && r.status !== 'covering')) { say('Link answer on ' + sid + ' for a seat no longer held: ignored'); continue; }
+    if (mgr) {
+      /* the same as a manager tapping Nudge on reception.html: step 1 logs it and emails them Where are you? */
+      const absent = { personId: pid, by: 'manager email', ts: ans.ts };
+      today[sid] = Object.assign({}, r, { absent });
+      await db.ref(root + '/reception/' + date + '/' + sid + '/absent').set(absent);
+      say('Nudge from the managers email on ' + sid + ': ' + firstName(team[pid], pid));
+      continue;
+    }
+    let change = null;
+    if (ans.kind === 'here') {
+      /* I am here, after a nudge: the managers hear it (step 1, the absent reply) and they count as covering */
+      change = { status: 'covering', ts: ans.ts, coveringTs: r.coveringTs || ans.ts };
+      if (r.absent && r.absent.personId === pid && !r.absent.reply) change['absent/reply'] = { status: 'here', ts: ans.ts };
+      const nx = Object.assign({}, r, { status: 'covering', ts: ans.ts, coveringTs: change.coveringTs });
+      if (change['absent/reply']) nx.absent = Object.assign({}, r.absent, { reply: change['absent/reply'] });
+      today[sid] = nx;
+      await db.ref(root + '/reception/' + date + '/' + sid).update(change);
+      say('Link answer on ' + sid + ': ' + firstName(team[pid], pid) + ' is here');
+      continue;
+    }
+    if (ans.kind === 'covering') { if (r.status !== 'covering') change = { status: 'covering', ts: ans.ts, coveringTs: ans.ts }; }
+    else {
+      const a = RR.answer(ans.kind, ans.text);
+      if (a) change = { status: 'declined', reason: a.reason, reasonText: a.reasonText, ts: ans.ts };
+    }
+    if (!change) continue;
+    today[sid] = Object.assign({}, r, change);
+    await db.ref(root + '/reception/' + date + '/' + sid).update(change);
+    say('Link answer on ' + sid + ': ' + firstName(team[pid], pid) + ' ' + (ans.kind === 'covering' ? 'is covering' : 'cannot cover'));
+  }
+
   /* 1. a decline: note it to the managers once (keyed by the decline's own time),
      remember the person as declined for that shift, and free the shift */
   const existing = {};
   const mailedCover = {}; /* person|shift mailed a cover email this run — stops ensure double-sends */
   const markMailed = (shift, pid) => { if (pid) mailedCover[shift + '|' + pid] = true; };
+  /* the person already holds the other seat of this shift: one person cannot sit in both */
+  /* or holds a shift next to it with no gap (Dan, 18 November 2026: "people can do 2 shifts in a day but not
+     back to back"). The plan already kept to this; a volunteer's take and a manager's pick did not. */
+  const inOtherSeat = (s, pid) => shifts.some(x => x.id !== s.id && RR.tooClose(x, s) && (today[x.id] || {}).personId === pid &&
+    ((today[x.id] || {}).status === 'assigned' || (today[x.id] || {}).status === 'covering'));
   for (const s of shifts) {
     let r = today[s.id] || {};
+    if (r.assign && r.assign.ts !== r.assignHandledTs && r.assign.personId && inOtherSeat(s, r.assign.personId)) {
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ assignHandledTs: r.assign.ts });
+      say('Not assigning ' + firstName(team[r.assign.personId], r.assign.personId) + ' to ' + s.id + ': already in the other seat or back to back');
+      r = today[s.id] = Object.assign({}, r, { assignHandledTs: r.assign.ts });
+    }
+    if (r.take && r.take.ts !== r.takeHandledTs && r.take.personId && inOtherSeat(s, r.take.personId)) {
+      if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ takeHandledTs: r.take.ts });
+      say('Not giving ' + s.id + ' to ' + firstName(team[r.take.personId], r.take.personId) + ': already in the other seat or back to back');
+      r = today[s.id] = Object.assign({}, r, { takeHandledTs: r.take.ts });
+    }
     /* a manager reallocated the shift: the person on it is logged as a skip, and the shift is freed */
     /* a manager chose someone for a shift nobody could cover: they go on it, and are emailed as usual */
     if (r.assign && r.assign.ts !== r.assignHandledTs && r.assign.personId) {
@@ -234,8 +364,7 @@ async function run(o) {
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(change);
       if (!dry) await logWrite('on_' + date + '_' + s.id + '_' + change.ts, { kind: 'on', reason: 'planned', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: change.ts, by: r.assign.by || '' });
       if (p.email) {
-        const mail = RR.coverEmail(firstName(p, pid), s);
-        qAdd(rcId(date, s.id, pid, change.ts), { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: '<p>' + esc(mail.text).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>') + '</p>', ts: Date.now() }, dry);
+        qAdd(rcId(date, s.id, pid, change.ts), await coverMail(p, pid, s), dry);
         markMailed(s.id, pid);
       }
       say('Manager chose ' + firstName(p, pid) + ' for ' + s.id);
@@ -267,8 +396,7 @@ async function run(o) {
         replacedPersonId: prev || '', by: tk.by || pid
       });
       if (p.email) {
-        const mail = RR.coverEmail(firstName(p, pid), Object.assign({}, s, { from: slot.from, to: slot.to }), { date: date });
-        qAdd(rcId(date, s.id, pid, 'take', tk.ts), { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, dry);
+        qAdd(rcId(date, s.id, pid, 'take', tk.ts), await coverMail(p, pid, Object.assign({}, s, { from: slot.from, to: slot.to })), dry);
         markMailed(s.id, pid);
       }
       if (prev) {
@@ -316,9 +444,10 @@ async function run(o) {
       await logWrite('absent_' + date + '_' + s.id + '_' + ab.ts, { kind: 'absent', personId: ab.personId, date, shift: s.id, from: s.from, to: s.to, ts: ab.ts, by: ab.by || '' });
       if (ap.email) {
         const first = firstName(ap, ab.personId);
-        const mail = RR.absentEmail(first, s, { date: date });
-        qAdd(rcId('absent', date, s.id, ab.ts), { to: [testExec || ap.email], subject: mail.subject,
-          text: mail.text, html: mail.html, ts: Date.now() }, dry);
+        const token = await linkFor(s, ab.personId);
+        const mail = RR.absentEmail(first, s, Object.assign({ date: date, token: token }, locOptsFor(s, ab.personId)));
+        qAdd(rcId('absent', date, s.id, ab.ts), Object.assign({ to: [testExec || ap.email], subject: mail.subject,
+          text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}), dry);
       }
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update({ absentHandledTs: ab.ts });
       today[s.id] = Object.assign({}, r, { absentHandledTs: ab.ts });
@@ -423,9 +552,17 @@ async function run(o) {
   if (!dayMark && planAt > 0 && n.mins < planAt) return { skipped: 'before the plan time' };
   if (!dayMark || Object.keys(existing).length < shifts.length) {
     const available = Array.from(new Set(SR.staffOn(ctx, date).concat((RR.ONE_OFF_IN || {})[date] || [])));
+    /* a seat that has already ended today is left alone: never filled, never reported short. This is what
+       stops the day the second seats arrived (17 November, mid afternoon) emailing somebody for the morning. */
+    const ended = date === n.date ? shifts.filter(s => endMins(s) <= n.mins && !existing[s.id]).map(s => s.id) : [];
+    /* a seat that has started (or ended) with somebody on it is never re-planned. planDay drops a holder who is
+       not on the day's staff list, so on 18 November, when Mon's decline on 12 to 3 re-ran the plan at 14:05,
+       Danny and Karis (put on the 9 to 12 by hand, not on the calendar list) were dropped from a shift that had
+       already finished: Mon was emailed to cover 9 to 12 and the managers were told 9 to 12 was not covered. */
+    const held = date === n.date ? shifts.filter(s => existing[s.id] && minsOf(s.from) <= n.mins).map(s => s.id) : [];
     const plan = RR.planDay({
       shifts, available, team, busy, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date),
-      declined: declined, existing: existing
+      declined: declined, existing: existing, skip: ended.concat(held)
     });
     for (const s of shifts) {
       const pid = plan.assignments[s.id];
@@ -439,17 +576,19 @@ async function run(o) {
       if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(rec);
       const why = Object.keys((today[s.id] || {}).declined || {}).length ? 'reallocated' : 'planned';
       await logWrite('on_' + date + '_' + s.id + '_' + rec.ts, { kind: 'on', reason: why, personId: pid, date, shift: s.id, from: s.from, to: s.to, ts: rec.ts });
-      const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
-      const cover = { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() };
+      const cover = await coverMail(p, pid, s, null, plan.assignments);
       /* planned shifts are held until 10 mins before the shift starts; a reallocation sends now */
       if (!reallocated) cover.sendAfter = coverSendAfterMs(date, s.from);
       qAdd(rcId(date, s.id, pid), cover, dry);
       markMailed(s.id, pid);
       say('On reception ' + s.from + ' to ' + s.to + ': ' + firstName(p, pid) + (cover.sendAfter ? ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')' : ' (now)'));
     }
+    const shortTold = {};
     for (const id of plan.short) {
       const s2 = shifts.filter(x => x.id === id)[0];
       if (!s2) continue;
+      /* both seats of one shift short: one note to the managers for the pair, not two */
+      const pair = plan.short.filter(k => { const x = shifts.filter(y => y.id === k)[0]; return x && RR.sameTime(x, s2); });
       if (!dry && (today[id] || {}).status !== 'short') {
         const cur = Object.assign({}, today[id] || {}, { personId: null, status: 'short', ts: Date.now() });
         today[id] = cur;
@@ -461,7 +600,9 @@ async function run(o) {
       const free = pool2.filter(pid => !RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0 && taken.indexOf(pid) < 0);
       const onOther = pool2.filter(pid => !RR.clashes(busy, pid, s2) && declined[id].indexOf(pid) < 0 && taken.indexOf(pid) >= 0);
       const names = {}; Object.keys(team).forEach(k => { names[k] = firstName(team[k], k); });
-      const note = RR.shortNote(s2, free, onOther, booked, names);
+      if (shortTold[s2.base || id]) continue;
+      shortTold[s2.base || id] = true;
+      const note = RR.shortNote(s2, free, onOther, booked, names, pair.length);
       qAdd(rcId('short', date, id), { to: 'managers', subject: note.subject, text: note.text,
         html: '<p>' + note.text.split('\n').map(esc).join('</p><p>') + '</p>', ts: Date.now() }, dry);
     }
@@ -472,23 +613,126 @@ async function run(o) {
      Lets live recover when an older unscoped rc_<date>_… id was eaten by a test
      send (rcTest). Never re-queues if a non-test send already went out. */
   const notifyMap = o.notify || {};
+  const notifyHas = id => !!notifyMap[id];
   for (const s of shifts) {
     const r = today[s.id] || {};
     const pid = r.personId;
     if (!pid || (r.status !== 'assigned' && r.status !== 'covering')) continue;
     if (mailedCover[s.id + '|' + pid]) continue;
     if (coverAlreadySent(notifyMap, date, s.id, pid)) continue;
+    /* a cover email queued before personal links existed and not sent yet (17 November: the next day
+       was planned at 17:30 on the old code) is swapped for one carrying their own link */
+    const oldId = rcId(date, s.id, pid), old = notifyMap[oldId];
+    if (links && old && !old.sent && !/cover\.html\?t=/.test(String(old.text || ''))) {
+      await db.ref(root + '/notify/' + oldId).remove();
+      delete notifyMap[oldId];
+      say('Swapping the queued cover email for ' + s.id + ' to one with their own link');
+    }
     const p = team[pid] || {};
     if (!(testExec || p.email)) continue;
-    const mail = RR.coverEmail(firstName(p, pid), s, { date: date });
-    const cover = { to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now(), sendAfter: coverSendAfterMs(date, s.from) };
+    const cover = await coverMail(p, pid, s, { sendAfter: coverSendAfterMs(date, s.from) });
     if (qAdd(rcId(date, s.id, pid), cover, dry)) { markMailed(s.id, pid); say('Queued cover ' + s.id + ' for ' + firstName(p, pid) + ' (hold until ' + new Date(cover.sendAfter).toISOString() + ')'); }
+  }
+
+  /* 2b2. unsent planned cover emails: refresh the location from who is on the
+     shift now, so a lone person is HALO, and wording queued before this change
+     is updated before it is sent. lockup-mail.js sends the queue after this job
+     in the same Action, so this is the location at send time. */
+  for (const s of shifts) {
+    const r = today[s.id] || {};
+    const pid = r.personId;
+    if (!pid || (r.status !== 'assigned' && r.status !== 'covering')) continue;
+    const id = rcId(date, s.id, pid);
+    const old = notifyMap[id];
+    if (!old || old.sent) continue;
+    const p = team[pid] || {};
+    const fresh = await coverMail(p, pid, s, { sendAfter: old.sendAfter, ts: old.ts });
+    const patch = { subject: '[Beta] ' + fresh.subject, text: fresh.text, html: fresh.html };
+    if (old.subject === patch.subject && old.text === patch.text && old.html === patch.html) continue;
+    let path = 'lockupPrivate/notify/' + id;
+    if (!(await db.ref(path).get()).val()) {
+      path = root + '/notify/' + id;
+      if (!(await db.ref(path).get()).val()) continue;
+    }
+    Object.assign(old, patch);
+    if (!dry) await db.ref(path).update(patch);
+    say('Updated the queued cover email for ' + s.id + ' to ' + firstName(p, pid));
+  }
+
+  /* 2c. not confirmed yet (Dan, 17 November 2026: "up the ante"): every 15 minutes from the first
+     cover email (10 minutes before the shift, or the moment they were put on if later) until they
+     tap I am covering or I cannot cover, for as long as the shift runs. The ids carry the reminder
+     number, so each goes once whatever the run timing; the managers hear once, at the third. */
+  if (date === n.date) {
+    for (const s of shifts) {
+      const r = today[s.id] || {}, pid = r.personId;
+      if (!pid || r.status !== 'assigned' || endMins(s) <= n.mins) continue;
+      const p = team[pid] || {};
+      if (!(testExec || p.email)) continue;
+      /* put on at r.ts; a stamp ahead of this run's clock reads as just now */
+      const since = typeof r.ts === 'number' ? Math.min(r.ts, nowMs) : 0;
+      const base = Math.max(coverSendAfterMs(date, s.from), since);
+      const k = Math.floor((nowMs - base) / NAG_MS);
+      if (k < 1) continue;
+      const id = rcId('nag', date, s.id, pid, k);
+      if (notifyHas(id)) continue;
+      const token = await linkFor(s, pid);
+      const mail = RR.nagEmail(firstName(p, pid), s, Object.assign({ date: date, token: token, n: k }, locOptsFor(s, pid)));
+      if (qAdd(id, Object.assign({ to: [testExec || p.email], subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, token ? { private: true } : {}), dry)) {
+        say('Reminder ' + k + ' to ' + firstName(p, pid) + ' for ' + s.id);
+      }
+      if (k >= NAG_MANAGERS_AT) {
+        const note = RR.unconfirmedNote(firstName(p, pid), s, Math.round((nowMs - base) / 60000) + 10, locOptsFor(s, pid));
+        qAdd(rcId('nagMgr', date, s.id, pid), { to: 'managers', subject: note.subject, text: note.text, html: '<p>' + esc(note.text) + '</p>', ts: Date.now() }, dry);
+      }
+    }
+  }
+
+  /* 2d. the start of each shift (Dan, 17 November 2026): one email to the managers saying who
+     should be in the showroom, whether each has confirmed, and a Nudge per person on (their own
+     no sign in link, on the private queue). Once a shift, from its start until it ends, so a run
+     GitHub starts late still sends it and a run after the shift never does. */
+  if (date === n.date) {
+    const bases = [];
+    shifts.forEach(s => { if (!bases.some(b => b.from === s.from && b.to === s.to)) bases.push({ from: s.from, to: s.to, base: s.base || s.id }); });
+    for (const b of bases) {
+      if (n.mins < minsOf(b.from) || n.mins >= minsOf(b.to)) continue;
+      const id = rcId('start', date, b.base);
+      if (notifyHas(id)) continue;
+      const seats = shifts.filter(s => s.from === b.from && s.to === b.to);
+      const rows = [];
+      for (const s of seats) {
+        const r = today[s.id] || {}, pid = r.personId;
+        const held = pid && (r.status === 'assigned' || r.status === 'covering');
+        const state = !held ? (r.status === 'short' ? 'short' : r.status === 'declined' ? 'declined' : 'open')
+          : (r.absent && r.absent.personId === pid && !r.absent.reply ? 'absent' : r.status);
+        const row = { seat: s.id, name: held ? firstName(team[pid], pid) : '', state };
+        if (held) {
+          const t = await linkFor(s, pid, true);
+          if (t) row.nudgeUrl = RR.linkUrl(t, 'nudge');
+        }
+        rows.push(row);
+      }
+      const mail = RR.startEmail(b, rows, { date });
+      if (qAdd(id, Object.assign({ to: 'managers', subject: mail.subject, text: mail.text, html: mail.html, ts: Date.now() }, rows.some(x => x.nudgeUrl) ? { private: true } : {}), dry)) {
+        say('Start of shift email for ' + b.from + ' to ' + b.to + ': ' + mail.subject);
+      }
+    }
   }
 
   /* 3. prune old days */
   if (!dry) {
     const cutoff = LR.addDays(date, -KEEP_DAYS);
     for (const d of Object.keys(all)) if (d < cutoff && d.match(/^\d{4}-\d{2}-\d{2}$/)) await db.ref(root + '/reception/' + d).remove();
+    /* a personal link lives as long as its day's plan, then both halves go */
+    if (links) {
+      const old = (await db.ref(IDX_ROOT).get()).val() || {};
+      for (const d of Object.keys(old)) {
+        if (!(d < cutoff)) continue;
+        for (const k of Object.keys(old[d] || {})) if (old[d][k] && old[d][k].t && RR.TOKEN_RE.test(old[d][k].t)) await db.ref(LINK_ROOT + '/' + old[d][k].t).remove();
+        await db.ref(IDX_ROOT + '/' + d).remove();
+      }
+    }
   }
   return { planned: !dayMark, date };
 }
@@ -509,7 +753,10 @@ function makeQueue(db, root, existing) {
     add(id, rec, dry) {
       if (existing[id]) return false;
       existing[id] = rec; added.push(id);
-      if (!dry) writes.push(db.ref(root + '/notify/' + id).set(Object.assign({ kind: 'reception' }, rec)));
+      /* an email carrying a personal link goes on the private queue: lockup is world readable */
+      const path = rec.private ? 'lockupPrivate/notify/' + id : root + '/notify/' + id;
+      const out = Object.assign({ kind: 'reception' }, rec); delete out.private;
+      if (!dry) writes.push(db.ref(path).set(out));
       return true;
     },
     flush() { return Promise.all(writes); },
@@ -531,4 +778,4 @@ async function readBusy(date, fetchImpl) {
   } catch (e) { return null; }
 }
 
-module.exports = { run, load, makeQueue, readBusy, APPT_FEED, OFFICE_ALERTS_URL, fetchWalkinAlerts, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };
+module.exports = { LINK_ROOT, IDX_ROOT, NAG_MS, NAG_MANAGERS_AT, run, load, makeQueue, readBusy, APPT_FEED, OFFICE_ALERTS_URL, fetchWalkinAlerts, readStoredWalkins, mergeWalkins, WALKIN_ROOT, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };

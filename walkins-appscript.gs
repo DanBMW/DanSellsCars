@@ -122,7 +122,7 @@ function doGet(e) {
   /* Force a Gmail rescan (board or manual). */
   if (p.refresh === '1' || p.refresh === 'true') {
     try {
-      refresh();
+      scanAndStore_();
     } catch (err) {
       return out({ error: String(err) }, p.callback);
     }
@@ -133,7 +133,7 @@ function doGet(e) {
      the walls stayed silent. Rescan when missing or older than 3 minutes. */
   if (!body || age > 3 * 60 * 1000) {
     try {
-      refresh();
+      scanAndStore_();
       body = readCache();
     } catch (err) {
       if (!body) return out({ error: String(err) }, p.callback);
@@ -289,7 +289,9 @@ function writeCache(obj) {
   PropertiesService.getScriptProperties().setProperty(CACHE_KEY, s);
 }
 
-function refresh() {
+/* The scan itself. Throws on any Gmail error; doGet uses it directly so a
+   board asking for ?refresh=1 still hears about a failure. */
+function scanAndStore_() {
   var packed = scan();
   writeCache({
     appointments: packed.appointments,
@@ -297,6 +299,49 @@ function refresh() {
     scannedAt: Date.now()
   });
   return packed.appointments.length;
+}
+
+/* The minute trigger. Dan, 18 November 2026: two "We're sorry, a server error
+   occurred. Please wait a bit and try again." emails from Google, each a run
+   that hung for 8 minutes inside a Gmail call (17 Nov 16:41, 18 Nov 04:24).
+   That is Google's own hiccup, not this code, and nothing was lost: the cache
+   kept the last good scan, the next minute's run rescanned, and doGet rescans
+   anyway once the cache is 3 minutes old. So a one-off failure is recorded and
+   swallowed rather than thrown (a throw is what sends the email). If scans
+   keep failing for FAIL_LOUD_MINS the trigger throws again, so a real outage
+   still emails him. A lock stops a hung run from piling the next ones up
+   behind it: while one is stuck, the others step aside. */
+var FAIL_KEY = 'refresh_fail_v1';
+var FAIL_LOUD_MINS = 30;
+
+function refresh() {
+  var lock = null;
+  if (typeof LockService !== 'undefined') {
+    lock = LockService.getScriptLock();
+    if (!lock.tryLock(1000)) return 'busy';       /* another run is still going */
+  }
+  var props = PropertiesService.getScriptProperties();
+  try {
+    var n = scanAndStore_();
+    if (props.getProperty(FAIL_KEY)) props.setProperty(FAIL_KEY, '');
+    return n;
+  } catch (err) {
+    var f = null;
+    try { f = JSON.parse(props.getProperty(FAIL_KEY) || 'null'); } catch (e) {}
+    if (!f || !f.since) f = { since: Date.now(), count: 0 };
+    f.count++;
+    f.last = Date.now();
+    f.msg = String(err).slice(0, 300);
+    props.setProperty(FAIL_KEY, JSON.stringify(f));
+    if (Date.now() - f.since >= FAIL_LOUD_MINS * 60000) {
+      throw new Error('Gmail scan failing for ' + Math.round((Date.now() - f.since) / 60000) +
+        ' minutes (' + f.count + ' runs). Last error: ' + f.msg);
+    }
+    if (typeof console !== 'undefined') console.warn('refresh skipped, will retry next minute: ' + f.msg);
+    return 'failed';
+  } finally {
+    if (lock) { try { lock.releaseLock(); } catch (e) {} }
+  }
 }
 
 function classifySubject(subject) {

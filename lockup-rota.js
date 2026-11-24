@@ -245,7 +245,8 @@
   };
   /* ---- fixed rotas: a run of days the managers have planned by hand ----
      Dan, 14 November 2026: the Christmas rota (Dan and Tomi swapped Christmas Eve and
-     New Year\u2019s Eve the same day). For each open date, who is in
+     New Year\u2019s Eve the same day). Updated 18 November from the latest
+     picture: Clive and Karis swapped the 29th and 30th. For each open date, who is in
      and who is off; anyone on the team not listed follows their usual week.
      Off on a fixed rota is away everywhere (kind 'rota'): the calendar, the
      lockup pairs, showroom cover, the forecourt check and the Monday email all
@@ -264,8 +265,8 @@
       '2026-12-23': { 'in': 'dan carl clive patryk tomi molly', off: 'danny karis mon chloe', managers: 'will' },
       '2026-12-24': { 'in': 'carl clive karis dan chloe', off: 'tomi danny mon patryk molly', managers: 'nathan', note: 'Christmas Eve' },
       '2026-12-28': { 'in': 'carl clive danny karis mon chloe', off: 'dan patryk tomi molly', managers: 'sergio', note: 'Bank holiday hours, 10am to 4pm' },
-      '2026-12-29': { 'in': 'dan clive danny mon patryk tomi chloe', off: 'carl karis molly', managers: 'sergio' },
-      '2026-12-30': { 'in': 'dan carl karis mon patryk tomi molly chloe', off: 'clive danny', managers: 'sergio' },
+      '2026-12-29': { 'in': 'dan danny karis mon patryk tomi chloe', off: 'carl clive molly', managers: 'sergio' },
+      '2026-12-30': { 'in': 'dan carl clive mon patryk tomi molly chloe', off: 'danny karis', managers: 'sergio' },
       '2026-12-31': { 'in': 'tomi carl danny mon patryk chloe', off: 'clive karis dan molly', managers: 'sergio', note: 'New Year\u2019s Eve' }
     }
   }];

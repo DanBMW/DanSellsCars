@@ -17,26 +17,8 @@
  "monthly": "£1,014.17",
  "monthly_gbp": 1014.17,
  "apr": 2.9,
- "finance_example": {
-  "product": "BMW Select (PCP)",
-  "lender": "BMW Financial Services (GB) Limited",
-  "apr": 2.9,
-  "monthly": 1014.17,
-  "payments": 47,
-  "term_months": 48,
-  "deposit": 4500,
-  "cash_price": 82081.2,
-  "amount_of_credit": 77581.2,
-  "final_payment": 36482.66,
-  "total_payable": 88648.65,
-  "charge_for_credit": 6567.45,
-  "annual_mileage": 8000,
-  "contract_mileage": 32000,
-  "excess_pence": null,
-  "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
- },
- "lead_time_weeks_min": 2,
- "lead_time_weeks_max": 4,
+ "lead_time_weeks_min": 1,
+ "lead_time_weeks_max": 3,
  "on_hold": false,
  "options": [
   "Iconic Glow Kidney Grille",
@@ -88,7 +70,7 @@
  "retailer_name": "Hedin Automotive Enfield",
  "first_seen": "2026-10-29",
  "first_seen_seed": true,
- "removed_at": "2026-11-10",
+ "removed_at": "2026-11-19",
  "status": "removed",
- "available_until": "2026-12-10"
+ "available_until": "2026-12-19"
 }

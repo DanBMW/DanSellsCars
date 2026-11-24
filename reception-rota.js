@@ -6,12 +6,20 @@
  *   - sales executives only, so the handover team (Chloe and Molly) are never
  *     put on reception; anyone off, on holiday or away is left out, using the
  *     shift calendar's own availability (ShiftRota.staffOn);
- *   - three shifts across the day, one person on each;
+ *   - three shifts across the day, two people on each (Dan, 17 November 2026).
+ *     Each shift is two seats with their own id (am and am2, mid and mid2,
+ *     pm and pm2), so everything that works per shift (the cover email, I
+ *     cannot cover, take, assign, nudge, the history) works per seat unchanged;
+ *   - nobody sits in both seats of one shift. A double shift is allowed only
+ *     with a gap between the two (morning and afternoon, never back to back),
+ *     and only when nobody free is on no shift yet;
  *   - fair: people with fewest recent reception shifts first, then people who
  *     have not already covered a shift today, so one person does not get the
  *     whole day when someone else is free;
  *   - a person who says they cannot cover is taken off that shift and the next
- *     fair person is put on, with the reason going to the managers.
+ *     fair person is put on, with the reason going to the managers;
+ *   - each shift has two locations: place 1 is HALO, place 2 is Reception.
+ *     A shift with only one person on, in either place, is HALO.
  *
  * Shift hours are a guess until Dan confirms them: see SHIFTS below.
  */
@@ -19,7 +27,7 @@
   'use strict';
 
   /* three shifts a day. Times are local (UK). Dan to confirm. */
-  var SHIFTS = {
+  var BASE = {
     weekday: [
       { id: 'am', from: '09:00', to: '12:00' },
       { id: 'mid', from: '12:00', to: '15:00' },
@@ -31,6 +39,38 @@
       { id: 'pm', from: '14:00', to: '17:00' }
     ]
   };
+  /* people on each shift. The first seat keeps the shift's own id, so days
+     planned before 17 November (one person a shift) still read the same. */
+  var SEATS = 2;
+  function seated(list) {
+    var out = [];
+    list.forEach(function (s) {
+      for (var i = 1; i <= SEATS; i++) out.push({ id: i === 1 ? s.id : s.id + i, from: s.from, to: s.to, base: s.id, seat: i });
+    });
+    return out;
+  }
+  var SHIFTS = { weekday: seated(BASE.weekday), sat: seated(BASE.sat) };
+  /* two seats at the same time (the same shift) */
+  function sameTime(a, b) { return minsOf(a.from) < minsOf(b.to) && minsOf(b.from) < minsOf(a.to); }
+  /* place 1 covers HALO, place 2 covers Reception. A lone person on the shift is always at HALO. */
+  var LOCATIONS = { 1: 'HALO', 2: 'Reception' };
+  function isHeld(row) {
+    return !!(row && row.personId && (row.status === 'assigned' || row.status === 'covering'));
+  }
+  function heldCount(day, shifts, s, upcoming) {
+    upcoming = upcoming || {};
+    return shifts.filter(function (x) { return sameTime(x, s); }).filter(function (x) {
+      if (upcoming[x.id]) return true;
+      return isHeld((day || {})[x.id]);
+    }).length;
+  }
+  function locationOf(seat, opts) {
+    opts = opts || {};
+    if (opts.alone) return LOCATIONS[1];
+    return LOCATIONS[seat] || LOCATIONS[1];
+  }
+  /* too close for one person to do both: the same time, or back to back with no gap */
+  function tooClose(a, b) { return minsOf(a.from) <= minsOf(b.to) && minsOf(b.from) <= minsOf(a.to); }
   var REASONS = {
     cannot: 'I cannot cover right now',
     notin: 'I am not in today',
@@ -82,15 +122,19 @@
   function planDay(opts) {
     var shifts = opts.shifts || [], pool = poolFor(opts.available, opts.team, opts.exclude);
     var hist = opts.history || {}, declined = opts.declined || {}, existing = opts.existing || {}, busy = opts.busy || {};
-    var out = {}, short = [], today = {};
+    var out = {}, short = [], today = {}, skip = opts.skip || [];
+    var byId = {}; shifts.forEach(function (s) { byId[s.id] = s; });
+    /* is this person on a seat too close to s (same shift, or back to back) */
+    var near = function (id, s) { return Object.keys(out).some(function (k) { return out[k] === id && k !== s.id && byId[k] && tooClose(byId[k], s); }); };
     /* keep standing assignments as they are */
     shifts.forEach(function (s) { if (existing[s.id] && pool.indexOf(existing[s.id]) >= 0) { out[s.id] = existing[s.id]; today[existing[s.id]] = (today[existing[s.id]] || 0) + 1; } });
     shifts.forEach(function (s) {
-      if (out[s.id]) return;
+      if (out[s.id] || skip.indexOf(s.id) >= 0) return;
       var no = declined[s.id] || [];
       var free = function (id) { return no.indexOf(id) < 0 && !clashes(busy, id, s); };
-      var cand = pool.filter(function (id) { return free(id) && Object.keys(out).every(function (k) { return out[k] !== id; }); });
-      /* no double shifts: someone already on today is never put on a second one. If nobody new is free the shift is short. */
+      /* a second shift only with a gap: never both seats of one shift, never back to back.
+         Fewest shifts today sorts first, so a double only happens when nobody else is free. */
+      var cand = pool.filter(function (id) { return free(id) && !near(id, s); });
       if (!cand.length) { out[s.id] = null; short.push(s.id); return; }
       cand.sort(function (a, b) {
         return ((today[a] || 0) - (today[b] || 0)) || ((hist[a] || 0) - (hist[b] || 0)) || (pool.indexOf(a) - pool.indexOf(b));
@@ -101,12 +145,16 @@
     return { assignments: out, short: short };
   }
 
+  /* reasons that are not a why on their own: the person must add words (Dan, 17 November 2026:
+     "if someone cannot cover they need to say why"). The other three name the reason themselves. */
+  function needsWords(kind) { return kind === 'cannot' || kind === 'other'; }
+
   /* what a covering person can answer, and what it does to the day */
   function answer(kind, reason) {
     if (kind === 'covering') return { status: 'covering', reassign: false };
     if (!REASONS[kind]) return null;
     var r = String(reason || '').trim(); /* the words are kept for every reason, not only Other */
-    if (kind === 'other' && !r) return null; /* a reason is needed for Other */
+    if (needsWords(kind) && !r) return null; /* "I cannot cover right now" and Other must say why */
     return { status: 'declined', reassign: true, reason: REASONS[kind], reasonText: r.slice(0, 500) };
   }
 
@@ -134,35 +182,125 @@
     return '<a href="' + escHtml(href) + '" style="' + style + '">' + escHtml(label) + '</a>';
   }
 
+  /* a personal link (Dan, 17 November 2026): no sign in, one person, one seat, one day.
+     The token is minted by the job (scripts/reception-mail.js) and only ever travels on
+     the private email queue, never anywhere world readable. */
+  var LINK_SITE = 'https://dan-sells.co.uk/cover.html';
+  var TOKEN_RE = /^[A-Za-z0-9_-]{24,64}$/;
+  function linkUrl(token, action, test) {
+    return LINK_SITE + '?t=' + encodeURIComponent(token) + (action ? '&a=' + encodeURIComponent(action) : '') + (test ? '&test=1' : '');
+  }
+  /* the tap links for an email: the personal link when there is one, else the signed in page */
+  function tapLinks(shift, opts) {
+    opts = opts || {};
+    if (opts.token) return { covering: linkUrl(opts.token, 'covering', opts.test), cannot: linkUrl(opts.token, 'cannot', opts.test), open: linkUrl(opts.token, '', opts.test) };
+    return {
+      covering: coverPageUrl({ date: opts.date, shift: shift.id, action: 'covering' }),
+      cannot: coverPageUrl({ date: opts.date, shift: shift.id, action: 'cannot' }),
+      open: coverPageUrl({ date: opts.date, shift: shift.id })
+    };
+  }
+
   /* the wording of the cover email, as Dan asked: "you are on showroom cover,
      please cover showroom until ##:##". opts.date makes the tap links open that day. */
   function coverEmail(name, shift, opts) {
     opts = opts || {};
-    var covering = coverPageUrl({ date: opts.date, shift: shift.id, action: 'covering' });
-    var cannot = coverPageUrl({ date: opts.date, shift: shift.id, action: 'cannot' });
-    var open = coverPageUrl({ date: opts.date, shift: shift.id });
-    var subject = 'Showroom cover ' + shift.from + ' to ' + shift.to;
-    var text = 'Hi ' + name + ',\n\nYou are on showroom cover. Please cover showroom until ' + shift.to + '.\n\n' +
+    var L = tapLinks(shift, opts);
+    var covering = L.covering, cannot = L.cannot, open = L.open;
+    var loc = locationOf(shift.seat, opts);
+    var subject = 'Showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to;
+    var text = 'Hi ' + name + ',\n\nYou are on showroom cover at ' + loc + '. Please cover showroom until ' + shift.to + '.\n\n' +
       'I am covering:\n' + covering + '\n\n' +
       'I cannot cover:\n' + cannot + '\n\n' +
       'Open showroom cover:\n' + open;
     var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
-      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom cover ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + '</div>' +
+      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom cover at ' + escHtml(loc) + ', ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + '</div>' +
       '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
       '<p style="margin:0 0 12px">Hi ' + escHtml(name) + ',</p>' +
-      '<p style="margin:0 0 16px">You are on showroom cover. Please cover showroom until ' + escHtml(shift.to) + '.</p>' +
+      '<p style="margin:0 0 16px">You are on showroom cover at ' + escHtml(loc) + '. Please cover showroom until ' + escHtml(shift.to) + '.</p>' +
       mailBtn(covering, 'I am covering', 'primary') +
       mailBtn(cannot, 'I cannot cover', 'danger') +
       '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover</p></div></div>';
     return { subject: subject, text: text, html: html, coveringUrl: covering, cannotUrl: cannot };
   }
 
+  /* every 15 minutes until they answer (Dan, 17 November 2026: "up the ante"). n is the
+     reminder number; from the third the managers are copied in on a separate note. */
+  function nagEmail(name, shift, opts) {
+    opts = opts || {};
+    var L = tapLinks(shift, opts), n = opts.n || 1;
+    var loc = locationOf(shift.seat, opts);
+    var subject = (n >= 3 ? 'Still waiting: ' : 'Reminder: ') + 'are you covering the showroom at ' + loc + ', ' + shift.from + ' to ' + shift.to + '?';
+    var line = n >= 3
+      ? 'Hi ' + name + ', this is reminder ' + n + '. You still have not said whether you are covering the showroom at ' + loc + ' until ' + shift.to + ', and the managers have been told.'
+      : 'Hi ' + name + ', you are on showroom cover at ' + loc + ' until ' + shift.to + ' and have not confirmed yet.';
+    var ask = 'Please tap one of these now. You will get this every 15 minutes until you do.';
+    var text = line + '\n\n' + ask + '\n\nI am covering:\n' + L.covering + '\n\nI cannot cover:\n' + L.cannot;
+    var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+      '<div style="background:' + (n >= 3 ? '#8a1c12' : '#0b1220') + ';color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">' + escHtml(subject) + '</div>' +
+      '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
+      '<p style="margin:0 0 12px">' + escHtml(line) + '</p>' +
+      '<p style="margin:0 0 16px">' + escHtml(ask) + '</p>' +
+      mailBtn(L.covering, 'I am covering', 'primary') +
+      mailBtn(L.cannot, 'I cannot cover', 'danger') +
+      '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover. No sign in needed: this link is yours alone.</p></div></div>';
+    return { subject: subject, text: text, html: html };
+  }
+  /* the managers' email at the start of each shift (Dan, 17 November 2026): who should be on,
+     whether each has confirmed, and a one tap Nudge for each person on, with no sign in.
+     rows: [{ seat, name, state: covering|assigned|declined|open|short|absent, nudgeUrl? }] */
+  var STATE_WORDS = {
+    covering: 'Confirmed, covering', assigned: 'Not confirmed yet', absent: 'Nudged, not answered yet',
+    declined: 'Cannot cover, being replaced', open: 'Nobody yet, being filled', short: 'Nobody free, please choose someone'
+  };
+  function startEmail(shift, rows, opts) {
+    opts = opts || {};
+    var on = rows.filter(function (r) { return r.name && (r.state === 'covering' || r.state === 'assigned' || r.state === 'absent'); });
+    var ok = rows.filter(function (r) { return r.state === 'covering'; }).length;
+    var subject = 'Showroom ' + shift.from + ' to ' + shift.to + ': ' + (on.length ? on.map(function (r) { return r.name; }).join(' and ') : 'nobody on') + (ok === rows.length ? '' : ' (' + ok + ' of ' + rows.length + ' confirmed)');
+    var lines = ['Showroom cover ' + shift.from + ' to ' + shift.to + ' starts now. Who should be in the showroom:', ''];
+    function placeOf(r, i) {
+      var seat = r.seatNum || (i + 1);
+      var loc = locationOf(seat, { alone: !!(r.name) && on.length <= 1 });
+      return 'Place ' + seat + ', ' + loc;
+    }
+    rows.forEach(function (r, i) {
+      lines.push(placeOf(r, i) + ': ' + (r.name || 'Nobody') + ', ' + (STATE_WORDS[r.state] || r.state) + '.');
+      if (r.nudgeUrl) lines.push('Not in the showroom? Nudge ' + r.name + ': ' + r.nudgeUrl);
+    });
+    lines.push('', 'Open showroom cover: ' + PAGE_URL);
+    var rowHtml = rows.map(function (r, i) {
+      var tone = r.state === 'covering' ? '#2ea56a' : (r.state === 'assigned' || r.state === 'absent') ? '#c98a00' : '#c0392b';
+      return '<div style="border:1px solid #d9e3ee;border-left:6px solid ' + tone + ';border-radius:12px;padding:14px;margin:0 0 12px">' +
+        '<div style="font-size:13px;color:#6b7a8c">' + escHtml(placeOf(r, i)) + '</div>' +
+        '<div style="font-size:18px;font-weight:800;margin:2px 0">' + escHtml(r.name || 'Nobody') + '</div>' +
+        '<div style="font-size:15px;color:' + tone + ';font-weight:700">' + escHtml(STATE_WORDS[r.state] || r.state) + '</div>' +
+        (r.nudgeUrl ? '<div style="margin-top:10px">' + mailBtn(r.nudgeUrl, 'Nudge ' + r.name + ', not in the showroom', 'danger') + '</div>' : '') +
+        '</div>';
+    }).join('');
+    var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
+      '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Showroom ' + escHtml(shift.from) + ' to ' + escHtml(shift.to) + ' starts now</div>' +
+      '<div style="border:1px solid #d9e3ee;border-top:0;border-radius:0 0 14px 14px;padding:20px">' +
+      '<p style="margin:0 0 14px">Who should be in the showroom. If someone is not there, tap Nudge: they get a Where are you? email straight away, with no sign in for you or for them.</p>' +
+      rowHtml + mailBtn(PAGE_URL, 'Open showroom cover', 'primary') +
+      '<p style="color:#6b7a8c;font-size:12px;margin:16px 0 0">Hedin BMW Ruxley showroom cover. The Nudge links are for managers only, please do not forward.</p></div></div>';
+    return { subject: subject, text: lines.join('\n'), html: html };
+  }
+  function unconfirmedNote(name, shift, mins, opts) {
+    opts = opts || {};
+    var loc = locationOf(shift.seat, opts);
+    var line = name + ' has not confirmed showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to + ' after ' + mins + ' minutes of reminders. They are still being asked every 15 minutes.';
+    return { subject: name + ' has not confirmed showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to, text: line };
+  }
+
   /* "where are you" nudge: tap I am here, or say you cannot be in */
   function absentEmail(name, shift, opts) {
     opts = opts || {};
-    var here = coverPageUrl({ date: opts.date, shift: shift.id, action: 'here' });
-    var away = coverPageUrl({ date: opts.date, shift: shift.id, action: 'away' });
-    var line = 'Hi ' + name + ', you are not in the showroom. You are on showroom cover ' + shift.from + ' to ' + shift.to + '.';
+    /* with a personal link: I am here, or the cannot cover reasons, with no sign in */
+    var here = opts.token ? linkUrl(opts.token, 'here', opts.test) : coverPageUrl({ date: opts.date, shift: shift.id, action: 'here' });
+    var away = opts.token ? linkUrl(opts.token, 'cannot', opts.test) : coverPageUrl({ date: opts.date, shift: shift.id, action: 'away' });
+    var loc = locationOf(shift.seat, opts);
+    var line = 'Hi ' + name + ', you are not in the showroom. You are on showroom cover at ' + loc + ', ' + shift.from + ' to ' + shift.to + '.';
     var text = line + '\n\nI am here:\n' + here + '\n\nI cannot be in:\n' + away;
     var html = '<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;max-width:520px;margin:auto;color:#12263a">' +
       '<div style="background:#0b1220;color:#fff;border-radius:14px 14px 0 0;padding:18px 20px;font-size:18px;font-weight:800">Where are you? &#128064;</div>' +
@@ -184,13 +322,15 @@
     return new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
   }
 
-  function shortNote(shift, free, onOther, booked, names) {
+  function shortNote(shift, free, onOther, booked, names, places) {
     var nm = function (id) { return (names || {})[id] || id; };
     var lines = [];
-    lines.push('Nobody free is left for showroom cover ' + shift.from + ' to ' + shift.to + '. Please choose someone.');
+    lines.push(places > 1
+      ? 'Nobody free is left for either place on showroom cover ' + shift.from + ' to ' + shift.to + '. Please choose two people.'
+      : 'Nobody free is left for showroom cover ' + shift.from + ' to ' + shift.to + '. Please choose someone.');
     lines.push('');
     lines.push('Free and not on a shift yet: ' + (free.length ? free.map(nm).join(', ') : 'nobody'));
-    lines.push('Free but already on another shift today: ' + (onOther.length ? onOther.map(nm).join(', ') : 'nobody'));
+    lines.push('Free but already on another shift today (fine if there is a gap between): ' + (onOther.length ? onOther.map(nm).join(', ') : 'nobody'));
     lines.push('With an appointment over this shift: ' + (booked.length ? booked.map(nm).join(', ') : 'nobody'));
     lines.push('');
     lines.push('Assign on reception.html (managers, Assign under the shift).');
@@ -333,12 +473,11 @@
 
   /* The shift whose window contains nowMins, or null outside every window (heads-up does not count). */
   function activeShiftAt(shifts, nowMins) {
-    var i, s;
-    for (i = 0; i < (shifts || []).length; i++) {
-      s = shifts[i];
-      if (nowMins >= minsOf(s.from) && nowMins < minsOf(s.to)) return s;
-    }
-    return null;
+    return activeShiftsAt(shifts, nowMins)[0] || null;
+  }
+  /* every seat whose window contains nowMins (both seats of the shift that is on) */
+  function activeShiftsAt(shifts, nowMins) {
+    return (shifts || []).filter(function (s) { return nowMins >= minsOf(s.from) && nowMins < minsOf(s.to); });
   }
 
   /* When a walk-in-taken alert names the person currently on the active cover shift,
@@ -352,14 +491,15 @@
     if (kind !== 'walk-in-taken' && kind !== 'walkin-taken'
         && kind !== 'walkin-arrived-taken' && kind !== 'walk-in-arrived-taken'
         && kind !== 'walkin-waiting-taken' && kind !== 'walk-in-waiting-taken') return null;
-    var shift = activeShiftAt(opts.shifts, opts.nowMins);
+    var pid = matchPersonByName(opts.assignedTo, opts.team);
+    if (!pid) return null;
+    /* the seat on the active shift this person holds (two people a shift since 17 November) */
+    var shift = activeShiftsAt(opts.shifts, opts.nowMins).filter(function (s) { return ((opts.day || {})[s.id] || {}).personId === pid; })[0];
     if (!shift) return null;
     var rec = (opts.day || {})[shift.id] || {};
     if (!rec.personId || rec.status === 'declined' || rec.status === 'short' || rec.status === 'open') return null;
     /* a reallocate already queued and not yet handled: do not stack another */
     if (rec.reallocate && rec.reallocate.ts !== rec.reallocateHandledTs) return null;
-    var pid = matchPersonByName(opts.assignedTo, opts.team);
-    if (!pid || pid !== rec.personId) return null;
     var cust = String(opts.customer || '').trim().slice(0, 80);
     return {
       shiftId: shift.id,
@@ -430,6 +570,6 @@ function publicRota(day, date, dow, team) {
   });
 }
 
-var api = { PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
+var api = { needsWords: needsWords, startEmail: startEmail, LOCATIONS: LOCATIONS, locationOf: locationOf, isHeld: isHeld, heldCount: heldCount, STATE_WORDS: STATE_WORDS, linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

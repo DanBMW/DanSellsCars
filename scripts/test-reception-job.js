@@ -38,14 +38,18 @@ const team = {
   dan: { name: 'Dan', email: 'daniel.cane@hedinautomotive.co.uk', order: 2, active: true },
   ben: { name: 'Ben', email: 'ben.x@hedinautomotive.co.uk', order: 3, active: true },
   chloe: { name: 'Chloe', email: 'chloe.x@hedinautomotive.co.uk', order: 4, active: true },
-  molly: { name: 'Molly', email: 'molly.x@hedinautomotive.co.uk', order: 5, active: true }
+  molly: { name: 'Molly', email: 'molly.x@hedinautomotive.co.uk', order: 5, active: true },
+  /* two people a shift since 17 November: six sales executives fill the six seats with nobody twice */
+  mon: { name: 'Mon', email: 'mon.x@hedinautomotive.co.uk', order: 6, active: true },
+  karis: { name: 'Karis', email: 'karis.x@hedinautomotive.co.uk', order: 7, active: true }
 };
+const SEATS = ['am', 'am2', 'mid', 'mid2', 'pm', 'pm2'];
 const at = (h, m) => ({ mins: h * 60 + m });
 const MON = '2026-11-02', SUN = '2026-11-08';
 const rcPfx = () => (RR.TEST_ONLY ? 'rc_test' : 'rc_live');
 
 async function runAt(db, date, h, m, cfgExtra) {
-  const queue = (await db.ref('lockupTest/notify').get()).val() || {};
+  const queue = Object.assign({}, (await db.ref('lockupTest/notify').get()).val() || {}, (await db.ref('lockupPrivate/notify').get()).val() || {});
   const q = J.makeQueue(db, 'lockupTest', queue);
   const reception = (await db.ref('lockupTest/reception').get()).val() || {};
   const res = await J.run(Object.assign({
@@ -67,16 +71,19 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(r.added.length, 0);
   console.log('ok: nothing is planned before 07:30');
 
-  // 08:00: three shifts, three different sales people, one email each, chloe and molly never
+  // 08:00: three shifts of two seats, six different sales people, one email each, chloe and molly never
   db = fakeDb();
   r = await runAt(db, MON, 8, 0);
   const day = db.data.lockupTest.reception[MON];
-  const ppl = ['am', 'mid', 'pm'].map(k => day[k].personId);
-  assert.strictEqual(new Set(ppl).size, 3, JSON.stringify(ppl));
+  const ppl = SEATS.map(k => day[k].personId);
+  assert.strictEqual(new Set(ppl).size, 6, JSON.stringify(ppl));
   assert.ok(ppl.every(p => p !== 'chloe' && p !== 'molly'));
-  assert.strictEqual(r.added.length, 3, 'three cover emails: ' + r.added.join(','));
+  assert.strictEqual(r.added.length, 6, 'six cover emails: ' + r.added.join(','));
   const mail = db.data.lockupTest.notify[r.added[0]];
-  assert.ok(/You are on showroom cover\. Please cover showroom until/.test(mail.text), mail.text);
+  assert.ok(/You are on showroom cover at HALO\. Please cover showroom until/.test(mail.text), mail.text);
+  const mail2 = db.data.lockupTest.notify[r.added[1]];
+  assert.ok(/You are on showroom cover at Reception\. Please cover showroom until/.test(mail2.text), mail2.text);
+
   if (RR.TEST_ONLY) assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?test=1/.test(mail.text), mail.text);
   else assert.ok(/I am covering:\nhttps:\/\/dan-sells\.co\.uk\/reception\.html\?(?!test=)/.test(mail.text) && !/reception\.html\?test=1/.test(mail.text), mail.text);
   assert.ok(/action=cannot/.test(mail.text), mail.text);
@@ -138,7 +145,9 @@ async function runAt(db, date, h, m, cfgExtra) {
   assert.strictEqual(shortDay.am.status, 'short', JSON.stringify(shortDay.am));
   assert.strictEqual(shortDay.mid.status, 'short');
   const shortNote = r.added.filter(id => id.indexOf(rcPfx() + '_short_') === 0);
-  assert.strictEqual(shortNote.length, 3, 'one note per uncovered shift: ' + r.added.join(','));
+  assert.strictEqual(shortNote.length, 3, 'one note per uncovered shift, not one per seat: ' + r.added.join(','));
+  assert.strictEqual(shortDay.am2.status, 'short');
+  assert.ok(/either place/.test(db.data.lockupTest.notify[shortNote[0]].text), 'the note says both places are empty');
   const shortMail = db.data.lockupTest.notify[shortNote[0]];
   assert.ok(/Showroom not covered 09:00 to 12:00/.test(shortMail.subject), shortMail.subject);
   assert.strictEqual(shortMail.to, 'managers');
@@ -159,9 +168,9 @@ async function runAt(db, date, h, m, cfgExtra) {
   db = fakeDb();
   await runAt(db, MON, 8, 0);
   const logged = Object.values(db.data.receptionLogTest || {});
-  assert.strictEqual(logged.filter(e => e.kind === 'on').length, 3, 'three shifts logged as on: ' + JSON.stringify(logged));
+  assert.strictEqual(logged.filter(e => e.kind === 'on').length, 6, 'six seats logged as on: ' + JSON.stringify(logged));
   await runAt(db, MON, 8, 15);
-  assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on').length, 3, 'a later run logs nothing twice');
+  assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on').length, 6, 'a later run logs nothing twice');
   const amWho = db.data.lockupTest.reception[MON].am.personId;
   db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { status: 'declined', reason: 'I am off site', reasonText: '', ts: 2000 });
   await runAt(db, MON, 9, 0);
@@ -190,7 +199,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   const whereAre = r.added.filter(id => id.indexOf(rcPfx() + '_absent_') === 0);
   assert.strictEqual(whereAre.length, 1, 'one where-are-you email: ' + r.added.join(','));
   const wm = db.data.lockupTest.notify[whereAre[0]];
-  assert.ok(/Where are you\?/.test(wm.subject) && /reception\.html/.test(wm.text) && /I am here/.test(wm.text), wm.text);
+  assert.ok(/Where are you\?/.test(wm.subject) && /reception\.html/.test(wm.text) && /I am here/.test(wm.text) && /on showroom cover at HALO, 15:00 to 18:00/.test(wm.text), wm.text);
   assert.deepStrictEqual(wm.to, ['daniel.cane@hedinautomotive.co.uk'], 'testExec routes the cover email to Dan');
   db.data.lockupTest.reception[MON].pm = Object.assign({}, db.data.lockupTest.reception[MON].pm, { absent: Object.assign({}, db.data.lockupTest.reception[MON].pm.absent, { reply: { status: 'here', ts: 6000 } }) });
   r = await runAt(db, MON, 10, 15);
@@ -230,10 +239,15 @@ async function runAt(db, date, h, m, cfgExtra) {
   db = fakeDb();
   await runAt(db, MON, 8, 0, { team: offTeam });
   const offDay = db.data.lockupTest.reception[MON];
-  const onDay = ['am', 'mid', 'pm'].map(k => offDay[k] && offDay[k].personId).filter(Boolean);
+  const onDay = SEATS.map(k => offDay[k] && offDay[k].personId).filter(Boolean);
   assert.ok(!onDay.includes('carl') && !onDay.includes('tomi'), 'days off are respected: ' + JSON.stringify(onDay));
-  assert.strictEqual(new Set(onDay).size, onDay.length, 'no double shifts: ' + JSON.stringify(onDay));
-  console.log('ok: someone on a day off is not put on, and nobody is on twice');
+  const wkS = RR.shiftsFor(1);
+  wkS.forEach(x => wkS.forEach(y => {
+    const a = (offDay[x.id] || {}).personId;
+    if (x.id < y.id && a && a === (offDay[y.id] || {}).personId) assert.ok(!RR.tooClose(x, y), 'a double only with a gap: ' + JSON.stringify(onDay));
+  }));
+  assert.strictEqual(new Set(onDay).size, 4, 'all four people in are used before anyone doubles: ' + JSON.stringify(onDay));
+  console.log('ok: someone on a day off is not put on, and a double shift always has a gap');
 
   // with a customer: the person on the shift is taken off at once, logged as a skip with that reason, and the next person goes on
   db = fakeDb();
@@ -254,7 +268,7 @@ async function runAt(db, date, h, m, cfgExtra) {
   await runAt(db, MON, 8, 0, { absences: everyoneBusy });
   const shortNoteId = Object.keys(db.data.lockupTest.notify).filter(k => k.indexOf(rcPfx() + '_short_') === 0)[0];
   const shortText = db.data.lockupTest.notify[shortNoteId].text;
-  assert.ok(/Free and not on a shift yet: nobody/.test(shortText) && /Please choose someone/.test(shortText), shortText);
+  assert.ok(/Free and not on a shift yet: nobody/.test(shortText) && /Please choose two people/.test(shortText), shortText);
   const dateMail = db.data.lockupTest.notify[shortNoteId];
   assert.ok(/Monday 2 November/.test(dateMail.subject) && /Monday 2 November/.test(dateMail.text), 'the managers email names the date: ' + dateMail.subject);
   assert.ok(/https:\/\/dan-sells\.co\.uk\/reception\.html/.test(dateMail.text) && /reception\.html/.test(dateMail.html), 'and links to the page');
@@ -352,7 +366,17 @@ async function runAt(db, date, h, m, cfgExtra) {
     db = fakeDb();
     await runAt(db, MON, 8, 0);
     const prev = db.data.lockupTest.reception[MON].mid.personId;
-    assert.ok(prev && prev !== 'ben');
+    /* Ben sits in the other seat of this shift, so his take is refused; nothing changes */
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid2.personId, 'ben');
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, {
+      take: { personId: 'ben', by: 'ben', ts: 11000 }
+    });
+    r = await runAt(db, MON, 9, 45);
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid.personId, prev, 'one person never sits in both seats of a shift');
+    assert.strictEqual(r.added.filter(id => id.indexOf(rcPfx() + '_taken_') === 0).length, 0);
+    /* Ben comes off mid2 (Karis takes it), and then his take of mid goes through */
+    db.data.lockupTest.reception[MON].mid2 = { personId: 'karis', status: 'assigned', ts: 11500 };
+    db.data.lockupTest.reception[MON].pm2 = { personId: 'tomi', status: 'assigned', ts: 11500 };
     db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, {
       take: { personId: 'ben', by: 'ben', ts: 12000 }
     });
@@ -385,18 +409,32 @@ async function runAt(db, date, h, m, cfgExtra) {
     db = fakeDb();
     await runAt(db, MON, 8, 0);
     const prev = db.data.lockupTest.reception[MON].am.personId;
+    /* Ben is on 12 to 3, back to back with 9 to 12, so his take is refused (Dan, 18 November: two shifts only with a gap) */
+    assert.strictEqual(db.data.lockupTest.reception[MON].mid2.personId, 'ben');
     db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
-      status: 'covering', coveringMins: 9 * 60, take: { personId: 'ben', by: 'ben', ts: 14000 }
+      status: 'covering', coveringMins: 9 * 60, take: { personId: 'ben', by: 'ben', ts: 13000 }
+    });
+    r = await runAt(db, MON, 10, 15);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, prev, 'no back to back take');
+    /* a manager's pick back to back is refused the same way */
+    const pmWho = db.data.lockupTest.reception[MON].pm.personId;
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, { personId: null, status: 'short', assign: { personId: pmWho, by: 'dan', ts: 13500 } });
+    r = await runAt(db, MON, 10, 20);
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, pmWho, 'a manager cannot put the 3 to 6 person on 12 to 3');
+    /* the person on 3 to 6 has a gap before 9 to 12, so they can take it */
+    const vol = pmWho;
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, {
+      take: { personId: vol, by: vol, ts: 14000 }
     });
     r = await runAt(db, MON, 10, 30);
-    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'ben');
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, vol);
     const handed = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'cover' && e.reason === 'handed_back' && e.personId === prev);
     assert.strictEqual(handed.length, 1, JSON.stringify(handed));
     assert.deepStrictEqual([handed[0].from, handed[0].to, handed[0].minutes], ['09:00', '10:30', 90]);
-    const took = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'took_over' && e.personId === 'ben');
+    const took = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'on' && e.reason === 'took_over' && e.personId === vol);
     assert.strictEqual(took[0].from, '10:30', took[0].from);
     assert.strictEqual(took[0].to, '12:00');
-    console.log('ok: mid-shift take banks the previous cover and starts the volunteer from now');
+    console.log('ok: mid-shift take banks the previous cover and starts the volunteer from now; no back to back take or pick');
   }
 
   // take an open/short shift
@@ -487,14 +525,106 @@ async function runAt(db, date, h, m, cfgExtra) {
     assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'danny', 'before the shift window, cover stays');
     assert.ok(db.data.lockupTest.reception[MON]._day.walkinHandled['w-early']);
     console.log('ok: walk-in taken by the cover person reallocates like Unable; other cases leave cover alone');
+
+    // 18 November: the feed had already dropped Mon's alert by the time the job ran. The team board keeps
+    // every walk-in taken under walkinTaken/<date>, and the job acts on that even when the feed is empty.
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { team: teamW, walkinAlerts: [] });
+    db.data.lockupTest.reception[MON].am = Object.assign({}, db.data.lockupTest.reception[MON].am, { personId: 'danny', status: 'covering', coveringMins: 9 * 60, ts: 1 });
+    db.data.walkinTaken = { [MON]: { 'kept-danny-1': { kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Mrs Board', ts: 1 } } };
+    r = await runAt(db, MON, 10, 20, { team: teamW, walkinAlerts: [] });
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am.personId, 'danny', 'a kept walk-in takes Danny off cover with an empty feed');
+    assert.ok(db.data.lockupTest.reception[MON].am.declined.danny);
+    assert.ok(db.data.lockupTest.reception[MON]._day.walkinHandled['kept-danny-1'], 'kept alert marked handled');
+    const kskip = Object.values(db.data.receptionLogTest || {}).filter(e => e.kind === 'skip' && e.personId === 'danny');
+    assert.strictEqual(kskip.length, 1);
+    assert.ok(/Mrs Board/.test(kskip[0].reasonText), kskip[0].reasonText);
+    // the same alert in the feed and kept: handled once
+    const onNow = db.data.lockupTest.reception[MON].am.personId;
+    r = await runAt(db, MON, 10, 30, { team: teamW, walkinAlerts: [{ id: 'kept-danny-1', kind: 'walk-in-taken', assignedTo: 'Danny Willis', customer: 'Mrs Board' }] });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, onNow, 'no second reallocation');
+    assert.deepStrictEqual(J.mergeWalkins([{ id: 'a' }, { id: 'b' }], [{ id: 'b', x: 1 }, { id: 'c' }]).map(a => a.id), ['a', 'b', 'c']);
+    console.log('ok: a walk-in the board kept reallocates even after the feed has dropped it, once');
+
+    // second seat, as Mon on mid today: a walk-in kept for the person on mid reallocates mid
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { team: teamW, walkinAlerts: [] });
+    const midWas = db.data.lockupTest.reception[MON].mid.personId;
+    const midName = teamW[midWas].fullName || teamW[midWas].name;
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, db.data.lockupTest.reception[MON].mid, { status: 'covering', ts: 1 });
+    db.data.walkinTaken = { [MON]: { 'kept-mid-1': { kind: 'walk-in-taken', assignedTo: midName, ts: 1 } } };
+    r = await runAt(db, MON, 13, 10, { team: teamW, walkinAlerts: [] });
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, midWas, 'the mid cover person is taken off after a kept walk-in');
+    assert.ok(db.data.lockupTest.reception[MON].mid.declined[midWas]);
+    console.log('ok: the same for the person on the 12 to 3 shift');
+  }
+
+  // 18 November 14:05: a decline on 12 to 3 re-ran the plan, and the finished 9 to 12 seats, held by people the
+  // plan does not count as in (put on by hand), were refilled: an email to cover 9 to 12 at 2pm, and a not covered note.
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { walkinAlerts: [] });
+    const day = db.data.lockupTest.reception[MON];
+    // the morning seats are held by people the plan does not count (no work email puts them outside the pool)
+    const teamH = Object.assign({}, team, { zed: { name: 'Zed', order: 9, active: true }, yan: { name: 'Yan', order: 10, active: true } });
+    day.am = Object.assign({}, day.am, { personId: 'zed', status: 'assigned', ts: 1 });
+    day.am2 = Object.assign({}, day.am2, { personId: 'yan', status: 'assigned', ts: 1 });
+    const midWho = day.mid.personId;
+    day.mid = Object.assign({}, day.mid, { status: 'declined', reason: 'I cannot cover right now', reasonText: 'With a customer', ts: 5 });
+    r = await runAt(db, MON, 14, 5, { team: teamH, walkinAlerts: [] });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'zed', 'a finished seat keeps its person');
+    assert.strictEqual(db.data.lockupTest.reception[MON].am2.personId, 'yan', 'a finished second seat keeps its person');
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am2.status, 'short');
+    assert.ok(!r.added.some(id => /_am2?_/.test(id) && !/_am2?_(zed|yan)$/.test(id)), 'nobody new emailed for 9 to 12: ' + r.added.join(','));
+    assert.ok(!r.added.some(id => /short_.*_am/.test(id)), 'no not covered note for 9 to 12');
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].mid.personId, midWho, 'the declined 12 to 3 is still refilled');
+    // a seat in progress with its person on is not swapped either
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, { walkinAlerts: [] });
+    const d2 = db.data.lockupTest.reception[MON];
+    d2.am = Object.assign({}, d2.am, { personId: 'zed', status: 'covering', ts: 1 });
+    d2.am2 = Object.assign({}, d2.am2, { status: 'declined', reason: 'I cannot cover right now', reasonText: 'x', ts: 5 });
+    r = await runAt(db, MON, 10, 0, { team: teamH, walkinAlerts: [] });
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, 'zed', 'the person covering now stays on');
+    console.log('ok: a decline later in the day never refills a seat that has started or finished with someone on it');
   }
 
   // a planned cover email is held until 10 minutes before its shift; a reallocation sends now
   db = fakeDb();
   await runAt(db, MON, 8, 0);
-  const heldMail = Object.values(db.data.lockupTest.notify).filter(e => /Showroom cover \d/.test(e.subject || '') && !/not covered/.test(e.subject));
+  const heldMail = Object.values(db.data.lockupTest.notify).filter(e => /Showroom cover at (HALO|Reception), \d/.test(e.subject || '') && !/not covered/.test(e.subject));
   assert.ok(heldMail.length > 0 && heldMail.every(e => typeof e.sendAfter === 'number'), 'planned cover emails are held: ' + JSON.stringify(heldMail.map(e => e.sendAfter)));
   console.log('ok: planned cover emails are held until 10 minutes before the shift');
+
+  // unsent planned cover emails are refreshed before they are sent: old wording, and a lone person is HALO
+  {
+    const allMail = d => Object.assign({}, d.data.lockupTest.notify || {}, (d.data.lockupPrivate || {}).notify || {});
+    db = fakeDb();
+    r = await runAt(db, MON, 8, 0);
+    const p1 = db.data.lockupTest.reception[MON].am.personId;
+    const p2 = db.data.lockupTest.reception[MON].am2.personId;
+    const id1 = rcPfx() + '_' + MON + '_am_' + p1;
+    const id2 = rcPfx() + '_' + MON + '_am2_' + p2;
+    const sendAfter = allMail(db)[id2].sendAfter;
+    assert.ok(/at Reception/.test(allMail(db)[id2].text), allMail(db)[id2].text);
+    // wording queued before locations existed is rewritten in place, still held
+    db.data.lockupTest.notify[id1].subject = '[Beta] Showroom cover 09:00 to 12:00';
+    db.data.lockupTest.notify[id1].text = 'Hi X,\n\nYou are on showroom cover. Please cover showroom until 12:00.';
+    r = await runAt(db, MON, 8, 15);
+    assert.ok(/You are on showroom cover at HALO\. Please cover showroom until 12:00\./.test(allMail(db)[id1].text), allMail(db)[id1].text);
+    assert.ok(/Showroom cover at HALO, 09:00 to 12:00/.test(allMail(db)[id1].subject), allMail(db)[id1].subject);
+    assert.strictEqual(allMail(db)[id1].sendAfter, sendAfter, 'still held to the same time');
+    // place 1 drops off and cannot be refilled: place 2's unsent email becomes HALO
+    db.data.lockupTest.reception[MON].am = { personId: null, status: 'open', ts: Date.now() };
+    const away = {};
+    Object.keys(team).forEach(id => { if (id !== p2) away['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
+    r = await runAt(db, MON, 8, 20, { absences: away });
+    assert.ok(/You are on showroom cover at HALO\. Please cover showroom until 12:00\./.test(allMail(db)[id2].text), allMail(db)[id2].text);
+    assert.ok(/Showroom cover at HALO, 09:00 to 12:00/.test(allMail(db)[id2].subject), allMail(db)[id2].subject);
+    assert.strictEqual(allMail(db)[id2].sendAfter, sendAfter);
+    assert.ok(!allMail(db)[id2].sent, 'still unsent');
+    console.log('ok: unsent cover emails are refreshed with the current location before they are sent');
+  }
 
   // off on the team calendar after the day was planned: taken off a shift that has not ended,
   // the shift refilled now, the managers told once, a shift that has ended left as it was,
@@ -509,8 +639,7 @@ async function runAt(db, date, h, m, cfgExtra) {
     r = await runAt(db, MON, 9, 40, { absences: away(amWas, MON) });
     const d1 = db.data.lockupTest.reception[MON];
     assert.ok(d1.am.personId && d1.am.personId !== amWas, 'am refilled with someone else: ' + d1.am.personId);
-    assert.notStrictEqual(d1.am.personId, d1.mid.personId);
-    assert.notStrictEqual(d1.am.personId, d1.pm.personId);
+    assert.ok([d1.am2.personId, d1.mid.personId, d1.mid2.personId].indexOf(d1.am.personId) < 0, 'never the other seat or back to back');
     assert.strictEqual(d1.am.offCalendar.personId, amWas);
     assert.strictEqual(d1.am.declined[amWas], true);
     const sentNow = r.added.map(id => db.data.lockupTest.notify[id]).filter(e => Array.isArray(e.to) && /Showroom cover/.test(e.subject || ''));
@@ -522,7 +651,7 @@ async function runAt(db, date, h, m, cfgExtra) {
     const after = d1.am.personId;
     r = await runAt(db, MON, 9, 50, { absences: away(amWas, MON) });
     assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, after, 'a second run changes nothing');
-    assert.strictEqual(r.added.length, 0, 'and sends nothing: ' + r.added.join(','));
+    assert.strictEqual(r.added.filter(id => !/_nag_/.test(id)).length, 0, 'and sends nothing but the unconfirmed reminders: ' + r.added.join(','));
 
     // the shift has already ended: left exactly as it was
     db = fakeDb();
@@ -565,6 +694,224 @@ async function runAt(db, date, h, m, cfgExtra) {
     } });
     assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, amNow, 'cancelled or in-but-no-lockup keeps cover');
     console.log('ok: off on the team calendar takes them off cover and refills the shift now, once');
+  }
+
+  // 17 November: a day planned with one person a shift gets its second seats mid afternoon.
+  // Seats that have ended are left alone (no email, no short note); the afternoon's second seat is filled now.
+  {
+    db = fakeDb({ lockupTest: { reception: { [MON]: {
+      _day: { plannedAt: 1 },
+      am: { personId: 'tomi', status: 'covering', ts: 1 },
+      mid: { personId: 'carl', status: 'covering', ts: 1 },
+      pm: { personId: 'dan', status: 'covering', ts: 1 }
+    } }, notify: {
+      [rcPfx() + '_' + MON + '_am_tomi']: { sent: 1 }, [rcPfx() + '_' + MON + '_mid_carl']: { sent: 1 }, [rcPfx() + '_' + MON + '_pm_dan']: { sent: 1 }
+    } } });
+    r = await runAt(db, MON, 16, 16);
+    const d = db.data.lockupTest.reception[MON];
+    assert.ok(!d.am2 && !d.mid2, 'ended seats are not filled: ' + JSON.stringify(d));
+    assert.ok(d.pm2 && d.pm2.personId && ['dan', 'carl'].indexOf(d.pm2.personId) < 0, 'the afternoon second seat is filled with a gap: ' + JSON.stringify(d.pm2));
+    assert.deepStrictEqual([d.am.personId, d.mid.personId, d.pm.personId], ['tomi', 'carl', 'dan'], 'nobody already on is moved');
+    assert.ok(!r.added.some(id => /_short_/.test(id)), 'no short notes for seats that have ended: ' + r.added.join(','));
+    const pm2Mail = r.added.filter(id => id.indexOf(rcPfx() + '_' + MON + '_pm2_') === 0);
+    assert.strictEqual(pm2Mail.length, 1, 'one email for the new seat: ' + r.added.join(','));
+    assert.strictEqual(r.added.filter(id => /^rc_(live|test)_2026-11-02_/.test(id)).length, 1, 'and none for anyone else');
+    r = await runAt(db, MON, 16, 31);
+    assert.strictEqual(r.added.length, 0, 'the next run sends nothing: ' + r.added.join(','));
+    console.log('ok: a day planned with one person a shift gets its second seats, ended seats left alone');
+  }
+
+  // 17 November: personal no sign in links, and a reminder every 15 minutes until they answer
+  {
+    const L = { links: true };
+    const allMail = db => Object.assign({}, db.data.lockupTest.notify || {}, (db.data.lockupPrivate || {}).notify || {});
+    db = fakeDb();
+    r = await runAt(db, MON, 8, 0, L);
+    const covers = r.added.filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.strictEqual(covers.length, 6);
+    assert.ok(covers.every(id => db.data.lockupPrivate.notify[id] && !(db.data.lockupTest.notify || {})[id]), 'cover emails with a link go on the private queue only');
+    assert.ok(!/cover\.html\?t=/.test(JSON.stringify(db.data.lockupTest)), 'no personal link anywhere under the world readable lockup tree');
+    const amWho = db.data.lockupTest.reception[MON].am.personId;
+    const amMail = db.data.lockupPrivate.notify[covers.find(id => id.indexOf('_am_' + amWho) > 0)];
+    const tok = (amMail.text.match(/cover\.html\?t=([A-Za-z0-9_-]+)&a=covering/) || [])[1];
+    assert.ok(tok && RR.TOKEN_RE.test(tok), 'the email carries a personal link: ' + amMail.text);
+    assert.ok(/cover\.html\?t=[A-Za-z0-9_-]+&a=cannot/.test(amMail.text) && /cover\.html\?t=/.test(amMail.html));
+    const link = db.data[J.LINK_ROOT][tok];
+    assert.deepStrictEqual([link.date, link.shift, link.personId, link.from, link.to], [MON, 'am', amWho, '09:00', '12:00']);
+    assert.strictEqual(Object.keys(db.data[J.LINK_ROOT]).length, 6, 'one link a person a seat');
+    assert.strictEqual(db.data[J.IDX_ROOT][MON]['am_' + amWho].t, tok);
+    r = await runAt(db, MON, 8, 15, L);
+    assert.strictEqual(Object.keys(db.data[J.LINK_ROOT]).length, 6, 'a later run reuses the links');
+    console.log('ok: cover emails carry a personal link, kept off the public queue');
+
+    // nobody has confirmed: a reminder every 15 minutes from the first email (08:50 for the 09:00 seats)
+    Object.keys(db.data.lockupTest.reception[MON]).forEach(k => { if (k !== '_day') db.data.lockupTest.reception[MON][k].ts = 1; });
+    r = await runAt(db, MON, 9, 0, L);
+    assert.strictEqual(r.added.filter(id => /_nag_/.test(id)).length, 0, 'nothing before 15 minutes: ' + r.added.join(','));
+    r = await runAt(db, MON, 9, 5, L);
+    let nags = r.added.filter(id => /_nag_/.test(id));
+    assert.deepStrictEqual(nags.map(id => id.replace(/^.*_nag_[0-9-]+_/, '')).sort(), ['am2_' + db.data.lockupTest.reception[MON].am2.personId + '_1', 'am_' + amWho + '_1'].sort(), 'reminder 1 for both morning seats: ' + nags.join(','));
+    const nag1 = db.data.lockupPrivate.notify[nags.find(id => id.indexOf('_am_') > 0)];
+    assert.ok(/Reminder: are you covering the showroom at HALO, 09:00 to 12:00\?/.test(nag1.subject) && nag1.text.indexOf('t=' + tok + '&a=covering') > 0, nag1.subject);
+    r = await runAt(db, MON, 9, 12, L);
+    assert.strictEqual(r.added.filter(id => /_nag_/.test(id)).length, 0, 'not again inside the 15 minutes');
+    r = await runAt(db, MON, 9, 21, L);
+    assert.strictEqual(r.added.filter(id => /_nag_.*_2$/.test(id)).length, 2, 'reminder 2: ' + r.added.join(','));
+    r = await runAt(db, MON, 9, 36, L);
+    assert.strictEqual(r.added.filter(id => /_nag_.*_3$/.test(id)).length, 2);
+    const mgr = r.added.filter(id => /_nagMgr_/.test(id));
+    assert.strictEqual(mgr.length, 2, 'the managers hear at the third: ' + r.added.join(','));
+    assert.strictEqual(db.data.lockupTest.notify[mgr[0]].to, 'managers');
+    assert.ok(/Still waiting/.test(db.data.lockupPrivate.notify[r.added.find(id => /_nag_.*_am_.*_3$/.test(id))].subject));
+    r = await runAt(db, MON, 9, 51, L);
+    assert.strictEqual(r.added.filter(id => /_nagMgr_/.test(id)).length, 0, 'and only once');
+    assert.strictEqual(r.added.filter(id => /_nag_.*_4$/.test(id)).length, 2);
+    assert.ok(!r.added.some(id => /_nag_.*_(mid|pm)/.test(id)), 'later shifts are not chased before their time');
+    console.log('ok: a reminder every 15 minutes until they answer, the managers told once at the third');
+
+    // they tap I am covering on the link: the seat says covering and the reminders stop
+    db.data[J.LINK_ROOT][tok].answer = { kind: 'covering', ts: 5000 };
+    r = await runAt(db, MON, 10, 6, L);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.status, 'covering');
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.personId, amWho);
+    assert.ok(!r.added.some(id => id.indexOf('_nag_' + MON + '_am_') > 0), 'no more reminders for them: ' + r.added.join(','));
+    assert.ok(r.added.some(id => id.indexOf('_nag_' + MON + '_am2_') > 0), 'their partner is still chased');
+    r = await runAt(db, MON, 10, 21, L);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am.status, 'covering', 'the same answer is not applied twice');
+    console.log('ok: I am covering on the link confirms the seat and stops the reminders');
+
+    // the partner taps I cannot cover (with a customer): declined, managers told, the next person on with their own link
+    const am2Who = db.data.lockupTest.reception[MON].am2.personId;
+    const tok2 = db.data[J.IDX_ROOT][MON]['am2_' + am2Who].t;
+    db.data[J.LINK_ROOT][tok2].answer = { kind: 'customer', ts: 6000 };
+    r = await runAt(db, MON, 10, 25, L);
+    const am2 = db.data.lockupTest.reception[MON].am2;
+    assert.ok(am2.personId && am2.personId !== am2Who, 'someone else is put on: ' + JSON.stringify(am2));
+    assert.ok(am2.declined[am2Who]);
+    const skip = Object.values(db.data.receptionLogTest).filter(e => e.kind === 'skip' && e.personId === am2Who);
+    assert.strictEqual(skip.length, 1);
+    assert.strictEqual(skip[0].reason, "I'm with a customer now, cannot cover");
+    assert.ok(r.added.some(id => /_decl_/.test(id)), 'managers told: ' + r.added.join(','));
+    const newMail = allMail(db)[r.added.find(id => id.indexOf(rcPfx() + '_' + MON + '_am2_' + am2.personId) === 0)];
+    assert.ok(newMail && /cover\.html\?t=/.test(newMail.text) && newMail.text.indexOf(tok2) < 0, 'the new person gets their own link');
+    console.log('ok: I cannot cover on the link hands the seat on, with the reason, and a fresh link');
+
+    // an answer on a link for a seat they no longer hold changes nothing
+    db.data[J.LINK_ROOT][tok2].answer = { kind: 'covering', ts: 7000 };
+    r = await runAt(db, MON, 10, 40, L);
+    assert.strictEqual(db.data.lockupTest.reception[MON].am2.personId, am2.personId, 'the old link cannot take the seat back');
+    assert.notStrictEqual(db.data.lockupTest.reception[MON].am2.status, 'covering');
+    // a made up token with no index entry is never read
+    db.data[J.LINK_ROOT]['x'.repeat(32)] = { date: MON, shift: 'am2', personId: 'tomi', answer: { kind: 'other', text: 'x', ts: 8000 } };
+    const before = JSON.stringify(db.data.lockupTest.reception[MON].am2);
+    await runAt(db, MON, 10, 55, L);
+    assert.strictEqual(JSON.stringify(db.data.lockupTest.reception[MON].am2), before, 'a forged link does nothing');
+    console.log('ok: an old or forged link changes nothing');
+
+    // without links (lockup test mode) the emails keep the signed in page and the public queue
+    db = fakeDb();
+    r = await runAt(db, MON, 8, 0);
+    assert.ok(!db.data.lockupPrivate && !db.data[J.LINK_ROOT], 'no links and nothing private');
+    // links are pruned with their day
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, L);
+    const later = '2026-11-20';
+    await runAt(db, later, 8, 0, Object.assign({ n: { date: later, dow: 5, mins: 480 } }, L));
+    assert.ok(Object.keys(db.data[J.LINK_ROOT]).length >= 6);
+    await runAt(db, '2026-11-18', 8, 0, Object.assign({ n: { date: '2026-11-18', dow: 3, mins: 480 } }, L));
+    assert.ok(!db.data[J.IDX_ROOT][MON] && Object.values(db.data[J.LINK_ROOT]).every(x => x.date !== MON), 'a day past keeping takes its links with it');
+    console.log('ok: no links in test mode; links go when their day is pruned');
+  }
+
+  // 17 November: both people answer for themselves, a reason must be given, and the managers get the start of every shift with a Nudge each
+  {
+    const L = { links: true };
+    const allMail = db => Object.assign({}, db.data.lockupTest.notify || {}, (db.data.lockupPrivate || {}).notify || {});
+    db = fakeDb();
+    await runAt(db, MON, 8, 0, L);
+    const day = () => db.data.lockupTest.reception[MON];
+    const p1 = day().am.personId, p2 = day().am2.personId;
+    const t1 = db.data[J.IDX_ROOT][MON]['am_' + p1].t, t2 = db.data[J.IDX_ROOT][MON]['am2_' + p2].t;
+    assert.ok(t1 && t2 && t1 !== t2, 'each of the two has their own link');
+    day().am2.status = 'covering';
+    r = await runAt(db, MON, 8, 55, L);
+    assert.ok(!r.added.some(id => /_start_/.test(id)), 'nothing to the managers before the shift starts');
+    r = await runAt(db, MON, 9, 2, L);
+    const st = r.added.filter(id => /_start_/.test(id));
+    assert.strictEqual(st.length, 1, 'one email at the start of the shift: ' + r.added.join(','));
+    const sm = allMail(db)[st[0]];
+    assert.strictEqual(sm.to, 'managers');
+    assert.ok(db.data.lockupPrivate.notify[st[0]], 'with nudge links, so on the private queue');
+    const n1 = team[p1].name, n2 = team[p2].name;
+    assert.ok(sm.subject.indexOf(n1 + ' and ' + n2) >= 0 && /1 of 2 confirmed/.test(sm.subject), sm.subject);
+    assert.ok(/Place 1, HALO: .*Not confirmed yet/.test(sm.text) && /Place 2, Reception: .*Confirmed, covering/.test(sm.text), sm.text);
+    assert.ok(new RegExp('Nudge ' + n1 + ': https://dan-sells\\.co\\.uk/cover\\.html\\?t=[A-Za-z0-9_-]+&a=nudge').test(sm.text) && new RegExp('Nudge ' + n2 + ':').test(sm.text), sm.text);
+    assert.ok(/Nudge .*not in the showroom/.test(sm.html));
+    const m1 = db.data[J.IDX_ROOT][MON]['m-am_' + p1].t;
+    assert.ok(m1 && m1 !== t1 && db.data[J.LINK_ROOT][m1].role === 'manager', 'the nudge link is a separate managers link');
+    r = await runAt(db, MON, 9, 17, L);
+    assert.ok(!r.added.some(id => /_start_/.test(id)), 'once a shift');
+    console.log('ok: the managers get the start of each shift: who is on, who has confirmed, a Nudge for each');
+
+    // a person's link cannot nudge, and I cannot cover right now with no words is refused
+    db.data[J.LINK_ROOT][t1].answer = { kind: 'nudge', ts: 9100 };
+    await runAt(db, MON, 9, 20, L);
+    assert.ok(!day().am.absent, 'a person cannot nudge');
+    db.data[J.LINK_ROOT][t1].answer = { kind: 'cannot', ts: 9200 };
+    await runAt(db, MON, 9, 21, L);
+    assert.strictEqual(day().am.personId, p1, 'no reason, no change');
+    assert.strictEqual(day().am.status, 'assigned');
+    // a manager's link can only nudge
+    db.data[J.LINK_ROOT][m1].answer = { kind: 'covering', ts: 9300 };
+    await runAt(db, MON, 9, 22, L);
+    assert.strictEqual(day().am.status, 'assigned', 'a managers link cannot confirm for them');
+    console.log('ok: each link does only its own job, and a decline needs a reason');
+
+    // Nudge from the email: the person gets Where are you? with their own link, I am here tells the managers
+    db.data[J.LINK_ROOT][m1].answer = { kind: 'nudge', ts: 9400 };
+    r = await runAt(db, MON, 9, 25, L);
+    assert.strictEqual(day().am.absent.personId, p1);
+    assert.strictEqual(day().am.absent.by, 'manager email');
+    assert.strictEqual(day().am.personId, p1, 'a nudge does not take them off');
+    const wid = r.added.find(id => /_absent_/.test(id));
+    const wm = db.data.lockupPrivate.notify[wid];
+    assert.ok(wm && /Where are you/.test(wm.subject) && wm.text.indexOf('t=' + t1 + '&a=here') > 0 && wm.text.indexOf('t=' + t1 + '&a=cannot') > 0, 'Where are you? with their own link: ' + (wm && wm.text));
+    assert.strictEqual(Object.values(db.data.receptionLogTest).filter(e => e.kind === 'absent' && e.personId === p1).length, 1, 'logged as absent');
+    db.data[J.LINK_ROOT][t1].answer = { kind: 'here', ts: 9500 };
+    r = await runAt(db, MON, 9, 30, L);
+    assert.strictEqual(day().am.status, 'covering', 'I am here counts as covering');
+    assert.strictEqual(day().am.absent.reply.status, 'here');
+    const rid = r.added.find(id => /_reply_/.test(id));
+    assert.ok(rid && /is here/.test(allMail(db)[rid].subject), 'the managers hear: ' + r.added.join(','));
+    console.log('ok: a Nudge from the email reaches them with their own link, and I am here goes back to the managers');
+
+    // the start email for a shift with nobody free names the gap and has no nudge
+    const everyoneAway = {};
+    Object.keys(team).forEach(id => { everyoneAway['a_' + id] = { personId: id, kind: 'holiday', status: 'booked', from: MON, to: MON, note: '' }; });
+    db = fakeDb();
+    r = await runAt(db, MON, 9, 1, Object.assign({ absences: everyoneAway }, L));
+    const se = allMail(db)[r.added.find(id => /_start_/.test(id))];
+    assert.ok(se && /nobody on/.test(se.subject) && /Nobody free, please choose someone/.test(se.text) && !/Nudge/.test(se.text), se && se.text);
+    assert.ok(db.data.lockupTest.notify[r.added.find(id => /_start_/.test(id))], 'with nothing private in it, on the ordinary queue');
+    console.log('ok: a shift nobody can cover says so at its start');
+  }
+
+  // cover emails queued on the old code (sign in links) and not sent yet are swapped for ones with a personal link
+  {
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const before = Object.keys(db.data.lockupTest.notify).filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.strictEqual(before.length, 6);
+    db.data.lockupTest.notify[before[0]].sent = 1;
+    r = await runAt(db, MON, 8, 15, { links: true });
+    const pub = Object.keys(db.data.lockupTest.notify).filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.deepStrictEqual(pub, [before[0]], 'only the one already sent stays as it was: ' + pub.join(','));
+    const priv = Object.keys(db.data.lockupPrivate.notify).filter(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id));
+    assert.strictEqual(priv.length, 5);
+    assert.ok(priv.every(id => /cover\.html\?t=/.test(db.data.lockupPrivate.notify[id].text) && db.data.lockupPrivate.notify[id].sendAfter), 'with their link, still held to the shift');
+    r = await runAt(db, MON, 8, 30, { links: true });
+    assert.ok(!r.added.some(id => new RegExp('^' + rcPfx() + '_' + MON + '_').test(id)), 'once');
+    console.log('ok: unsent cover emails from before the links are swapped for ones with a link');
   }
 
   console.log('all reception job tests passed');

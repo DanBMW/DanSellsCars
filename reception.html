@@ -9,7 +9,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <link rel="stylesheet" href="team.css">
 <script src="lockup-rota.js"></script>
-<script src="reception-rota.js"></script>
+<script src="reception-rota.js?v=4"></script>
 <script src="team-identity.js"></script>
 <script src="team-session.js"></script>
 <style>
@@ -92,6 +92,13 @@ window.__backend = backend;
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var WORKER = 'https://vehicleproxy.danielcane1992.workers.dev';
   /* Fire-and-forget: ask the worker to dispatch lockup-emails now. Failures are ignored; the 15-minute cron is the backstop. */
+  /* a refused write must not look like a signal problem: on 18 November the live rules did not cover the
+     second seats, Clive tapped cannot cover on mid2 twice, saw Try again, and nothing ever reached anyone */
+  function saveFail(e) {
+    var denied = /permission|denied/i.test(String((e && (e.code || e.message)) || ''));
+    return denied ? 'That was refused, so nothing has changed and the managers have not been told. Please tell a manager now so they can move you.'
+      : 'That did not save. Check your signal and try again.';
+  }
   function kickCover() { try { fetch(WORKER + '?target=cover-kick').catch(function () {}); } catch (e) {} }
   var WATCHING = '', DAY = {}, STATE = null, OPEN = '', DEEP = null, DEEP_DONE = '', MINE_HTML = null, LIST_HTML = null;
 
@@ -196,7 +203,7 @@ window.__backend = backend;
     $('r-kick').textContent = R.DAY_NAMES ? (R.DAY_NAMES[view.dow] + ' ' + date) : date;
     if (!shifts.length) { $('r-title').textContent = 'Closed today'; $('r-sub').textContent = 'No showroom cover on a Sunday.'; $('r-mine').innerHTML = ''; $('r-list').innerHTML = ''; MINE_HTML = LIST_HTML = null; return; }
     $('r-title').textContent = 'Showroom cover today';
-    $('r-sub').textContent = 'One person covers the showroom in each shift. Tell us here if you cannot, or take a shift if you want to sit in.';
+    $('r-sub').textContent = 'Two people cover the showroom in each shift. Place 1 is HALO, place 2 is Reception. Tell us here if you cannot, or take a place if you want to sit in.';
 
     var mine = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && (r.status === 'assigned' || r.status === 'covering') && minsOf(s.to) > clockMins; })[0];
     var mineDone = shifts.filter(function (s) { var r = DAY[s.id] || {}; return r.personId === me && r.status === 'declined'; });
@@ -210,9 +217,14 @@ window.__backend = backend;
         '<button class="ghost" type="button" data-away="' + esc(missing.id) + '" style="margin-top:8px">Send the reason</button></div>' +
         '<p class="msg" id="r-away-msg" aria-live="polite"></p></div>';
     }
+    function locOf(s) {
+      if (!s) return RR.locationOf(1);
+      var held = shifts.filter(function (x) { return RR.sameTime(x, s); }).filter(function (x) { return RR.isHeld(DAY[x.id]); }).length;
+      return RR.locationOf(s.seat, { alone: held <= 1 });
+    }
     if (mine) {
       var r = DAY[mine.id] || {};
-      html += '<div class="card"><b>You are on showroom cover until ' + esc(mine.to) + '.</b>' +
+      html += '<div class="card"><b>You are on showroom cover at ' + esc(locOf(mine)) + ' until ' + esc(mine.to) + '.</b>' +
         '<p class="muted small" style="margin:6px 0 10px">' + (r.status === 'covering' ? 'You have said you are covering.' : 'Tap if you are covering, or tell us if you cannot.') + '</p>' +
         '<button class="big" type="button" data-ack="' + esc(mine.id) + '">I am covering</button>' +
         '<div style="margin-top:12px" class="names">' +
@@ -241,20 +253,36 @@ window.__backend = backend;
       var note = r.absent ? '<div class="muted small" style="margin-top:4px">Nudged: ' + esc(nameOf(r.absent.personId)) + (r.absent.reply ? (r.absent.reply.status === 'here' ? '. Says they are here.' : '. Not in: ' + esc(r.absent.reply.text || '')) : '. No reply yet.') + '</div>' : '';
       var pick = '';
       if (STATE.canManage && !r.personId) {
-        var busyIds = shifts.filter(function (x) { return x.id !== s.id && (DAY[x.id] || {}).personId; }).map(function (x) { return DAY[x.id].personId; });
+        /* where else each person is today: the other place on this shift (not allowed), back to back (no gap), or later with a gap */
+        var whereOn = function (id) {
+          var w = '';
+          shifts.forEach(function (x) {
+            if (x.id === s.id || (DAY[x.id] || {}).personId !== id) return;
+            if (RR.sameTime(x, s)) w = 'same';
+            else if (RR.tooClose(x, s) && w !== 'same') w = 'next';
+            else if (!w) w = 'gap';
+          });
+          return w;
+        };
         var opts = ['<option value="">Choose someone</option>'].concat(salesIds().map(function (id) {
-          return '<option value="' + esc(id) + '">' + esc(nameOf(id)) + (busyIds.indexOf(id) >= 0 ? ' (already on another shift)' : '') + '</option>';
+          var w = whereOn(id);
+          return '<option value="' + esc(id) + '"' + (w === 'same' || w === 'next' ? ' disabled' : '') + '>' + esc(nameOf(id)) +
+            (w === 'same' ? ' (already in the other place)' : w === 'next' ? ' (on the shift next to it, not allowed)' : w === 'gap' ? ' (already on another shift)' : '') + '</option>';
         })).join('');
         pick = '<div class="rc-actions"><select id="as-' + esc(s.id) + '" style="flex:1 1 220px;min-height:44px;font-size:15px;background:#0e1626;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:8px">' + opts + '</select>' +
           '<button class="big" type="button" data-assign="' + esc(s.id) + '">Assign</button></div>';
       }
       var takeBtn = '';
-      var canTake = salesIds().indexOf(me) >= 0 && minsOf(s.to) > clockMins && r.personId !== me && (r.take || {}).personId !== me;
+      /* nobody takes the other place on a shift they are already covering */
+      /* not the other place of this shift, and not a shift next to it: two shifts a day only with a gap */
+      var inPair = shifts.some(function (x) { return x.id !== s.id && RR.tooClose(x, s) && (DAY[x.id] || {}).personId === me && ((DAY[x.id] || {}).status === 'assigned' || (DAY[x.id] || {}).status === 'covering'); });
+      var canTake = salesIds().indexOf(me) >= 0 && minsOf(s.to) > clockMins && r.personId !== me && (r.take || {}).personId !== me && !inPair;
       if (canTake) {
-        var takeLabel = r.personId ? 'Take this shift' : 'Take the shift';
+        var takeLabel = r.personId ? 'Take this place' : 'Take the place';
         takeBtn = '<div class="rc-actions"><button class="big" type="button" data-take="' + esc(s.id) + '">' + takeLabel + '</button></div>';
       }
-      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
+      var loc = s.seat ? (RR.isHeld(r) ? locOf(s) : RR.locationOf(s.seat)) : '';
+      return '<div class="rc-row"><div class="rc-time">' + esc(s.from) + ' to ' + esc(s.to) + (s.seat ? ' <span class="muted small">place ' + s.seat + ' of ' + RR.SEATS + ', ' + esc(loc) + '</span>' : '') + '</div><div class="rc-who">' + esc(who) + ' ' + pill + '</div>' + note + pick + takeBtn + tag + '</div>';
     }).join('');
     /* same for the list: a repaint must not reset a half chosen Assign or a half typed reason */
     var listKey = date + '|' + listHtml, listChanged = listKey !== LIST_HTML;
@@ -345,7 +373,7 @@ window.__backend = backend;
        banking uses status=covering + ts (see confirmMinsOf in reception-mail.js). */
     TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'covering', personId: STATE.personId, ts: Date.now() })
       .then(function () { kickCover(); $('r-msg') && (($('r-msg').textContent = 'Thanks, you are covering.')); })
-      .catch(function () { $('r-msg') && ($('r-msg').textContent = 'That did not save. Try again.'); });
+      .catch(function (e) { $('r-msg') && ($('r-msg').textContent = saveFail(e)); });
   }
 
   function takeShift(shiftId, date) {
@@ -365,7 +393,7 @@ window.__backend = backend;
     var RL = RLROOT();
     TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
       .then(function () { kickCover(); $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told, and the next person is being put on.'; })
-      .catch(function () { $('r-msg').textContent = 'That did not save. Try again.'; });
+      .catch(function (e) { $('r-msg').textContent = saveFail(e); });
   }
 
   function askWhy(kind, shiftId, date) {
@@ -384,7 +412,7 @@ window.__backend = backend;
       var RL = RLROOT();
       TeamSession.backend().update(RL + '/reception/' + date + '/' + shiftId, { status: 'declined', reason: ans.reason, reasonText: ans.reasonText, personId: STATE.personId, ts: Date.now() })
         .then(function () { kickCover(); $('r-why').innerHTML = ''; $('r-msg').textContent = 'Sent. The managers have been told.'; })
-        .catch(function () { $('r-send').disabled = false; $('r-msg').textContent = 'That did not save. Try again.'; });
+        .catch(function (e) { $('r-send').disabled = false; $('r-msg').textContent = saveFail(e); });
     };
   }
 

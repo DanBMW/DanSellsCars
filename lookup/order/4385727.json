@@ -17,24 +17,6 @@
  "monthly": "£979.70",
  "monthly_gbp": 979.7,
  "apr": 2.9,
- "finance_example": {
-  "product": "BMW Select (PCP)",
-  "lender": "BMW Financial Services (GB) Limited",
-  "apr": 2.9,
-  "monthly": 979.7,
-  "payments": 47,
-  "term_months": 48,
-  "deposit": 4500,
-  "cash_price": 80550.0,
-  "amount_of_credit": 76050.0,
-  "final_payment": 36482.27,
-  "total_payable": 87028.17,
-  "charge_for_credit": 6478.17,
-  "annual_mileage": 8000,
-  "contract_mileage": 32000,
-  "excess_pence": null,
-  "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
- },
  "lead_time_weeks_min": 1,
  "lead_time_weeks_max": 3,
  "on_hold": false,
@@ -89,7 +71,7 @@
  "retailer_name": "Hedin Automotive Woolwich",
  "first_seen": "2026-10-29",
  "first_seen_seed": true,
- "status": "in_stock",
- "removed_at": null,
- "available_until": null
+ "removed_at": "2026-11-23",
+ "status": "removed",
+ "available_until": "2026-12-23"
 }
