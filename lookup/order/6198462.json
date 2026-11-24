@@ -17,8 +17,8 @@
  "monthly": "£873.77",
  "monthly_gbp": 873.77,
  "apr": 4.9,
- "lead_time_weeks_min": 1,
- "lead_time_weeks_max": 3,
+ "lead_time_weeks_min": 10,
+ "lead_time_weeks_max": 12,
  "on_hold": false,
  "options": [
   "Brooklyn Grey",

@@ -17,8 +17,8 @@
  "monthly": "£820.36",
  "monthly_gbp": 820.36,
  "apr": 4.9,
- "lead_time_weeks_min": 5,
- "lead_time_weeks_max": 7,
+ "lead_time_weeks_min": 10,
+ "lead_time_weeks_max": 12,
  "on_hold": false,
  "options": [
   "Parking Assistant Professional",
