@@ -4179,6 +4179,35 @@ function armRotation(){
 }
 function startRotation(){ armRotation() }
 
+/* ---- skipping by keyboard: right arrow for the next screen, left for the
+   previous. A TV remote's arrows send the same keys, so this works from the
+   sofa as well as a keyboard. It only steps the rotation: a manager's pin,
+   an open panel, a cut scene or the premiere all keep the floor, and a key
+   typed into a field is never taken as a skip. */
+var lastNudge=0;
+function nudgeView(dir){
+  if(premiereLock||busy)return false;
+  if(pinnedView&&pinnedView!=='auto')return false;
+  if(document.querySelector('.modal-bg.open'))return false;
+  var list=views();
+  if(list.length<2)return false;
+  var i=(viewIdx+dir+list.length)%list.length;
+  showView(i);
+  return true;
+}
+document.addEventListener('keydown',function(e){
+  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;
+  if(e.altKey||e.ctrlKey||e.metaKey)return;
+  var t=e.target, tag=t&&t.tagName;
+  if(t&&(t.isContentEditable||tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'))return;
+  /* holding a key scrolls through the screens, but not so fast they blur */
+  if(e.repeat&&Date.now()-lastNudge<350)return;
+  if(nudgeView(e.key==='ArrowRight'?1:-1)){
+    lastNudge=Date.now();
+    e.preventDefault();
+  }
+});
+
 /* ---- pinning the wall display to one board ----
    A manager can stop the cycle and hold one board up. Like the sketch
    controls this goes through the database, so the wall follows a tap made on
