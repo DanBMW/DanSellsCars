@@ -3551,6 +3551,52 @@ function fcSpec(c){
   if(c.colour)bits.push(esc(c.colour));
   return bits.join(' · ');
 }
+/* ---- offers from the stock sheet: team-offers.json, built by
+   scripts/build-stock-support.py. A missing file just means no offers view. */
+var OFFERS=null, offerRound=0;
+function loadOffers(){
+  fetch('team-offers.json',{cache:'no-cache'})
+    .then(function(r){ if(!r.ok)throw new Error(r.status); return r.json() })
+    .then(function(d){
+      if(!d||!Array.isArray(d.cars)||!d.cars.length)return;
+      OFFERS=d.cars;
+      if(curViewId==='offers')paintOffers();
+      applyPin();
+    })['catch'](function(){ /* no file, no offers view */ });
+}
+/* the whole list in a day-seeded order, so the team see a mix of models and
+   the same mix on every screen; each go round takes the next six */
+function offerCars(){
+  if(!OFFERS||!OFFERS.length)return [];
+  var n=OFFERS.length, seed=fcHash(fcDay()), out=[];
+  for(var i=0;i<n;i++)out.push(OFFERS[(i*7+seed)%n]);
+  return out;
+}
+var OFFER_PER=6;
+function paintOffers(){
+  var all=offerCars();
+  if(!all.length)return;
+  var pages=Math.max(1,Math.ceil(all.length/OFFER_PER));
+  var page=offerRound%pages; offerRound++;
+  var cars=all.slice(page*OFFER_PER, page*OFFER_PER+OFFER_PER);
+  $('fc-kicker').innerHTML='Offers on the forecourt';
+  $('fc-sub').textContent='Cars from the stock sheet, with the monthly and deposit';
+  $('fc-grid').innerHTML=cars.map(function(c){
+    var img=c.img?'<img src="'+esc(c.img)+'" alt="" loading="lazy" onerror="this.style.display=&quot;none&quot;">':'';
+    var terms=[];
+    if(c.dep!=null)terms.push('£'+Number(c.dep).toLocaleString('en-GB')+' initial rental');
+    if(c.mil)terms.push(Number(c.mil).toLocaleString('en-GB')+' miles a year');
+    return '<div class="fc-car">'+
+      '<div class="pic"><span class="noimg">BMW</span>'+img+'</div>'+
+      '<div class="txt">'+
+        '<div class="nm">'+esc(c.desc||c.fam||'BMW')+'</div>'+
+        '<div class="pr">£'+Number(c.mon).toLocaleString('en-GB')+' <small>a month</small></div>'+
+        '<div class="sp">'+esc([c.col,c.fuel].filter(Boolean).join(' · '))+'</div>'+
+        '<div class="sp">'+esc(terms.join(' · '))+'</div>'+
+      '</div></div>';
+  }).join('');
+  $('fc-when').textContent='From the stock sheet · '+(page+1)+' of '+pages+' · '+all.length+' cars in the rotation';
+}
 function paintForecourt(){
   var set=fcCars();
   if(!set)return;
@@ -3799,6 +3845,7 @@ function paintWhosIn(){
    up for days, so look again on the hour - which is also what rolls it at 9 */
 function watchStock(){
   loadStock();
+  loadOffers();
   clearInterval(stockTimer);
   stockTimer=setInterval(loadStock,3600000);
 }
@@ -3870,7 +3917,7 @@ window.addEventListener('resize',function(){
 /* A birthday card is one line of text - it does not need thirty seconds, and
    with two or three up at once a full slot each pushes the boards themselves
    too far apart. So the rotation is per-view rather than one fixed interval. */
-var VIEW_MS=30000, BDAY_VIEW_MS=15000, viewIdx=0, curViewId='board', rotTimer=null, reliefTimer=null;
+var VIEW_MS=15000, BDAY_VIEW_MS=15000, viewIdx=0, curViewId='board', rotTimer=null, reliefTimer=null;
 function viewMs(v){
   var full=sNum('viewsecs',VIEW_MS/1000)*1000;
   if(!v)return full;
@@ -3918,6 +3965,8 @@ function views(){
   /* who is in this week, with tonight's lockup in orange */
   if(sOn('whosin')&&whosinWeek())out.push({id:'whosin', kind:'whosin'});
   if(sOn('forecourt')&&fcCars())out.push({id:'forecourt', kind:'forecourt'});
+  /* six cars from the stock sheet at a time, a fresh six each go round */
+  if(sOn('offers')&&offerCars().length)out.push({id:'offers', kind:'offers'});
   /* birthdays come after the boards and screenshots, not in between them */
   if(sOn('birthdays'))liveBirthdays().forEach(function(bd){
     out.push({id:'bday-'+bd.id, kind:'birthday', bday:bd});
@@ -3951,12 +4000,13 @@ function showView(i){
   }
   if(v.kind==='eventdeals')paintEventDeals();
   if(v.kind==='forecourt')paintForecourt();
+  if(v.kind==='offers')paintOffers();
   if(v.kind==='whosin')paintWhosIn();
   $('wiscene').classList.toggle('show',v.kind==='whosin');
   $('ncscene').classList.toggle('show',!!v.img);
   $('bdayview').classList.toggle('show',v.kind==='birthday');
   $('edscene').classList.toggle('show',v.kind==='eventdeals');
-  $('fcscene').classList.toggle('show',v.kind==='forecourt');
+  $('fcscene').classList.toggle('show',v.kind==='forecourt'||v.kind==='offers');
   ncChat(v.kind==='newcar');
   paintViewControls();
   armRotation();
@@ -4011,7 +4061,7 @@ function startRotation(){ armRotation() }
    a phone, and unlike a play command it is *state*: a screen switched on
    later comes up on the pinned board rather than starting to rotate. */
 var VIEWPINS=[
-  {id:'auto',         name:'Rotate through them all', sub:'Thirty seconds each'},
+  {id:'auto',         name:'Rotate through them all', sub:'Fifteen seconds each'},
   {id:'board',        name:'Used car board',          sub:'The Profit Challenge'},
   {id:'newcar',       name:'New car board',           sub:'76 Plate leaderboard'},
   {id:'extra-used',   name:'Used car secondary',      sub:'Your own screenshot'},
@@ -4019,6 +4069,7 @@ var VIEWPINS=[
   {id:'mugshot',      name:'Mug shot of the week',    sub:'Voted for by the team'},
   {id:'whosin',      name:"Who's in this week",    sub:'With tonight\u2019s lockup in orange'},
   {id:'forecourt',    name:"What's new on the forecourt", sub:'Fresh stock, from the stock list'},
+  {id:'offers',      name:'Offers from the stock sheet', sub:'Six cars at a time, with the monthly'},
   {id:'eventdeals',   name:'Event deals',            sub:'Highest margin first'}
 ];
 /* A pin lapses after fifteen minutes. Somebody holds a board up to talk to
@@ -4051,6 +4102,7 @@ function viewAvailable(id){
   if(id==='extra-newcar')return !!EXTRA.newcar;
   if(id==='mugshot')return !!liveMug();
   if(id==='forecourt')return !!fcCars();
+  if(id==='offers')return offerCars().length>0;
   if(id==='whosin')return !!whosinWeek();
   return false;
 }
@@ -7118,7 +7170,7 @@ function paintSettingsNote(){
   var off=[];
   ['dance','stats','nathan','fire','relief','paper','champ','bubbles','trailer',
    'premiere',
-   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','whosin','ticker',
+   'ncchat','newcar','extras','mugshot','mugask','birthdays','forecourt','offers','whosin','ticker',
    'seasons',
    'eventdeals','dealmargin','radio',
    'sound'].forEach(function(k){ if(!sOn(k))off.push(k) });
