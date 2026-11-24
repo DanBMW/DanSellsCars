@@ -12,10 +12,10 @@
  "seats": 5,
  "engine_cc": 2998,
  "zero_to_62": 4.3,
- "price": "£66,051.11",
- "price_gbp": 66051,
- "monthly": "£859.56",
- "monthly_gbp": 859.56,
+ "price": "£59,350.01",
+ "price_gbp": 59350,
+ "monthly": "£705.79",
+ "monthly_gbp": 705.79,
  "apr": 3.9,
  "lead_time_weeks_min": 5,
  "lead_time_weeks_max": 7,
@@ -56,7 +56,7 @@
   "High-gloss Shadowline Exterior Trim",
   "Live Cockpit Plus"
  ],
- "retailer_price": false,
+ "retailer_price": true,
  "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWA2v7MXl9aV015toFnqItSu33rKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVGtic2E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdhAMfIj8gbtLAYCHwu6ZjsczNnBGCWhvBpmzcL3tm1nvhQ50rFpF3UiePD1P5%25VyJvWjikIZatpyV2YbG0GcI7sufef8Y4WnANa9sMLpjBG4WTQ1CmxOLRUFcrovQ9%25DhPgUUSkl3JsG%25O2x5akek67oiGYy2E4dVfsA7KMgIAW%254qTwYjosMXRNsCsAT89BWc5TRHSmLwa49zOrQNLMSv6PUBA4OtEJ%25mP360KakrJ2EeqG2Pp3KyXf7J1VqZ8A4aFEXbHjM75E8uzCT44tHnvcRMCezpth9Tcrv103SRhbtFe5O9iH0Dyi6SjQelZVEOTHyxbIK6%25VZouYqEM7bdnsXMDeugpW8TmSnw1LHR2ZpNFQz9ZP1BDUvSHEFml%25tOtDDrxk060ylPo2ebfnxJd7yu9Aoag4ZnS8dGwMbpgCgfNTu1xPwABRnFdqNjm9pDFtBCrS1lDmmcPOFxoerhJ6DodBP3aEldx2J5GKxgozaifqowbMGVAXdNuJfIj8gDx1",
  "images": [
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWA2v7MXl9aV015toFnqItSu33rKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVGtic2E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdhAMfIj8gbtLAYCHwu6ZjsczNnBGCWhvBpmzcL3tm1nvhQ50rFpF3UiePD1P5%25VyJvWjikIZatpyV2YbG0GcI7sufef8Y4WnANa9sMLpjBG4WTQ1CmxOLRUFcrovQ9%25DhPgUUSkl3JsG%25O2x5akek67oiGYy2E4dVfsA7KMgIAW%254qTwYjosMXRNsCsAT89BWc5TRHSmLwa49zOrQNLMSv6PUBA4OtEJ%25mP360KakrJ2EeqG2Pp3KyXf7J1VqZ8A4aFEXbHjM75E8uzCT44tHnvcRMCezpth9Tcrv103SRhbtFe5O9iH0Dyi6SjQelZVEOTHyxbIK6%25VZouYqEM7bdnsXMDeugpW8TmSnw1LHR2ZpNFQz9ZP1BDUvSHEFml%25tOtDDrxk060ylPo2ebfnxJd7yu9Aoag4ZnS8dGwMbpgCgfNTu1xPwABRnFdqNjm9pDFtBCrS1lDmmcPOFxoerhJ6DodBP3aEldx2J5GKxgozaifqowbMGVAXdNuJfIj8gDx1",
