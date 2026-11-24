@@ -897,6 +897,7 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <script src="staff-gate.js"></script>
+<script src="email-signature.js"></script>
 <script>
 // The password is checked by staff-gate.js (salted hash only, never the
 // password itself). Same password as admin.html. Change it with:
@@ -1393,7 +1394,7 @@ function emailFollowUp() {
   let subject = t.subject, body = t.body;
   if (name)  { subject = subject.split('[Name]').join(name); body = body.split('[Name]').join(name); }
   if (model) { subject = subject.split('[Model]').join(model); body = body.split('[Model]').join(model); }
-  window.location.href = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(EmailSignature.withSignature(body).replace(/\n/g, '\r\n'));
 }
 
 function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -1419,7 +1420,7 @@ function renderTemplates() {
         + '</div>'
         + '<div class="tmpl-body">'
         +   (t.note ? '<div class="tmpl-note">' + esc(t.note) + '</div>' : '')
-        +   '<pre class="tmpl-text">' + esc(t.body) + '</pre>'
+        +   '<pre class="tmpl-text">' + esc(EmailSignature.withSignature(t.body)) + '</pre>'
         +   '<div class="btn-row">'
         +     '<button class="btn-open" onclick="openOutlook(' + i + ')">&#x2709; Outlook</button>'
         +     '<button class="btn-copy" onclick="copyTmpl(' + i + ',this)">Copy</button>'
@@ -1437,11 +1438,26 @@ function toggleTmpl(head) {
 
 function openOutlook(i) {
   const t = TEMPLATES[i];
-  window.location.href = 'mailto:?subject=' + encodeURIComponent(t.subject) + '&body=' + encodeURIComponent(t.body);
+  const text = EmailSignature.withSignature(t.body);
+  window.location.href = 'mailto:?subject=' + encodeURIComponent(t.subject) + '&body=' + encodeURIComponent(text.replace(/\n/g, '\r\n'));
 }
 
 function copyTmpl(i, btn) {
-  copyText(TEMPLATES[i].body, btn);
+  const text = EmailSignature.withSignature(TEMPLATES[i].body);
+  const html = EmailSignature.toHtml(TEMPLATES[i].body);
+  const done = function() {
+    btn.textContent = '\u2713 Copied';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  };
+  if (navigator.clipboard && window.ClipboardItem) {
+    navigator.clipboard.write([new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([text], { type: 'text/plain' })
+    })]).then(done, function() { copyText(text, btn); });
+  } else {
+    copyText(text, btn);
+  }
 }
 
 renderTemplates();

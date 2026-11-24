@@ -191,6 +191,7 @@
         return PE.productBlock(p).replace('<td style="padding:16px 0;border-top:1px solid #e5e5e5">', '<td style="padding:0 0 16px;border-top:1px solid #e5e5e5">' + tag); }).join('')
       + '</table><p style="margin:0 0 14px"><a href="' + PE.VID + 'full-presentation.html" style="color:#1c69d4">&#9654; Watch our full protection presentation</a></p>';
     return { html: h, text: PE.toText(h), included: inc.map(function (p) { return p.id; }), available: exc.map(function (p) { return p.id; }) }; }
+  function sig() { if (typeof EmailSignature !== 'undefined') return EmailSignature; if (typeof require === 'function') return require('../../email-signature.js'); throw new Error('email-signature.js not loaded'); }
   function build(rec, variant, stage) {
     stage = stage || nextStage(rec); if (!stage) throw new Error('Journey complete');
     var v = variants(stage.kind)[variant]; if (!v) throw new Error('Pick one of the three wordings');
@@ -204,13 +205,13 @@
     var vp = pm0 ? v.p.slice(0, -1).concat([pm0], v.p.slice(-1)) : v.p;
     var paras = vp.concat(['Kind regards,']), at = paras.length - 2;
     var html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#111;max-width:600px"><p style="margin:0 0 14px">Hi ' + escH(rec.firstName) + ',</p>'
-      + paras.map(function (p, i) { return (ps && i === at ? ps.html : '') + '<p style="margin:0 0 14px">' + fill(p, rec, stage, true) + '</p>'; }).join('') + '</div>';
+      + paras.map(function (p, i) { return (ps && i === at ? ps.html : '') + '<p style="margin:0 0 14px">' + fill(p, rec, stage, true) + '</p>'; }).join('') + sig().HTML + '</div>';
     var tp = paras.map(function (p) { return fill(p, rec, stage, false); }); if (ps) tp.splice(at, 0, ps.text);
-    var text = ['Hi ' + rec.firstName + ','].concat(tp).join('\n\n');
+    var text = sig().withSignature(['Hi ' + rec.firstName + ','].concat(tp).join('\n\n'));
     var subj = fill(v.s, rec, stage, false); subj = subj.charAt(0).toUpperCase() + subj.slice(1);
     return { to: rec.email, cc: CC, subject: subj, html: html, text: text, stage: stage, products: ps };
   }
-  function mailto(m) { return 'mailto:' + encodeURIComponent(m.to) + '?cc=' + encodeURIComponent(m.cc) + '&subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(m.text); }
+  function mailto(m) { return 'mailto:' + encodeURIComponent(m.to) + '?cc=' + encodeURIComponent(m.cc) + '&subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(String(m.text).replace(/\n/g, '\r\n')); }
 
   /* ---------- encrypted backup: records stay encrypted, plus the vault salt so it can be reopened with the passphrase ---------- */
   function exportBackup(vault, rows) { return JSON.stringify({ kind: 'dan-sells-followups-backup', v: 1, exported: new Date().toISOString(), vault: vault, rows: rows.map(function (r) { return { id: r.id, iv: r.iv, ct: r.ct }; }) }); }
