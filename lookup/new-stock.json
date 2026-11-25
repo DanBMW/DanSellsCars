@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-25T06:05:36.000Z",
+ "generated_at": "2026-11-25T07:12:24.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 390,
@@ -3804,8 +3804,8 @@
    "monthly": "£449.27",
    "monthly_gbp": 449.27,
    "apr": 2.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
