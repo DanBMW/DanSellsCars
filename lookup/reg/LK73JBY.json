@@ -16,12 +16,14 @@
  "trim": "M Sport",
  "price": "£26,000",
  "price_gbp": 26000,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1eab2-2033-737e-8a7d-87439b0273b5-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a210a0-d118-75d0-912d-2647d4ded465-preview.jpg",
  "images": [
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1eab2-2033-737e-8a7d-87439b0273b5-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1eab2-20ce-7c73-a872-e81a61bee6bc-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1eab2-217c-7a46-bd6f-fb463c58688b-enlarged.jpg",
-  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a1eab2-2259-77e2-86d0-7899d6909b4a-enlarged.jpg"
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a210a0-d118-75d0-912d-2647d4ded465-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a210a0-d1cc-7262-8265-695fb1f739b3-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a210a0-d267-72d5-9de5-42f3bbff3be5-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a210a0-d2f1-7e7d-9d26-7bc6f1de7a7a-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a210a0-d393-74eb-876e-c5188f3d492a-enlarged.jpg",
+  "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a210a0-d42f-7640-b9ff-7a40e67b532f-enlarged.jpg"
  ],
  "listing_url": "https://hedinautomotive.co.uk/buy-car/used-cars/261833/pb-bmw-320-2023",
  "listing_id": "261833",
@@ -41,7 +43,7 @@
   "payments": 47,
   "price": 26000,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-24T16:04:43.657492+00:00",
+  "quoted_at": "2026-11-25T07:04:54.3219458+00:00",
   "reg": "LK73JBY",
   "term": 48,
   "total_payable": 34632.89,
