@@ -15,26 +15,8 @@
  "monthly": "£861.64",
  "monthly_gbp": 861.64,
  "apr": 6.9,
- "finance_example": {
-  "product": "BMW Select (PCP)",
-  "lender": "BMW Financial Services (GB) Limited",
-  "apr": 6.9,
-  "monthly": 861.64,
-  "payments": 47,
-  "term_months": 48,
-  "deposit": 4500,
-  "cash_price": 58880.0,
-  "amount_of_credit": 54380.0,
-  "final_payment": 24604.76,
-  "total_payable": 69601.84,
-  "charge_for_credit": 10721.84,
-  "annual_mileage": 8000,
-  "contract_mileage": 32000,
-  "excess_pence": null,
-  "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
- },
- "lead_time_weeks_min": 2,
- "lead_time_weeks_max": 4,
+ "lead_time_weeks_min": 1,
+ "lead_time_weeks_max": 3,
  "on_hold": false,
  "options": [
   "M steering wheel",
@@ -66,10 +48,10 @@
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSAAAY6N%25%25BxoI5mAoXcGY40nOoDz4ZK9jdGwMbqZagfNTuX%25KwABRn8qTNjm9pHXUBCrS1MGomcPOFTiarhJ6DRXwP3aEl9sqJ5GKxSx2aifqoONoGVAXdulWfIj8gnxVAYCHwpmajsczN1%25fCWhvBFmacL3tmDoihQ50rldh3UiePvuC5%25VyJte3ikIZa0yBV2YbGJThI7sufaRbY4WnAGlisMLpjffVWTQ1CApkLRUFcj1tQ9%25DhC0jUSkl3PMD%25O2x5JLek67oiaQ52E4dVs8L7KMgIWrj4qTwYLMOMXRNsQLcT89BWU%254RHSmL%25QG9zOrQIUFSv6PUY%254",
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ukkk6pVHHIchORYkhl4U60Nanhjd0rFb23UiePDrQ5%25VyJlHFikIZaxDyV2YbGol8I7sufeUhY4WnAy9QsMLpjZliWTQ1CbEDLRUFcucvQ9%25DhnVhUSkl3JCK%25O2x5acSk67oiGYQ2E4dVfH%257KMgIAYQ4qTwYjh9MXRNsC3MT89BWgJ7RHSmLwBT9zOrQNmISv6PULyMOtEJ%25QZP60KakUC9EeqG2%25%25SKyXf7kGzqZ8A42fwXbHjM7N28uzCTWejHnvcRLqBzpth9QXRv103SExqtFe5OKs20Dyi6qenelZVEXq4yxbIK8H0ZouYqHXUbdnsXO8AugpW86H0"
  ],
- "retailer_id": "22181",
- "retailer_name": "Hedin Automotive Ruxley",
+ "retailer_id": "16215",
+ "retailer_name": "Hedin Automotive Woolwich",
  "first_seen": "2026-11-02",
- "removed_at": "2026-11-10",
- "status": "removed",
- "available_until": "2026-12-10"
+ "status": "in_stock",
+ "removed_at": null,
+ "available_until": null
 }

@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-24T16:13:04.000Z",
+ "generated_at": "2026-11-25T06:05:36.000Z",
  "retailer_id": "22181",
  "retailer_name": "Hedin Automotive Ruxley",
  "count": 390,
@@ -7,25 +7,25 @@
   {
    "retailer_id": "22181",
    "retailer_name": "Hedin Automotive Ruxley",
-   "count": 69,
+   "count": 59,
    "ok": true
   },
   {
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
-   "count": 107,
+   "count": 109,
    "ok": true
   },
   {
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
-   "count": 140,
+   "count": 144,
    "ok": true
   },
   {
    "retailer_id": "16215",
    "retailer_name": "Hedin Automotive Woolwich",
-   "count": 74,
+   "count": 78,
    "ok": true
   }
  ],
@@ -51,8 +51,8 @@
    "monthly": "£318.48",
    "monthly_gbp": 318.48,
    "apr": 2.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Skyscraper Grey"
@@ -105,8 +105,8 @@
    "monthly": "£339.99",
    "monthly_gbp": 339.99,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "standard": [
     "Parking Assistant",
@@ -133,8 +133,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LrhV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgoPVAY6N%25%25BxoI5mAkFbVY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBhNjm9pHE3BCrS1z78mcPOFvD%25rhJ6DtzOP3aEl0v7J5GKxSCNaifqobD5GVAXduvafIj8gnoVAYCHwpmajsczNXeGCWhvB8zhcL3tmHvdhQ50rz4C3UiePmnC5%25VyJresikIZaPyqV2YbGJvlI7sufg3RY4WnAc93sMLpjhxSWTQ1C3orLRUFc5Q7Q9%25DhiWNUSkl3Via%25O2x5IVkk67oiYsU2E4dVsIb7KMgIWYr",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LrhV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75hWSk6pVHHIchORYkzAPS60Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIMV2YbGo1TI7sufdtxY4WnAgjHsMLpjwdnWTQ1CNgtLRUFcu7VQ9%25DhPjRUSkl3JgQ%25O2x5ahSk67oiGYQ2E4dVlBU7KMgIxdM4qTwYog3MXRNsd07T89BWYa7RHSmLsBE9zOrQWmDSv6PULgCOtEJ%255TZ60Kak4bTEeqG2McuKyXf7ThsqZ8A4RXtXbHjM9KV8uzCTS9QHnvcROSzzpth96E8v103SEOPtFe5OK6s"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
+   "retailer_id": "26177",
+   "retailer_name": "Hedin Automotive Bromley",
    "first_seen": "2026-11-24"
   },
   {
@@ -189,8 +189,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LMcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSdzAY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LMcV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75u3dk6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
+   "retailer_id": "16267",
+   "retailer_name": "Hedin Automotive Enfield",
    "first_seen": "2026-11-19"
   },
   {
@@ -245,9 +245,10 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgno1AY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rcV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ahfk6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
-   "first_seen": "2026-10-29"
+   "retailer_id": "16267",
+   "retailer_name": "Hedin Automotive Enfield",
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197421",
@@ -301,9 +302,10 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rCV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgS0cAY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33rCV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75uN4k6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
-   "first_seen": "2026-10-29"
+   "retailer_id": "16267",
+   "retailer_name": "Hedin Automotive Enfield",
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6200835",
@@ -324,8 +326,8 @@
    "monthly": "£349.18",
    "monthly_gbp": 349.18,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -357,8 +359,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LrhV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSdzAY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LrhV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75u3dk6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
+   "retailer_id": "26177",
+   "retailer_name": "Hedin Automotive Bromley",
    "first_seen": "2026-11-24"
   },
   {
@@ -414,9 +416,10 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33MVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSdzAY6N%25%25BxoI5mANB8fY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1zpjmcPOFv4HrhJ6DtlfP3aEl0v6J5GKxet4aifqoy04GVAXd6hmfIj8gEtPAYCHwpoQjsczN1dYCWhvBFy7cL3tmDNWhQ50rl3O3UiePxGC5%25VyJtncikIZa0yIV2YbGeZmI7sufySiY4WnAGlisMLpjfn%25WTQ1CApvLRUFcjZwQ9%25DhrEEUSkl3PsK%25O2x5Jhfk67oiYXW2E4dVsm87KMgIWrj4qTwYLMOMXRNsQ7GT89BWUQhRHSmL%25U99zOrQk2TSv6PU2%25lOtEJ%257kj60KakW2xEeqG2L7R",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33MVV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75u3dk6pVHHIchORYkVIx%2560Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdG2Y4WnAg0osMLpjwC%25WTQ1CNgpLRUFcBw0Q9%25DhmN0USkl3pMY%25O2x51wWk67oiGhX2E4dVf367KMgIAmt4qTwYjVKMXRNsCTnT89BWcU7RHSmLwa49zOrQNmOSv6PUBrYOtEJ%25mu960KakUC9EeqG2%25aHKyXf7kGgqZ8A42riXbHjMs118uzCTWEFHnvcRLM%25zpth96lKv103SEYxtFe5OKs20Dyi6qenelZVEXtUyxbIK8XMZouYqH8bbdnsXzvyugpW8vHCnw1LHtz2pNFQzKvc1BDUvqtZ"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
-   "first_seen": "2026-10-29"
+   "retailer_id": "16267",
+   "retailer_name": "Hedin Automotive Enfield",
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197416",
@@ -471,8 +474,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33LwV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgS0cAY6N%25%25BxoI5mANlcGY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33LwV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75uN4k6pVHHIchORYkVC4U60Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
+   "retailer_id": "16215",
+   "retailer_name": "Hedin Automotive Woolwich",
    "first_seen": "2026-10-20"
   },
   {
@@ -494,8 +497,8 @@
    "monthly": "£353.69",
    "monthly_gbp": 353.69,
    "apr": 2.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Black Sapphire",
@@ -528,8 +531,8 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LMsV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgno1AY6N%25%25BxoI5mANlcGY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LMsV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ahfk6pVHHIchORYkVC4U60Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
+   "retailer_id": "16215",
+   "retailer_name": "Hedin Automotive Woolwich",
    "first_seen": "2026-11-23"
   },
   {
@@ -585,9 +588,10 @@
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33LcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgno1AY6N%25%25BxoI5mANlcGY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBtNjm9pHE3BCrS1z78mcPOFvDGrhJ6DtzOP3aEl0v7J5GKxet7aifqoOcBGVAXd6vrfIj8gnxLAYCHwpoIjsczN1e2CWhvBFwscL3tmDhShQ50rlaj3UiePvuC5%25VyJteVikIZa0yBV2YbGe95I7sufaD5Y4WnAGuUsMLpjfnzWTQ1CAygLRUFcm66Q9%25DhrYEUSkl3PcG%25O2x5Iqsk67oiYBX2E4dVsmA7KMgIW4S4qTwYL2aMXRNsQLcT89BWUQRRHSmL%25kM9zOrQkUDSv6PU2%25AOtEJ%25skl60KakW2T",
     "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu33LcV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ahfk6pVHHIchORYkVC4U60Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIwV2YbGo1TI7sufdtxY4WnAgjUsMLpjwdnWTQ1CNgtLRUFcBwtQ9%25Dhn4IUSkl3pgs%25O2x5acqk67oiGhO2E4dVfBv7KMgIAiE4qTwYjMuMXRNsCQ2T89BWgJ7RHSmLwBS9zOrQNmISv6PUBbROtEJ%25QjR60KakUJ8EeqG2%25adKyXf7km5qZ8A4YppXbHjMs618uzCTW4UHnvcRODEzpth96Ilv103SEYktFe5OK0u0Dyi6qvQelZVEXq4yxbIK8XZZouYqHzebdnsXz8jugpW8vHknw1LHEzCpNFQzKvy"
    ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
-   "first_seen": "2026-10-29"
+   "retailer_id": "16215",
+   "retailer_name": "Hedin Automotive Woolwich",
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
   },
   {
    "order_number": "6197400",
@@ -1625,8 +1629,8 @@
    "monthly": "£387.64",
    "monthly_gbp": 387.64,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Skyscraper Grey",
@@ -2186,8 +2190,8 @@
    "monthly": "£387.64",
    "monthly_gbp": 387.64,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Skyscraper Grey",
@@ -2414,8 +2418,8 @@
    "monthly": "£394.58",
    "monthly_gbp": 394.58,
    "apr": 2.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Contrast Roof in Black",
@@ -2585,8 +2589,8 @@
    "monthly": "£403.09",
    "monthly_gbp": 403.09,
    "apr": 2.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Storm Bay",
@@ -2874,8 +2878,8 @@
    "monthly": "£423.06",
    "monthly_gbp": 423.06,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Brooklyn Grey",
@@ -2933,8 +2937,8 @@
    "monthly": "£423.58",
    "monthly_gbp": 423.58,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -3049,8 +3053,8 @@
    "monthly": "£415.53",
    "monthly_gbp": 415.53,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Black Sapphire",
@@ -3364,8 +3368,8 @@
    "monthly": "£434.16",
    "monthly_gbp": 434.16,
    "apr": 2.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -3860,8 +3864,8 @@
    "monthly": "£451.43",
    "monthly_gbp": 451.43,
    "apr": 2.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Sun Protection Glass",
@@ -8834,8 +8838,8 @@
    "monthly": "£541.08",
    "monthly_gbp": 541.08,
    "apr": 3.9,
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "M Adaptive Suspension",
@@ -11315,8 +11319,8 @@
    "monthly": "£546.88",
    "monthly_gbp": 546.88,
    "apr": 2.9,
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Harman/Kardon Surround Sound Audio System",
@@ -16391,8 +16395,8 @@
    "monthly": "£817.19",
    "monthly_gbp": 817.19,
    "apr": 5.9,
-   "lead_time_weeks_min": 3,
-   "lead_time_weeks_max": 5,
+   "lead_time_weeks_min": 2,
+   "lead_time_weeks_max": 4,
    "on_hold": false,
    "options": [
     "Parking Assistant Plus",
@@ -16478,6 +16482,60 @@
    "retailer_id": "16267",
    "retailer_name": "Hedin Automotive Enfield",
    "first_seen": "2026-11-03"
+  },
+  {
+   "order_number": "6207134",
+   "description": "i3 50 xDrive M Sport First Edition Saloon",
+   "range": "BMW i3 50 xDrive M Sport First Edition Saloon",
+   "colour": "M Le Castellet Blue",
+   "fuel": "Electric",
+   "transmission": "Automatic",
+   "drive": "All Wheel",
+   "wheels": "19\" wheels",
+   "upholstery": "Synthetic Leather",
+   "seats": 5,
+   "zero_to_62": 4.7,
+   "price": "£58,880.00",
+   "price_gbp": 58880,
+   "monthly": "£861.64",
+   "monthly_gbp": 861.64,
+   "apr": 6.9,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
+   "on_hold": false,
+   "options": [
+    "M steering wheel",
+    "M Le Castellet Blue"
+   ],
+   "standard": [
+    "Wireless charging tray Plus",
+    "DAB Radio",
+    "BMW TeleServices",
+    "Front Heated Seats",
+    "Ambient Lighting",
+    "Charging cable Professional (Mode 3)",
+    "BMW Panoramic Vision",
+    "Driving Assistant Plus",
+    "Active Guard",
+    "Tyre Repair Kit Plus",
+    "Multifunctional seats for driver and front passenger"
+   ],
+   "standard_packages": [
+    "First Edition",
+    "Technology Plus Pack"
+   ],
+   "retailer_price": false,
+   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVPys52E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwK5PjsczNqU3CWhvBXyGcL3tm87ehQ50rHrO3UiePzfP5%25VyJom4ikIZadr%25V2YbGgj3I7sufw9iY4WnANj3sMLpjBPUWTQ1CmJWLRUFcnoYQ9%25DhpFLUSkl31DA%25O2x5hqWk67oi3Xx2E4dV5mU7KMgIii%254qTwYVgSMXRNsIwpT89BWY1IRHSmLcKB9zOrQhMFSv6PU3TQOtEJ%257ZM60Kak4CIEeqG2MKzKyXf7TMsqZ8A4R9EXbHjM9T58uzCTkRNHnvcR29E",
+   "images": [
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVPys52E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwK5PjsczNqU3CWhvBXyGcL3tm87ehQ50rHrO3UiePzfP5%25VyJom4ikIZadr%25V2YbGgj3I7sufw9iY4WnANj3sMLpjBPUWTQ1CmJWLRUFcnoYQ9%25DhpFLUSkl31DA%25O2x5hqWk67oi3Xx2E4dV5mU7KMgIii%254qTwYVgSMXRNsIwpT89BWY1IRHSmLcKB9zOrQhMFSv6PU3TQOtEJ%257ZM60Kak4CIEeqG2MKzKyXf7TMsqZ8A4R9EXbHjM9T58uzCTkRNHnvcR29E",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25cD7QOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbG0QcI7sufeRLY4WnAyD5sMLpjZ6FWTQ1CbCzLRUFcuicQ9%25DhPjEUSkl3JC9%25O2x5aILk67oiG8U2E4dVfIL7KMgIAcR4qTwYjh4MXRNsdP2T89BWgNMRHSmLwBV9zOrQWe4Sv6PULyrOtEJ%25QjR60KakUU9EeqG2%25aHKyXf7kGgqZ8A42wkXbHjMs0A8uzCTWKNHnvcRLqTzpth96lKv103SEYktFe5OK0u0Dyi6qK7elZVEX8tyxbIK8qQZouYqSXfbdnsXO8t",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25cD7QOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbG0QcI7sufeRLY4WnAyD5sMLpjZ6FWTQ1CbCzLRUFcuicQ9%25DhPjEUSkl3JC9%25O2x5aILk67oiG8U2E4dVfIL7KMgIAcR4qTwYjh4MXRNsdP2T89BWgNMRHSmLwBV9zOrQWe4Sv6PULyrOtEJ%25QjR60KakUU9EeqG2%25aHKyXf7kGgqZ8A42wkXbHjMs0A8uzCTWKNHnvcRLqTzpth96lKv103SEYktFe5OK0u0Dyi6qK7elZVEX8tyxbIK8qQZouYqSXfbdnsXO8t",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSAAAY6N%25%25BxoI5mAoXcGY40nOoDz4ZK9jdGwMbqZagfNTuX%25KwABRn8qTNjm9pHXUBCrS1MGomcPOFTiarhJ6DRXwP3aEl9sqJ5GKxSx2aifqoONoGVAXdulWfIj8gnxVAYCHwpmajsczN1%25fCWhvBFmacL3tmDoihQ50rldh3UiePvuC5%25VyJte3ikIZa0yBV2YbGJThI7sufaRbY4WnAGlisMLpjffVWTQ1CApkLRUFcj1tQ9%25DhC0jUSkl3PMD%25O2x5JLek67oiaQ52E4dVs8L7KMgIWrj4qTwYLMOMXRNsQLcT89BWU%254RHSmL%25QG9zOrQIUFSv6PUY%254",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ukkk6pVHHIchORYkhl4U60Nanhjd0rFb23UiePDrQ5%25VyJlHFikIZaxDyV2YbGol8I7sufeUhY4WnAy9QsMLpjZliWTQ1CbEDLRUFcucvQ9%25DhnVhUSkl3JCK%25O2x5acSk67oiGYQ2E4dVfH%257KMgIAYQ4qTwYjh9MXRNsC3MT89BWgJ7RHSmLwBT9zOrQNmISv6PULyMOtEJ%25QZP60KakUC9EeqG2%25%25SKyXf7kGzqZ8A42fwXbHjM7N28uzCTWejHnvcRLqBzpth9QXRv103SExqtFe5OKs20Dyi6qenelZVEXq4yxbIK8H0ZouYqHXUbdnsXO8AugpW86H0"
+   ],
+   "retailer_id": "16215",
+   "retailer_name": "Hedin Automotive Woolwich",
+   "first_seen": "2026-11-02"
   },
   {
    "order_number": "6199863",
@@ -18207,64 +18265,6 @@
    "retailer_name": "Hedin Automotive Bromley",
    "first_seen": "2026-10-29",
    "first_seen_seed": true
-  },
-  {
-   "order_number": "6207487",
-   "description": "i3 50 xDrive M Sport First Edition Saloon",
-   "range": "BMW i3 50 xDrive M Sport First Edition Saloon",
-   "colour": "M Le Castellet Blue",
-   "fuel": "Electric",
-   "transmission": "Automatic",
-   "drive": "All Wheel",
-   "wheels": "20\" wheels",
-   "upholstery": "Synthetic Leather",
-   "seats": 5,
-   "zero_to_62": 4.7,
-   "price": "£62,105.00",
-   "price_gbp": 62105,
-   "monthly": "£930.69",
-   "monthly_gbp": 930.69,
-   "apr": 6.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
-   "on_hold": false,
-   "options": [
-    "Parking Assistant Professional",
-    "M Le Castellet Blue",
-    "20\" M light alloy wheels cross-spoke style 1065 M",
-    "BMW Individual steering wheel",
-    "Contemporary Digital White bicolour interior design",
-    "Panoramic glass sunroof with climate comfort glazing"
-   ],
-   "standard": [
-    "Wireless charging tray Plus",
-    "DAB Radio",
-    "BMW TeleServices",
-    "Front Heated Seats",
-    "Ambient Lighting",
-    "Charging cable Professional (Mode 3)",
-    "BMW Panoramic Vision",
-    "Driving Assistant Plus",
-    "Active Guard",
-    "Tyre Repair Kit Plus",
-    "Multifunctional seats for driver and front passenger"
-   ],
-   "standard_packages": [
-    "First Edition",
-    "Technology Plus Pack"
-   ],
-   "retailer_price": false,
-   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVP9PL2E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwuAvjsczNqiJCWhvBX%255cL3tm8ZfhQ50rH4y3UiePzP65%25VyJvA3ikIZadL%25V2YbGgPTI7sufwJ2Y4WnANcisMLpjBOIWTQ1CmciLRUFcrakQ9%25DhPGQUSkl31gW%25O2x5FlUk67oiDxC2E4dVlzi7KMgIiHU4qTwYVzgMXRNsIJ2T89BWYY7RHSmLsBE9zOrQWmDSv6PULlWOtEJ%255Rl60Kaki9%25EeqG2MuRKyXf7ThsqZ8A4RXtXbHjM9RL8uzCTSOqHnvcRO9Vzpth97Smv103S4Oq",
-   "images": [
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVP9PL2E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwuAvjsczNqiJCWhvBX%255cL3tm8ZfhQ50rH4y3UiePzP65%25VyJvA3ikIZadL%25V2YbGgPTI7sufwJ2Y4WnANcisMLpjBOIWTQ1CmciLRUFcrakQ9%25DhPGQUSkl31gW%25O2x5FlUk67oiDxC2E4dVlzi7KMgIiHU4qTwYVzgMXRNsIJ2T89BWYY7RHSmLsBE9zOrQWmDSv6PULlWOtEJ%255Rl60Kaki9%25EeqG2MuRKyXf7ThsqZ8A4RXtXbHjM9RL8uzCTSOqHnvcRO9Vzpth97Smv103S4Oq",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25c8cMOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbGoVnI7sufeUhY4WnAy9QsMLpjZliWTQ1CbEDLRUFcucvQ9%25DhnVLUSkl3JM9%25O2x5acqk67oiGhO2E4dVfsU7KMgIAzk4qTwYjsUMXRNsC3ST89BWc5TRHSmLwa49zOrQNmRSv6PUBrYOtEJ%25muU60KakUbREeqG2%25uaKyXf7khOqZ8A4226XbHjM7At8uzCT4jBHnvcRMm4zpth9QXmv103SU89tFe5OKoX0Dyi6qW7elZVEXypyxbIK8XMZouYqHzebdnsXz8%25ugpW86Hjnw1LHEze",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25c8cMOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbGoVnI7sufeUhY4WnAy9QsMLpjZliWTQ1CbEDLRUFcucvQ9%25DhnVLUSkl3JM9%25O2x5acqk67oiGhO2E4dVfsU7KMgIAzk4qTwYjsUMXRNsC3ST89BWc5TRHSmLwa49zOrQNmRSv6PUBrYOtEJ%25muU60KakUbREeqG2%25uaKyXf7khOqZ8A4226XbHjM7At8uzCT4jBHnvcRMm4zpth9QXmv103SU89tFe5OKoX0Dyi6qW7elZVEXypyxbIK8XMZouYqHzebdnsXz8%25ugpW86Hjnw1LHEze",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSAAAY6N%25%25BxoI5mAo%25o3Y40nOoDz4ZK9jdGwMbqZagfNTuX%25KwABRn8qTNjm9pHXUBCrS1zB6mcPOFTfdrhJ6DRVGP3aEl98NJ5GKxSWXaifqoOo7GVAXd6BafIj8gn3VAYCHwpoQjsczN1dYCWhvBFPfcL3tmD2jhQ50rlPf3UiePxgI5%25VyJow5ikIZa0phV2YbGeZiI7sufybrY4WnAZOfsMLpjfSiWTQ1CAOpLRUFcjdYQ9%25DhCCsUSkl3cD4%25O2x5hlyk67oi3Zh2E4dVGUZ7KMgIf%25V4qTwYLzUMXRNsQJcT89BWURERHSmL%25U39zOrQk2TSv6PU2%25AOtEJ%25skl60KakW2T",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ukkk6pVHHIchORYkhHhT60Nanhjd0rFb23UiePDrQ5%25VyJlHFikIZaxDyV2YbGol8I7sufdIpY4WnAy%253sMLpjZSUWTQ1CbxVLRUFcuKlQ9%25DhnhtUSkl3pIQ%25O2x5aTSk67oiGhX2E4dVf367KMgIAW%254qTwYjv2MXRNsCW%25T89BWc5ORHSmLhiR9zOrQNGMSv6PUBr9OtEJ%25mPs60Kakrn%25EeqG2%25u9KyXf7knGqZ8A4236XbHjM77E8uzCT4j0HnvcRMCmzpth9TrMv103SU8rtFe5O%25HS0Dyi6qd8elZVEXL4yxbIK8Z1ZouYqH8TbdnsXzvyugpW8vHknw1LHEzCpNFQzKvy"
-   ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
-   "first_seen": "2026-11-02"
   },
   {
    "order_number": "6207006",
@@ -21992,6 +21992,79 @@
    "first_seen_seed": true
   },
   {
+   "order_number": "4295341",
+   "description": "X6 M60i xDrive",
+   "range": "BMW X6 M60i xDrive",
+   "series": "X6",
+   "colour": "Black Sapphire",
+   "fuel": "Petrol",
+   "transmission": "Automatic",
+   "drive": "All Wheel",
+   "wheels": "22\" wheels",
+   "upholstery": "Synthetic Leather",
+   "seats": 5,
+   "engine_cc": 4395,
+   "zero_to_62": 4.3,
+   "price": "£89,239.85",
+   "price_gbp": 89240,
+   "monthly": "£1,147.05",
+   "monthly_gbp": 1147.05,
+   "apr": 4.9,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
+   "on_hold": false,
+   "options": [
+    "22\" Bicolour Double-spoke style 742 M light alloy wheels",
+    "Black Sapphire"
+   ],
+   "standard": [
+    "M Sport Exhaust System",
+    "Connected Package Professional",
+    "Parking Assistant",
+    "Storage for wireless charging",
+    "M Sport Leather Steering Wheel",
+    "High-Beam Assistant",
+    "Folding Side Mirrors with Auto-dimming",
+    "M Sport Differential",
+    "Adaptive LED Headlights",
+    "BMW Online Services",
+    "M Adaptive Suspension",
+    "Integral Active Steering",
+    "Velour Floor Mats",
+    "Sun Protection Glass",
+    "Anthracite Headlining",
+    "DAB Radio",
+    "Electric Front Seats + Driver Memory",
+    "BMW TeleServices",
+    "Front Heated Seats",
+    "Ambient Lighting",
+    "48V mild hybrid technology",
+    "Driving Assistant",
+    "Personal eSIM",
+    "Active Guard",
+    "Active Protection",
+    "Fineline Black Wood with Metal Effect Interior Trim",
+    "Harman/Kardon Surround Sound Audio System",
+    "High-gloss Shadowline Exterior Trim",
+    "Comfort Access",
+    "Live Cockpit Plus",
+    "Front Lumbar Support"
+   ],
+   "retailer_price": true,
+   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVfts52E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdhdefIj8g3OyAYCHwu0QjsczNnEbCWhvBpmfcL3tm1nvhQ50rFpF3UiePD1E5%25VyJlF%25ikIZatLCV2YbG0PcI7sufeFbY4WnAyA3sMLpjZjzWTQ1CmfOLRUFcrAPQ9%25DhPjRUSkl3Jw%25%25O2x5akek67oiG2O2E4dVfsU7KMgIAxY4qTwYjC2MXRNsCWqT89BWc5TRHSmLwG29zOrQNmcSv6PUBrUOtEJ%25mPE60KakrJWEeqG2PpOKyXf7khOqZ8A42XyXbHjM7At8uzCT4jBHnvcRMCyzpth9T3Xv103SRPntFe5O9AL0Dyi6SM8elZVE2ggyxbIK7wTZouYq4tNbdnsXMK9ugpW8T8nnw1LHtrepNFQz07O1BDUveFJFml%25typRDrxk0ZyKlPo2ebZxxJd7yunXoag4ZnpldGwMbpusgfNTu1n6wABRneZt",
+   "images": [
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVfts52E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdhdefIj8g3OyAYCHwu0QjsczNnEbCWhvBpmfcL3tm1nvhQ50rFpF3UiePD1E5%25VyJlF%25ikIZatLCV2YbG0PcI7sufeFbY4WnAyA3sMLpjZjzWTQ1CmfOLRUFcrAPQ9%25DhPjRUSkl3Jw%25%25O2x5akek67oiG2O2E4dVfsU7KMgIAxY4qTwYjC2MXRNsCWqT89BWc5TRHSmLwG29zOrQNmcSv6PUBrUOtEJ%25mPE60KakrJWEeqG2PpOKyXf7khOqZ8A42XyXbHjM7At8uzCT4jBHnvcRMCyzpth9T3Xv103SRPntFe5O9AL0Dyi6SM8elZVE2ggyxbIK7wTZouYq4tNbdnsXMK9ugpW8T8nnw1LHtrepNFQz07O1BDUveFJFml%25typRDrxk0ZyKlPo2ebZxxJd7yunXoag4ZnpldGwMbpusgfNTu1n6wABRneZt",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23JcG%25Oni88VCcSTI%25ip7QOtwJucAotmI0vhQ50rYeI3UiePsME5%25VyJWJFikIZaLzDV2YbGo1TI7sufdtxY4WnAgjisMLpjwdnWTQ1CNgNLRUFcBwtQ9%25DhmN9USkl3pMY%25O2x51csk67oiFNx2E4dVDVL7KMgIlIu4qTwYjizMXRNsCVcT89BWcIXRHSmLhG99zOrQ3SFSv6PU5OzOtEJ%25i7R60KakVr2EeqG2IYOKyXf7Y4eqZ8A4sQqXbHjMG5O8uzCTfjsHnvcRACRzpth9jctv103SCh4tFe5Ocgz0Dyi6SWzelZVEOyDyxbIK6VpZouYqEIAbdnsXKYDugpW8qLynw1LHXcdpNFQz8VM1BDUvHKZFml%25tOaaDrxk06GqlPo2eEpfxJd7yK08oag4ZqZddGwMbpCFgfNTu16zwABRnFNhNjm9pDgXBCrS1lD0mcPOFxlrrhJ6DodyP3aEldgmJ5GKxgo7aifqowdvGVAXdFlp",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23JcG%25Oni88VCcSTI%25ip7QOtwJucAotmI0vhQ50rYeI3UiePsME5%25VyJWJFikIZaLzDV2YbGo1TI7sufdtxY4WnAgjisMLpjwdnWTQ1CNgNLRUFcBwtQ9%25DhmN9USkl3pMY%25O2x51csk67oiFNx2E4dVDVL7KMgIlIu4qTwYjizMXRNsCVcT89BWcIXRHSmLhG99zOrQ3SFSv6PU5OzOtEJ%25i7R60KakVr2EeqG2IYOKyXf7Y4eqZ8A4sQqXbHjMG5O8uzCTfjsHnvcRACRzpth9jctv103SCh4tFe5Ocgz0Dyi6SWzelZVEOyDyxbIK6VpZouYqEIAbdnsXKYDugpW8qLynw1LHXcdpNFQz8VM1BDUvHKZFml%25tOaaDrxk06GqlPo2eEpfxJd7yK08oag4ZqZddGwMbpCFgfNTu16zwABRnFNhNjm9pDgXBCrS1lD0mcPOFxlrrhJ6DodyP3aEldgmJ5GKxgo7aifqowdvGVAXdFlp",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgno1AY6N%25%25BxoI5mANEcGY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJnqNjm9pa2XBCrS1zK5mcPOFv4HrhJ6DtlNP3aEl0v6J5GKxeteaifqoy04GVAXdZeVfIj8gE3rAYCHwKoPjsczNqeHCWhvBXBacL3tm8mOhQ50rlN23UiePxBo5%25VyJomUikIZad1VV2YbGgIqI7sufwY2Y4WnANcisMLpjBbCWTQ1CmrYLRUFcrhTQ9%25DhPGQUSkl31wY%25O2x5FlPk67oiDxi2E4dVlo47KMgIxdh4qTwYot2MXRNsIJ2T89BWYRXRHSmLsBE9zOrQWmDSv6PULrXOtEJ%25QaR60KakUovEeqG2%25B3KyXf7kL9qZ8A4YppXbHjMs1Q8uzCTWEFHnvcRLM%25zpth9Q9vv103SExqtFe5OKs20Dyi6qedelZVEXtUyxbIK8XMZouYqH8bbdnsXzvRugpW8vtZnw1LHtzcpNFQz0v71BDUvq8E",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ahfk6pVHHIchORYkV14U60Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLaDV2YbGQvlI7sufdFRY4WnAg0osMLpjwCVWTQ1CNgpLRUFcBwBQ9%25DhmN0USkl3rBS%25O2x51Tsk67oiFhW2E4dVDBo7KMgIlIQ4qTwYxYnMXRNsCVvT89BWcIhRHSmLhY89zOrQ3fSSv6PU5ODOtEJ%25i6v60KakV49EeqG2IP7KyXf7Ys6qZ8A4sMyXbHjMWUX8uzCTfi6HnvcRACWzpth9jc9v103SCh0tFe5Oc3M0Dyi6hwvelZVEOLvyxbIK6ZlZouYqEI1bdnsXKYjugpW8qslnw1LHXQZpNFQz8hg1BDUvHITFml%25tzqbDrxk06GGlPo2eEfXxJd7yK1Aoag4ZqeHdGwMbXbggfNTu1cDwABRnFEvNjm9pDB3BCrS1lw8mcPOFxlerhJ6DoxPP3aEldgZJ5GKxgwraifqowd4GVAXdNgtfIj8gDx1"
+   ],
+   "retailer_id": "16267",
+   "retailer_name": "Hedin Automotive Enfield",
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
+  },
+  {
    "order_number": "4693669",
    "description": "M3 Competition M xDrive Saloon",
    "range": "BMW M3 Competition M xDrive Saloon",
@@ -22711,8 +22784,8 @@
    "monthly": "£1,064.46",
    "monthly_gbp": 1064.46,
    "apr": 4.9,
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
    "on_hold": false,
    "options": [
     "BMW Kidney Iconic Glow",
@@ -22999,8 +23072,8 @@
    "monthly": "£1,268.72",
    "monthly_gbp": 1268.72,
    "apr": 2.9,
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "Parking Assistant Plus",
@@ -23206,79 +23279,6 @@
    "retailer_id": "26177",
    "retailer_name": "Hedin Automotive Bromley",
    "first_seen": "2026-11-23"
-  },
-  {
-   "order_number": "4295341",
-   "description": "X6 M60i xDrive",
-   "range": "BMW X6 M60i xDrive",
-   "series": "X6",
-   "colour": "Black Sapphire",
-   "fuel": "Petrol",
-   "transmission": "Automatic",
-   "drive": "All Wheel",
-   "wheels": "22\" wheels",
-   "upholstery": "Synthetic Leather",
-   "seats": 5,
-   "engine_cc": 4395,
-   "zero_to_62": 4.3,
-   "price": "£95,730.26",
-   "price_gbp": 95730,
-   "monthly": "£1,298.79",
-   "monthly_gbp": 1298.79,
-   "apr": 4.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
-   "on_hold": false,
-   "options": [
-    "22\" Bicolour Double-spoke style 742 M light alloy wheels",
-    "Black Sapphire"
-   ],
-   "standard": [
-    "M Sport Exhaust System",
-    "Connected Package Professional",
-    "Parking Assistant",
-    "Storage for wireless charging",
-    "M Sport Leather Steering Wheel",
-    "High-Beam Assistant",
-    "Folding Side Mirrors with Auto-dimming",
-    "M Sport Differential",
-    "Adaptive LED Headlights",
-    "BMW Online Services",
-    "M Adaptive Suspension",
-    "Integral Active Steering",
-    "Velour Floor Mats",
-    "Sun Protection Glass",
-    "Anthracite Headlining",
-    "DAB Radio",
-    "Electric Front Seats + Driver Memory",
-    "BMW TeleServices",
-    "Front Heated Seats",
-    "Ambient Lighting",
-    "48V mild hybrid technology",
-    "Driving Assistant",
-    "Personal eSIM",
-    "Active Guard",
-    "Active Protection",
-    "Fineline Black Wood with Metal Effect Interior Trim",
-    "Harman/Kardon Surround Sound Audio System",
-    "High-gloss Shadowline Exterior Trim",
-    "Comfort Access",
-    "Live Cockpit Plus",
-    "Front Lumbar Support"
-   ],
-   "retailer_price": true,
-   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVfts52E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdhdefIj8g3OyAYCHwu0QjsczNnEbCWhvBpmfcL3tm1nvhQ50rFpF3UiePD1E5%25VyJlF%25ikIZatLCV2YbG0PcI7sufeFbY4WnAyA3sMLpjZjzWTQ1CmfOLRUFcrAPQ9%25DhPjRUSkl3Jw%25%25O2x5akek67oiG2O2E4dVfsU7KMgIAxY4qTwYjC2MXRNsCWqT89BWc5TRHSmLwG29zOrQNmcSv6PUBrUOtEJ%25mPE60KakrJWEeqG2PpOKyXf7khOqZ8A42XyXbHjM7At8uzCT4jBHnvcRMCyzpth9T3Xv103SRPntFe5O9AL0Dyi6SM8elZVE2ggyxbIK7wTZouYq4tNbdnsXMK9ugpW8T8nnw1LHtrepNFQz07O1BDUveFJFml%25typRDrxk0ZyKlPo2ebZxxJd7yunXoag4ZnpldGwMbpusgfNTu1n6wABRneZt",
-   "images": [
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYadPwV2vf99ArPkQjVfts52E1dzPBuEljK6J5GKxCqjaifqocL4GVAXdhdefIj8g3OyAYCHwu0QjsczNnEbCWhvBpmfcL3tm1nvhQ50rFpF3UiePD1E5%25VyJlF%25ikIZatLCV2YbG0PcI7sufeFbY4WnAyA3sMLpjZjzWTQ1CmfOLRUFcrAPQ9%25DhPjRUSkl3Jw%25%25O2x5akek67oiG2O2E4dVfsU7KMgIAxY4qTwYjC2MXRNsCWqT89BWc5TRHSmLwG29zOrQNmcSv6PUBrUOtEJ%25mPE60KakrJWEeqG2PpOKyXf7khOqZ8A42XyXbHjM7At8uzCT4jBHnvcRMCyzpth9T3Xv103SRPntFe5O9AL0Dyi6SM8elZVE2ggyxbIK7wTZouYq4tNbdnsXMK9ugpW8T8nnw1LHtrepNFQz07O1BDUveFJFml%25typRDrxk0ZyKlPo2ebZxxJd7yunXoag4ZnpldGwMbpusgfNTu1n6wABRneZt",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23JcG%25Oni88VCcSTI%25ip7QOtwJucAotmI0vhQ50rYeI3UiePsME5%25VyJWJFikIZaLzDV2YbGo1TI7sufdtxY4WnAgjisMLpjwdnWTQ1CNgNLRUFcBwtQ9%25DhmN9USkl3pMY%25O2x51csk67oiFNx2E4dVDVL7KMgIlIu4qTwYjizMXRNsCVcT89BWcIXRHSmLhG99zOrQ3SFSv6PU5OzOtEJ%25i7R60KakVr2EeqG2IYOKyXf7Y4eqZ8A4sQqXbHjMG5O8uzCTfjsHnvcRACRzpth9jctv103SCh4tFe5Ocgz0Dyi6SWzelZVEOyDyxbIK6VpZouYqEIAbdnsXKYDugpW8qLynw1LHXcdpNFQz8VM1BDUvHKZFml%25tOaaDrxk06GqlPo2eEpfxJd7yK08oag4ZqZddGwMbpCFgfNTu16zwABRnFNhNjm9pDgXBCrS1lD0mcPOFxlrrhJ6DodyP3aEldgmJ5GKxgo7aifqowdvGVAXdFlp",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23JcG%25Oni88VCcSTI%25ip7QOtwJucAotmI0vhQ50rYeI3UiePsME5%25VyJWJFikIZaLzDV2YbGo1TI7sufdtxY4WnAgjisMLpjwdnWTQ1CNgNLRUFcBwtQ9%25DhmN9USkl3pMY%25O2x51csk67oiFNx2E4dVDVL7KMgIlIu4qTwYjizMXRNsCVcT89BWcIXRHSmLhG99zOrQ3SFSv6PU5OzOtEJ%25i7R60KakVr2EeqG2IYOKyXf7Y4eqZ8A4sQqXbHjMG5O8uzCTfjsHnvcRACRzpth9jctv103SCh4tFe5Ocgz0Dyi6SWzelZVEOyDyxbIK6VpZouYqEIAbdnsXKYDugpW8qLynw1LHXcdpNFQz8VM1BDUvHKZFml%25tOaaDrxk06GqlPo2eEpfxJd7yK08oag4ZqZddGwMbpCFgfNTu16zwABRnFNhNjm9pDgXBCrS1lD0mcPOFxlrrhJ6DodyP3aEldgmJ5GKxgo7aifqowdvGVAXdFlp",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgno1AY6N%25%25BxoI5mANEcGY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJnqNjm9pa2XBCrS1zK5mcPOFv4HrhJ6DtlNP3aEl0v6J5GKxeteaifqoy04GVAXdZeVfIj8gE3rAYCHwKoPjsczNqeHCWhvBXBacL3tm8mOhQ50rlN23UiePxBo5%25VyJomUikIZad1VV2YbGgIqI7sufwY2Y4WnANcisMLpjBbCWTQ1CmrYLRUFcrhTQ9%25DhPGQUSkl31wY%25O2x5FlPk67oiDxi2E4dVlo47KMgIxdh4qTwYot2MXRNsIJ2T89BWYRXRHSmLsBE9zOrQWmDSv6PULrXOtEJ%25QaR60KakUovEeqG2%25B3KyXf7kL9qZ8A4YppXbHjMs1Q8uzCTWEFHnvcRLM%25zpth9Q9vv103SExqtFe5OKs20Dyi6qedelZVEXtUyxbIK8XMZouYqH8bbdnsXzvRugpW8vtZnw1LHtzcpNFQz0v71BDUvq8E",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWmfkEMXl9aV015toFnqItSMaPMKV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ahfk6pVHHIchORYkV14U60Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLaDV2YbGQvlI7sufdFRY4WnAg0osMLpjwCVWTQ1CNgpLRUFcBwBQ9%25DhmN0USkl3rBS%25O2x51Tsk67oiFhW2E4dVDBo7KMgIlIQ4qTwYxYnMXRNsCVvT89BWcIhRHSmLhY89zOrQ3fSSv6PU5ODOtEJ%25i6v60KakV49EeqG2IP7KyXf7Ys6qZ8A4sMyXbHjMWUX8uzCTfi6HnvcRACWzpth9jc9v103SCh0tFe5Oc3M0Dyi6hwvelZVEOLvyxbIK6ZlZouYqEI1bdnsXKYjugpW8qslnw1LHXQZpNFQz8hg1BDUvHITFml%25tzqbDrxk06GGlPo2eEfXxJd7yK1Aoag4ZqeHdGwMbXbggfNTu1cDwABRnFEvNjm9pDB3BCrS1lw8mcPOFxlerhJ6DoxPP3aEldgZJ5GKxgwraifqowd4GVAXdNgtfIj8gDx1"
-   ],
-   "retailer_id": "16267",
-   "retailer_name": "Hedin Automotive Enfield",
-   "first_seen": "2026-10-29",
-   "first_seen_seed": true
   },
   {
    "order_number": "7969971",
@@ -24330,6 +24330,85 @@
    "first_seen_seed": true
   },
   {
+   "order_number": "4404323",
+   "description": "M5 Saloon",
+   "range": "BMW M5 Saloon",
+   "series": "5 Series",
+   "colour": "BMW Individual Techno-Violet",
+   "fuel": "PHEV",
+   "transmission": "Automatic",
+   "drive": "All Wheel",
+   "upholstery": "Leather",
+   "seats": 5,
+   "engine_cc": 4395,
+   "zero_to_62": 3.5,
+   "price": "£101,846.70",
+   "price_gbp": 101847,
+   "monthly": "£1,283.56",
+   "monthly_gbp": 1283.56,
+   "apr": 2.9,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
+   "on_hold": false,
+   "options": [
+    "BMW Individual Techno-Violet",
+    "20\"/21\" 951 M Light Alloy Wheels Black with mixed tyres",
+    "Silverstone and Black Bicolour extended Merino leather",
+    "Carbon fibre Silver threads high gloss interior trim"
+   ],
+   "packages": [
+    "M Driver's Pack"
+   ],
+   "standard": [
+    "M Drive Professional",
+    "Connected Package Professional",
+    "BMW Individual Lights Shadow Line",
+    "BMW Iconic Glow",
+    "Parking Assistant Plus",
+    "Storage for wireless charging",
+    "BMW Individual high-gloss Shadow Line with extended contents",
+    "Adaptive LED Headlights",
+    "Charging cable Professional (Mode 3)",
+    "Four-zone Automatic Air Conditioning",
+    "BMW Online Services",
+    "Bowers & Wilkins Surround Sound System",
+    "Interior Camera",
+    "Sun Protection Glass",
+    "M Multifunctional Seats",
+    "Anthracite Headlining",
+    "DAB Radio",
+    "Electric Front Seats + Driver Memory",
+    "BMW TeleServices",
+    "BMW IconicSounds Electric",
+    "Ambient Lighting",
+    "Driving Assistant",
+    "Personal eSIM",
+    "Active Guard",
+    "Driving Assistant Plus preparation",
+    "M Sport Seat Belts",
+    "Heated Steering Wheel",
+    "Panoramic Glass Roof",
+    "AC Fast Charging Preparation",
+    "eDrive Exterior Sound",
+    "High-gloss Shadowline Exterior Trim",
+    "Comfort Access",
+    "Live Cockpit Pro with Head up Display"
+   ],
+   "retailer_price": true,
+   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaxAVV2vf99ArPkQjVFiPr2E1dzPBuEljs2J5GKxCWLaifqoc6yGVAXdhdqfIj8gbtLAYCHwugIjsczNnEbCWhvBpuzcL3tm1n1hQ50rHYf3UiePzBA5%25VyJvTbikIZatawV2YbG0GXI7sufwUhY4WnANa9sMLpjBG4WTQ1CmxDLRUFcrdQQ9%25DhPp3USkl3J3B%25O2x5aylk67oiGZk2E4dVfIL7KMgIAcE4qTwYjhMMXRNsC3MT89BWcfpRHSmLwG29zOrQNmOSv6PUBrYOtEJ%25mur60KakUC9EeqG2%25aHKyXf7kGgqZ8A42ftXbHjM7CE8uzCT4DKHnvcRMmbzpth9TGsv103SR7ktFe5O%258o0Dyi6kS4elZVE2EyyxbIK7KpZouYqHNvbdnsXz%25BugpW8vk9nw1LHtprpNFQz0uM1BDUve06Fml%25tyeDDrxk0Zb1lPo2ebyVxJd7yuZ9oag4ZnXldGwMbp87gfNTu0v0",
+   "images": [
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaxAVV2vf99ArPkQjVFiPr2E1dzPBuEljs2J5GKxCWLaifqoc6yGVAXdhdqfIj8gbtLAYCHwugIjsczNnEbCWhvBpuzcL3tm1n1hQ50rHYf3UiePzBA5%25VyJvTbikIZatawV2YbG0GXI7sufwUhY4WnANa9sMLpjBG4WTQ1CmxDLRUFcrdQQ9%25DhPp3USkl3J3B%25O2x5aylk67oiGZk2E4dVfIL7KMgIAcE4qTwYjhMMXRNsC3MT89BWcfpRHSmLwG29zOrQNmOSv6PUBrYOtEJ%25mur60KakUC9EeqG2%25aHKyXf7kGgqZ8A42ftXbHjM7CE8uzCT4DKHnvcRMmbzpth9TGsv103SR7ktFe5O%258o0Dyi6kS4elZVE2EyyxbIK7KpZouYqHNvbdnsXz%25BugpW8vk9nw1LHtprpNFQz0uM1BDUve06Fml%25tyeDDrxk0Zb1lPo2ebyVxJd7yuZ9oag4ZnXldGwMbp87gfNTu0v0",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23rV%25%25Oni88VCcSTI%25NUcCOtwJucAotmI7OhQ50rY4M3UiePsvD5%25VyJWJeikIZaxpMV2YbGoakI7sufdtxY4WnAgousMLpjwdwWTQ1Cb2iLRUFcuAVQ9%25DhnqxUSkl3p3G%25O2x515yk67oiGRW2E4dVf387KMgIA5E4qTwYjrBMXRNsCJTT89BWcgLRHSmLhLA9zOrQ3DmSv6PU5lSOtEJ%25ikM60KakVstEeqG2IWKKyXf7YLKqZ8A4sigXbHjMG5O8uzCTfjzHnvcRAC2zpth9joCv103SRY8tFe5O93b0Dyi6S5aelZVEOipyxbIK6YtZouYqEB0bdnsXKjxugpW8q57nw1LHX6SpNFQz9ZP1BDUvSHEFml%25tOtDDrxk060glPo2ebfnxJd7yu9Aoag4ZnS8dGwMbpgCgfNTu1oKwABRnF1vNjm9pDFBBCrS1lxwmcPOFxD%25rhJ6Dol8P3aEldymJ5GKxgZ6aifqo1n1",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23rV%25%25Oni88VCcSTI%25NUcCOtwJucAotmI7OhQ50rY4M3UiePsvD5%25VyJWJeikIZaxpMV2YbGoakI7sufdtxY4WnAgousMLpjwdwWTQ1Cb2iLRUFcuAVQ9%25DhnqxUSkl3p3G%25O2x515yk67oiGRW2E4dVf387KMgIA5E4qTwYjrBMXRNsCJTT89BWcgLRHSmLhLA9zOrQ3DmSv6PU5lSOtEJ%25ikM60KakVstEeqG2IWKKyXf7YLKqZ8A4sigXbHjMG5O8uzCTfjzHnvcRAC2zpth9joCv103SRY8tFe5O93b0Dyi6S5aelZVEOipyxbIK6YtZouYqEB0bdnsXKjxugpW8q57nw1LHX6SpNFQz9ZP1BDUvSHEFml%25tOtDDrxk060glPo2ebfnxJd7yu9Aoag4ZnS8dGwMbpgCgfNTu1oKwABRnF1vNjm9pDFBBCrS1lxwmcPOFxD%25rhJ6Dol8P3aEldymJ5GKxgZ6aifqo1n1",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgbBAAY6N%25%25BxoI5mAefoxY40nOoDz4ZmcYdGwMbrh3gfNTuP7XwABRnJnTNjm9pHE3BCrS1zpjmcPOFv4HrhJ6DtzOP3aEl0v0J5GKxSCNaifqoODBGVAXd6QHfIj8gEg1AYCHwKwRjsczN1iJCWhvBFg%25cL3tmDwWhQ50rlby3UiePxn55%25VyJotaikIZadaDV2YbGgXZI7sufw8IY4WnANj3sMLpjBP4WTQ1CmJLLRUFcraLQ9%25DhPNtUSkl31wY%25O2x5Fl2k67oiDxC2E4dVlzx7KMgIir%254qTwYVgSMXRNsIwpT89BWYNERHSmLsr49zOrQWyMSv6PULlHOtEJ%25Qwc60KakUsIEeqG2V9uKyXf7IkWqZ8A4Y4XXbHjMsMt8uzCTSF6HnvcROVDzpth96I%25v103SEtxtFe5OKzL0Dyi6qK7elZVEXqyyxbIK8H0ZouYqHXAbdnsXz8%25ugpW8vRZnw1LHt9spNFQzK6K",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75PIkk6pVHHIchORYkB%25hc60Nanhjd0rY463UiePsMT5%25VyJWtlikIZaLayV2YbGo1TI7sufdG2Y4WnAg0osMLpjwdnWTQ1CNgNLRUFcu7VQ9%25DhnjIUSkl3pXo%25O2x515fk67oiFiZ2E4dVf9L7KMgIA5H4qTwYjiKMXRNsCPmT89BWcaRRHSmLhwQ9zOrQ3QjSv6PU5lrOtEJ%25ixO60KakV2TEeqG2IW0KyXf7YLqqZ8A4sQqXbHjMWVw8uzCTfi6HnvcRACvzpth9jc7v103SCdctFe5O9sH0Dyi6S5uelZVEOiGyxbIK6V1ZouYqEs0bdnsXKmeugpW8qConw1LHXi4pNFQz8EO1BDUvSbJFml%25tOzKDrxk060llPo2eEewxJd7yuApoag4ZnSjdGwMbpOHgfNTu1wcwABRnFdqNjm9pDFtBCrS1lDmmcPOFxoNrhJ6DolkP3aEldxHJ5GKxgZraifqowbEGVAXdFpF"
+   ],
+   "retailer_id": "26177",
+   "retailer_name": "Hedin Automotive Bromley",
+   "first_seen": "2026-10-29",
+   "first_seen_seed": true
+  },
+  {
    "order_number": "6225062",
    "description": "i7 60 xDrive M Sport",
    "range": "BMW i7 60 xDrive M Sport",
@@ -24835,85 +24914,6 @@
    "first_seen_seed": true
   },
   {
-   "order_number": "4404323",
-   "description": "M5 Saloon",
-   "range": "BMW M5 Saloon",
-   "series": "5 Series",
-   "colour": "BMW Individual Techno-Violet",
-   "fuel": "PHEV",
-   "transmission": "Automatic",
-   "drive": "All Wheel",
-   "upholstery": "Leather",
-   "seats": 5,
-   "engine_cc": 4395,
-   "zero_to_62": 3.5,
-   "price": "£115,905.00",
-   "price_gbp": 115905,
-   "monthly": "£1,600.10",
-   "monthly_gbp": 1600.1,
-   "apr": 2.9,
-   "lead_time_weeks_min": 1,
-   "lead_time_weeks_max": 3,
-   "on_hold": false,
-   "options": [
-    "BMW Individual Techno-Violet",
-    "20\"/21\" 951 M Light Alloy Wheels Black with mixed tyres",
-    "Silverstone and Black Bicolour extended Merino leather",
-    "Carbon fibre Silver threads high gloss interior trim"
-   ],
-   "packages": [
-    "M Driver's Pack"
-   ],
-   "standard": [
-    "M Drive Professional",
-    "Connected Package Professional",
-    "BMW Individual Lights Shadow Line",
-    "BMW Iconic Glow",
-    "Parking Assistant Plus",
-    "Storage for wireless charging",
-    "BMW Individual high-gloss Shadow Line with extended contents",
-    "Adaptive LED Headlights",
-    "Charging cable Professional (Mode 3)",
-    "Four-zone Automatic Air Conditioning",
-    "BMW Online Services",
-    "Bowers & Wilkins Surround Sound System",
-    "Interior Camera",
-    "Sun Protection Glass",
-    "M Multifunctional Seats",
-    "Anthracite Headlining",
-    "DAB Radio",
-    "Electric Front Seats + Driver Memory",
-    "BMW TeleServices",
-    "BMW IconicSounds Electric",
-    "Ambient Lighting",
-    "Driving Assistant",
-    "Personal eSIM",
-    "Active Guard",
-    "Driving Assistant Plus preparation",
-    "M Sport Seat Belts",
-    "Heated Steering Wheel",
-    "Panoramic Glass Roof",
-    "AC Fast Charging Preparation",
-    "eDrive Exterior Sound",
-    "High-gloss Shadowline Exterior Trim",
-    "Comfort Access",
-    "Live Cockpit Pro with Head up Display"
-   ],
-   "retailer_price": true,
-   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaxAVV2vf99ArPkQjVFiPr2E1dzPBuEljs2J5GKxCWLaifqoc6yGVAXdhdqfIj8gbtLAYCHwugIjsczNnEbCWhvBpuzcL3tm1n1hQ50rHYf3UiePzBA5%25VyJvTbikIZatawV2YbG0GXI7sufwUhY4WnANa9sMLpjBG4WTQ1CmxDLRUFcrdQQ9%25DhPp3USkl3J3B%25O2x5aylk67oiGZk2E4dVfIL7KMgIAcE4qTwYjhMMXRNsC3MT89BWcfpRHSmLwG29zOrQNmOSv6PUBrYOtEJ%25mur60KakUC9EeqG2%25aHKyXf7kGgqZ8A42ftXbHjM7CE8uzCT4DKHnvcRMmbzpth9TGsv103SR7ktFe5O%258o0Dyi6kS4elZVE2EyyxbIK7KpZouYqHNvbdnsXz%25BugpW8vk9nw1LHtprpNFQz0uM1BDUve06Fml%25tyeDDrxk0Zb1lPo2ebyVxJd7yuZ9oag4ZnXldGwMbp87gfNTu0v0",
-   "images": [
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaxAVV2vf99ArPkQjVFiPr2E1dzPBuEljs2J5GKxCWLaifqoc6yGVAXdhdqfIj8gbtLAYCHwugIjsczNnEbCWhvBpuzcL3tm1n1hQ50rHYf3UiePzBA5%25VyJvTbikIZatawV2YbG0GXI7sufwUhY4WnANa9sMLpjBG4WTQ1CmxDLRUFcrdQQ9%25DhPp3USkl3J3B%25O2x5aylk67oiGZk2E4dVfIL7KMgIAcE4qTwYjhMMXRNsC3MT89BWcfpRHSmLwG29zOrQNmOSv6PUBrYOtEJ%25mur60KakUC9EeqG2%25aHKyXf7kGgqZ8A42ftXbHjM7CE8uzCT4DKHnvcRMmbzpth9TGsv103SR7ktFe5O%258o0Dyi6kS4elZVE2EyyxbIK7KpZouYqHNvbdnsXz%25BugpW8vk9nw1LHtprpNFQz0uM1BDUve06Fml%25tyeDDrxk0Zb1lPo2ebyVxJd7yuZ9oag4ZnXldGwMbp87gfNTu0v0",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23rV%25%25Oni88VCcSTI%25NUcCOtwJucAotmI7OhQ50rY4M3UiePsvD5%25VyJWJeikIZaxpMV2YbGoakI7sufdtxY4WnAgousMLpjwdwWTQ1Cb2iLRUFcuAVQ9%25DhnqxUSkl3p3G%25O2x515yk67oiGRW2E4dVf387KMgIA5E4qTwYjrBMXRNsCJTT89BWcgLRHSmLhLA9zOrQ3DmSv6PU5lSOtEJ%25ikM60KakVstEeqG2IWKKyXf7YLKqZ8A4sigXbHjMG5O8uzCTfjzHnvcRAC2zpth9joCv103SRY8tFe5O93b0Dyi6S5aelZVEOipyxbIK6YtZouYqEB0bdnsXKjxugpW8q57nw1LHX6SpNFQz9ZP1BDUvSHEFml%25tOtDDrxk060glPo2ebfnxJd7yu9Aoag4ZnS8dGwMbpgCgfNTu1oKwABRnF1vNjm9pDFBBCrS1lxwmcPOFxD%25rhJ6Dol8P3aEldymJ5GKxgZ6aifqo1n1",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23rV%25%25Oni88VCcSTI%25NUcCOtwJucAotmI7OhQ50rY4M3UiePsvD5%25VyJWJeikIZaxpMV2YbGoakI7sufdtxY4WnAgousMLpjwdwWTQ1Cb2iLRUFcuAVQ9%25DhnqxUSkl3p3G%25O2x515yk67oiGRW2E4dVf387KMgIA5E4qTwYjrBMXRNsCJTT89BWcgLRHSmLhLA9zOrQ3DmSv6PU5lSOtEJ%25ikM60KakVstEeqG2IWKKyXf7YLKqZ8A4sigXbHjMG5O8uzCTfjzHnvcRAC2zpth9joCv103SRY8tFe5O93b0Dyi6S5aelZVEOipyxbIK6YtZouYqEB0bdnsXKjxugpW8q57nw1LHX6SpNFQz9ZP1BDUvSHEFml%25tOtDDrxk060glPo2ebfnxJd7yu9Aoag4ZnS8dGwMbpgCgfNTu1oKwABRnF1vNjm9pDFBBCrS1lxwmcPOFxD%25rhJ6Dol8P3aEldymJ5GKxgZ6aifqo1n1",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgbBAAY6N%25%25BxoI5mAefoxY40nOoDz4ZmcYdGwMbrh3gfNTuP7XwABRnJnTNjm9pHE3BCrS1zpjmcPOFv4HrhJ6DtzOP3aEl0v0J5GKxSCNaifqoODBGVAXd6QHfIj8gEg1AYCHwKwRjsczN1iJCWhvBFg%25cL3tmDwWhQ50rlby3UiePxn55%25VyJotaikIZadaDV2YbGgXZI7sufw8IY4WnANj3sMLpjBP4WTQ1CmJLLRUFcraLQ9%25DhPNtUSkl31wY%25O2x5Fl2k67oiDxC2E4dVlzx7KMgIir%254qTwYVgSMXRNsIwpT89BWYNERHSmLsr49zOrQWyMSv6PULlHOtEJ%25Qwc60KakUsIEeqG2V9uKyXf7IkWqZ8A4Y4XXbHjMsMt8uzCTSF6HnvcROVDzpth96I%25v103SEtxtFe5OKzL0Dyi6qK7elZVEXqyyxbIK8H0ZouYqHXAbdnsXz8%25ugpW8vRZnw1LHt9spNFQzK6K",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3fvOMXl9aV015toFnqItSu33LKV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75PIkk6pVHHIchORYkB%25hc60Nanhjd0rY463UiePsMT5%25VyJWtlikIZaLayV2YbGo1TI7sufdG2Y4WnAg0osMLpjwdnWTQ1CNgNLRUFcu7VQ9%25DhnjIUSkl3pXo%25O2x515fk67oiFiZ2E4dVf9L7KMgIA5H4qTwYjiKMXRNsCPmT89BWcaRRHSmLhwQ9zOrQ3QjSv6PU5lrOtEJ%25ixO60KakV2TEeqG2IW0KyXf7YLqqZ8A4sQqXbHjMWVw8uzCTfi6HnvcRACvzpth9jc7v103SCdctFe5O9sH0Dyi6S5uelZVEOiGyxbIK6V1ZouYqEs0bdnsXKmeugpW8qConw1LHXi4pNFQz8EO1BDUvSbJFml%25tOzKDrxk060llPo2eEewxJd7yuApoag4ZnSjdGwMbpOHgfNTu1wcwABRnFdqNjm9pDFtBCrS1lDmmcPOFxoNrhJ6DolkP3aEldxHJ5GKxgZraifqowbEGVAXdFpF"
-   ],
-   "retailer_id": "26177",
-   "retailer_name": "Hedin Automotive Bromley",
-   "first_seen": "2026-10-29",
-   "first_seen_seed": true
-  },
-  {
    "order_number": "4403837",
    "description": "M5 Saloon",
    "range": "BMW M5 Saloon",
@@ -24931,8 +24931,8 @@
    "monthly": "£1,910.12",
    "monthly_gbp": 1910.12,
    "apr": 2.9,
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
+   "lead_time_weeks_min": 4,
+   "lead_time_weeks_max": 6,
    "on_hold": false,
    "options": [
     "20\"/21\" 952 M Light Alloy Wheels Black Bicolour with mixed tyres"
@@ -31833,79 +31833,6 @@
    "removed_at": "2026-11-10"
   },
   {
-   "order_number": "6207134",
-   "description": "i3 50 xDrive M Sport First Edition Saloon",
-   "range": "BMW i3 50 xDrive M Sport First Edition Saloon",
-   "colour": "M Le Castellet Blue",
-   "fuel": "Electric",
-   "transmission": "Automatic",
-   "drive": "All Wheel",
-   "wheels": "19\" wheels",
-   "upholstery": "Synthetic Leather",
-   "seats": 5,
-   "zero_to_62": 4.7,
-   "price": "£58,880.00",
-   "price_gbp": 58880,
-   "monthly": "£861.64",
-   "monthly_gbp": 861.64,
-   "apr": 6.9,
-   "finance_example": {
-    "product": "BMW Select (PCP)",
-    "lender": "BMW Financial Services (GB) Limited",
-    "apr": 6.9,
-    "monthly": 861.64,
-    "payments": 47,
-    "term_months": 48,
-    "deposit": 4500,
-    "cash_price": 58880.0,
-    "amount_of_credit": 54380.0,
-    "final_payment": 24604.76,
-    "total_payable": 69601.84,
-    "charge_for_credit": 10721.84,
-    "annual_mileage": 8000,
-    "contract_mileage": 32000,
-    "excess_pence": null,
-    "basis": "BMW publish the monthly payment, the APR and the cash price for this car. The optional final payment, total amount payable and total charge for credit are worked out from those on the terms BMW state, and are not a quotation."
-   },
-   "lead_time_weeks_min": 2,
-   "lead_time_weeks_max": 4,
-   "on_hold": false,
-   "options": [
-    "M steering wheel",
-    "M Le Castellet Blue"
-   ],
-   "standard": [
-    "Wireless charging tray Plus",
-    "DAB Radio",
-    "BMW TeleServices",
-    "Front Heated Seats",
-    "Ambient Lighting",
-    "Charging cable Professional (Mode 3)",
-    "BMW Panoramic Vision",
-    "Driving Assistant Plus",
-    "Active Guard",
-    "Tyre Repair Kit Plus",
-    "Multifunctional seats for driver and front passenger"
-   ],
-   "standard_packages": [
-    "First Edition",
-    "Technology Plus Pack"
-   ],
-   "retailer_price": false,
-   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVPys52E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwK5PjsczNqU3CWhvBXyGcL3tm87ehQ50rHrO3UiePzfP5%25VyJom4ikIZadr%25V2YbGgj3I7sufw9iY4WnANj3sMLpjBPUWTQ1CmJWLRUFcnoYQ9%25DhpFLUSkl31DA%25O2x5hqWk67oi3Xx2E4dV5mU7KMgIii%254qTwYVgSMXRNsIwpT89BWY1IRHSmLcKB9zOrQhMFSv6PU3TQOtEJ%257ZM60Kak4CIEeqG2MKzKyXf7TMsqZ8A4R9EXbHjM9T58uzCTkRNHnvcR29E",
-   "images": [
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVPys52E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwK5PjsczNqU3CWhvBXyGcL3tm87ehQ50rHrO3UiePzfP5%25VyJom4ikIZadr%25V2YbGgj3I7sufw9iY4WnANj3sMLpjBPUWTQ1CmJWLRUFcnoYQ9%25DhpFLUSkl31DA%25O2x5hqWk67oi3Xx2E4dV5mU7KMgIii%254qTwYVgSMXRNsIwpT89BWY1IRHSmLcKB9zOrQhMFSv6PU3TQOtEJ%257ZM60Kak4CIEeqG2MKzKyXf7TMsqZ8A4R9EXbHjM9T58uzCTkRNHnvcR29E",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25cD7QOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbG0QcI7sufeRLY4WnAyD5sMLpjZ6FWTQ1CbCzLRUFcuicQ9%25DhPjEUSkl3JC9%25O2x5aILk67oiG8U2E4dVfIL7KMgIAcR4qTwYjh4MXRNsdP2T89BWgNMRHSmLwBV9zOrQWe4Sv6PULyrOtEJ%25QjR60KakUU9EeqG2%25aHKyXf7kGgqZ8A42wkXbHjMs0A8uzCTWKNHnvcRLqTzpth96lKv103SEYktFe5OK0u0Dyi6qK7elZVEX8tyxbIK8qQZouYqSXfbdnsXO8t",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25cD7QOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbG0QcI7sufeRLY4WnAyD5sMLpjZ6FWTQ1CbCzLRUFcuicQ9%25DhPjEUSkl3JC9%25O2x5aILk67oiG8U2E4dVfIL7KMgIAcR4qTwYjh4MXRNsdP2T89BWgNMRHSmLwBV9zOrQWe4Sv6PULyrOtEJ%25QjR60KakUU9EeqG2%25aHKyXf7kGgqZ8A42wkXbHjMs0A8uzCTWKNHnvcRLqTzpth96lKv103SEYktFe5OK0u0Dyi6qK7elZVEX8tyxbIK8qQZouYqSXfbdnsXO8t",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSAAAY6N%25%25BxoI5mAoXcGY40nOoDz4ZK9jdGwMbqZagfNTuX%25KwABRn8qTNjm9pHXUBCrS1MGomcPOFTiarhJ6DRXwP3aEl9sqJ5GKxSx2aifqoONoGVAXdulWfIj8gnxVAYCHwpmajsczN1%25fCWhvBFmacL3tmDoihQ50rldh3UiePvuC5%25VyJte3ikIZa0yBV2YbGJThI7sufaRbY4WnAGlisMLpjffVWTQ1CApkLRUFcj1tQ9%25DhC0jUSkl3PMD%25O2x5JLek67oiaQ52E4dVs8L7KMgIWrj4qTwYLMOMXRNsQLcT89BWU%254RHSmL%25QG9zOrQIUFSv6PUY%254",
-    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33LVV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ukkk6pVHHIchORYkhl4U60Nanhjd0rFb23UiePDrQ5%25VyJlHFikIZaxDyV2YbGol8I7sufeUhY4WnAy9QsMLpjZliWTQ1CbEDLRUFcucvQ9%25DhnVhUSkl3JCK%25O2x5acSk67oiGYQ2E4dVfH%257KMgIAYQ4qTwYjh9MXRNsC3MT89BWgJ7RHSmLwBT9zOrQNmISv6PULyMOtEJ%25QZP60KakUC9EeqG2%25%25SKyXf7kGzqZ8A42fwXbHjM7N28uzCTWejHnvcRLqBzpth9QXRv103SExqtFe5OKs20Dyi6qenelZVEXq4yxbIK8H0ZouYqHXUbdnsXO8AugpW86H0"
-   ],
-   "retailer_id": "22181",
-   "retailer_name": "Hedin Automotive Ruxley",
-   "first_seen": "2026-11-02",
-   "removed_at": "2026-11-10"
-  },
-  {
    "order_number": "7969986",
    "description": "330e M Sport Saloon",
    "range": "BMW 330e M Sport Saloon",
@@ -34914,6 +34841,65 @@
    "retailer_name": "Hedin Automotive Enfield",
    "first_seen": "2026-11-17",
    "removed_at": "2026-11-24"
+  },
+  {
+   "order_number": "6207487",
+   "description": "i3 50 xDrive M Sport First Edition Saloon",
+   "range": "BMW i3 50 xDrive M Sport First Edition Saloon",
+   "colour": "M Le Castellet Blue",
+   "fuel": "Electric",
+   "transmission": "Automatic",
+   "drive": "All Wheel",
+   "wheels": "20\" wheels",
+   "upholstery": "Synthetic Leather",
+   "seats": 5,
+   "zero_to_62": 4.7,
+   "price": "£62,105.00",
+   "price_gbp": 62105,
+   "monthly": "£930.69",
+   "monthly_gbp": 930.69,
+   "apr": 6.9,
+   "lead_time_weeks_min": 1,
+   "lead_time_weeks_max": 3,
+   "on_hold": false,
+   "options": [
+    "Parking Assistant Professional",
+    "M Le Castellet Blue",
+    "20\" M light alloy wheels cross-spoke style 1065 M",
+    "BMW Individual steering wheel",
+    "Contemporary Digital White bicolour interior design",
+    "Panoramic glass sunroof with climate comfort glazing"
+   ],
+   "standard": [
+    "Wireless charging tray Plus",
+    "DAB Radio",
+    "BMW TeleServices",
+    "Front Heated Seats",
+    "Ambient Lighting",
+    "Charging cable Professional (Mode 3)",
+    "BMW Panoramic Vision",
+    "Driving Assistant Plus",
+    "Active Guard",
+    "Tyre Repair Kit Plus",
+    "Multifunctional seats for driver and front passenger"
+   ],
+   "standard_packages": [
+    "First Edition",
+    "Technology Plus Pack"
+   ],
+   "retailer_price": false,
+   "image": "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVP9PL2E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwuAvjsczNqiJCWhvBX%255cL3tm8ZfhQ50rH4y3UiePzP65%25VyJvA3ikIZadL%25V2YbGgPTI7sufwJ2Y4WnANcisMLpjBOIWTQ1CmciLRUFcrakQ9%25DhPGQUSkl31gW%25O2x5FlUk67oiDxC2E4dVlzi7KMgIiHU4qTwYVzgMXRNsIJ2T89BWYY7RHSmLsBE9zOrQWmDSv6PULlWOtEJ%255Rl60Kaki9%25EeqG2MuRKyXf7ThsqZ8A4RXtXbHjM9RL8uzCTSOqHnvcRO9Vzpth97Smv103S4Oq",
+   "images": [
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAoXmnwiFTWESWlpCO3tDpEK5%25HITyK3ihNYaHVVV2vf99ArPkQjVP9PL2E1dzPBuEl08IJ5GKxel3aifqoy90GVAXdZeqfIj8gbyRAYCHwuAvjsczNqiJCWhvBX%255cL3tm8ZfhQ50rH4y3UiePzP65%25VyJvA3ikIZadL%25V2YbGgPTI7sufwJ2Y4WnANcisMLpjBOIWTQ1CmciLRUFcrakQ9%25DhPGQUSkl31gW%25O2x5FlUk67oiDxC2E4dVlzi7KMgIiHU4qTwYVzgMXRNsIJ2T89BWYY7RHSmLsBE9zOrQWmDSv6PULlWOtEJ%255Rl60Kaki9%25EeqG2MuRKyXf7ThsqZ8A4RXtXbHjM9RL8uzCTSOqHnvcRO9Vzpth97Smv103S4Oq",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAom9jdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25c8cMOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbGoVnI7sufeUhY4WnAy9QsMLpjZliWTQ1CbEDLRUFcucvQ9%25DhnVLUSkl3JM9%25O2x5acqk67oiGhO2E4dVfsU7KMgIAzk4qTwYjsUMXRNsC3ST89BWc5TRHSmLwa49zOrQNmRSv6PUBrYOtEJ%25muU60KakUbREeqG2%25uaKyXf7khOqZ8A4226XbHjM7At8uzCT4jBHnvcRMm4zpth9QXmv103SU89tFe5OKoX0Dyi6qW7elZVEXypyxbIK8XMZouYqHzebdnsXz8%25ugpW86Hjnw1LHEze",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAomnjdGUNq4tH4mgYzLpBgt0Q9bkqD0LUWf23b%25%25%25Oni88VCcSTI%25c8cMOtwJucAotm1ZkhQ50rFmL3UiePD815%25VyJlFeikIZaxDXV2YbGoVnI7sufeUhY4WnAy9QsMLpjZliWTQ1CbEDLRUFcucvQ9%25DhnVLUSkl3JM9%25O2x5acqk67oiGhO2E4dVfsU7KMgIAzk4qTwYjsUMXRNsC3ST89BWc5TRHSmLwa49zOrQNmRSv6PUBrYOtEJ%25muU60KakUbREeqG2%25uaKyXf7khOqZ8A4226XbHjM7At8uzCT4jBHnvcRMm4zpth9QXmv103SU89tFe5OKoX0Dyi6qW7elZVEXypyxbIK8XMZouYqHzebdnsXz8%25ugpW86Hjnw1LHEze",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgSAAAY6N%25%25BxoI5mAo%25o3Y40nOoDz4ZK9jdGwMbqZagfNTuX%25KwABRn8qTNjm9pHXUBCrS1zB6mcPOFTfdrhJ6DRVGP3aEl98NJ5GKxSWXaifqoOo7GVAXd6BafIj8gn3VAYCHwpoQjsczN1dYCWhvBFPfcL3tmD2jhQ50rlPf3UiePxgI5%25VyJow5ikIZa0phV2YbGeZiI7sufybrY4WnAZOfsMLpjfSiWTQ1CAOpLRUFcjdYQ9%25DhCCsUSkl3cD4%25O2x5hlyk67oi3Zh2E4dVGUZ7KMgIf%25V4qTwYLzUMXRNsQJcT89BWURERHSmL%25U39zOrQk2TSv6PU2%25AOtEJ%25skl60KakW2T",
+    "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESWuflgMXl9aV015toFnqItSu33rcV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75ukkk6pVHHIchORYkhHhT60Nanhjd0rFb23UiePDrQ5%25VyJlHFikIZaxDyV2YbGol8I7sufdIpY4WnAy%253sMLpjZSUWTQ1CbxVLRUFcuKlQ9%25DhnhtUSkl3pIQ%25O2x5aTSk67oiGhX2E4dVf367KMgIAW%254qTwYjv2MXRNsCW%25T89BWc5ORHSmLhiR9zOrQNGMSv6PUBr9OtEJ%25mPs60Kakrn%25EeqG2%25u9KyXf7knGqZ8A4236XbHjM77E8uzCT4j0HnvcRMCmzpth9TrMv103SU8rtFe5O%25HS0Dyi6qd8elZVEXL4yxbIK8Z1ZouYqH8TbdnsXzvyugpW8vHknw1LHEzCpNFQzKvy"
+   ],
+   "retailer_id": "22181",
+   "retailer_name": "Hedin Automotive Ruxley",
+   "first_seen": "2026-11-02",
+   "removed_at": "2026-11-25"
   }
  ]
 }

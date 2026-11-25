@@ -17,8 +17,8 @@
  "monthly": "£339.99",
  "monthly_gbp": 339.99,
  "apr": 2.9,
- "lead_time_weeks_min": 3,
- "lead_time_weeks_max": 5,
+ "lead_time_weeks_min": 4,
+ "lead_time_weeks_max": 6,
  "on_hold": false,
  "standard": [
   "Parking Assistant",
@@ -45,8 +45,8 @@
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LrhV2vEH%25f2I5mNbd37TsVdloDzURlv1fvkrPJtH4cWaJe%25KaYp4T8xwcVxUWf2T0AY6YKHaXiI5mVHvhCWKYI9DicAolv1feQh4khZtr2aEyt4MGVSjQXMafJFCgoPVAY6N%25%25BxoI5mAkFbVY40nOoDz4ZmM7dGwMbrTmgfNTuP3WwABRnJBhNjm9pHE3BCrS1z78mcPOFvD%25rhJ6DtzOP3aEl0v7J5GKxSCNaifqobD5GVAXduvafIj8gnoVAYCHwpmajsczNXeGCWhvB8zhcL3tmHvdhQ50rz4C3UiePmnC5%25VyJresikIZaPyqV2YbGJvlI7sufg3RY4WnAc93sMLpjhxSWTQ1C3orLRUFc5Q7Q9%25DhiWNUSkl3Via%25O2x5IVkk67oiYsU2E4dVsIb7KMgIWYr",
   "https://prod.cosy.bmw.cloud/vss/cosySec?COSY-EU-100-1713kmbZb2UCeOzVsMe6B3gwI8ESW3foSMXl9aV015toFnqItSu3LrhV2vEH%25f2I5mfnCUCWKnFv8WIsVPeNhJ5RJb274arpFGAh6xazpqZrGs%25rR4i84Tp%25OnO1xLDRSTI9xd42E1OSZAR7%25cjdGUNq4tH4EW5LbpLAVLQ9%259njV7USu2XleQ%25LA75hWSk6pVHHIchORYkzAPS60Nanhjd0rYet3UiePsyY5%25VyJWTKikIZaLIMV2YbGo1TI7sufdtxY4WnAgjHsMLpjwdnWTQ1CNgtLRUFcu7VQ9%25DhPjRUSkl3JgQ%25O2x5ahSk67oiGYQ2E4dVlBU7KMgIxdM4qTwYog3MXRNsd07T89BWYa7RHSmLsBE9zOrQWmDSv6PULgCOtEJ%255TZ60Kak4bTEeqG2McuKyXf7ThsqZ8A4RXtXbHjM9KV8uzCTS9QHnvcROSzzpth96E8v103SEOPtFe5OK6s"
  ],
- "retailer_id": "22181",
- "retailer_name": "Hedin Automotive Ruxley",
+ "retailer_id": "26177",
+ "retailer_name": "Hedin Automotive Bromley",
  "first_seen": "2026-11-24",
  "status": "in_stock",
  "removed_at": null,

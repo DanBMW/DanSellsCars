@@ -16,8 +16,8 @@
  "monthly": "£1,910.12",
  "monthly_gbp": 1910.12,
  "apr": 2.9,
- "lead_time_weeks_min": 2,
- "lead_time_weeks_max": 4,
+ "lead_time_weeks_min": 4,
+ "lead_time_weeks_max": 6,
  "on_hold": false,
  "options": [
   "20\"/21\" 952 M Light Alloy Wheels Black Bicolour with mixed tyres"

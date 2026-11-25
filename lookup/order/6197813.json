@@ -17,8 +17,8 @@
  "monthly": "£394.58",
  "monthly_gbp": 394.58,
  "apr": 2.9,
- "lead_time_weeks_min": 1,
- "lead_time_weeks_max": 3,
+ "lead_time_weeks_min": 2,
+ "lead_time_weeks_max": 4,
  "on_hold": false,
  "options": [
   "Contrast Roof in Black",
