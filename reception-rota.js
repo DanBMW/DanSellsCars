@@ -559,8 +559,9 @@
      the two test addresses (Dan and Nathan). Change this to false only when Dan says it goes live. */
   var TEST_ONLY = false;
   /* one-off corrections to who is in on a day, on top of the shift calendar. Tomi has appointments on Friday 6
-     November, his usual day off, so he is assumed in for that day. Remove the line once the rota itself is corrected. */
-  var ONE_OFF_IN = { '2026-11-06': ['tomi'] };
+     November, his usual day off, so he is assumed in for that day. Danny is in on Wednesday 25 November, his usual
+     day off (Dan, 25 November). Remove a line once the rota itself is corrected. */
+  var ONE_OFF_IN = { '2026-11-06': ['tomi'], '2026-11-25': ['danny'] };
 /* public rota: one row a shift, initials only, no names, emails, notes or reasons.
    day = reception/<date> as stored; team = lockup config team by id.
    A shift whose holder stepped off (status declined) carries endedAt, the London time
