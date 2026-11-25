@@ -561,7 +561,7 @@ async function run(o) {
        already finished: Mon was emailed to cover 9 to 12 and the managers were told 9 to 12 was not covered. */
     const held = date === n.date ? shifts.filter(s => existing[s.id] && minsOf(s.from) <= n.mins).map(s => s.id) : [];
     const plan = RR.planDay({
-      shifts, available, team, busy, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date),
+      shifts, available, team, busy, exclude: ((cfg && cfg.receptionExclude) || []).concat(Object.keys(team).filter(id => !(team[id] || {}).email)), history: historyOf(all, date), doubledBefore: RR.doubledBefore(all, date),
       declined: declined, existing: existing, skip: ended.concat(held)
     });
     for (const s of shifts) {

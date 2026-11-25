@@ -119,9 +119,29 @@
        declined  { shiftId: [ids who said they cannot cover that shift] }
        existing  { shiftId: id } already put on and still standing; these are kept
      returns { assignments: { shiftId: id|null }, short: [shiftId] } */
+  /* who held two or more seats on the most recent earlier day with a plan, within the last
+     three days (so Saturday counts for Monday, Sunday being closed). all = reception/<date>/<seat>. */
+  function doubledBefore(all, date) {
+    var prev = Object.keys(all || {}).filter(function (d) { return /^\d{4}-\d{2}-\d{2}$/.test(d) && d < date; }).sort().pop();
+    if (!prev) return [];
+    var gap = (Date.parse(date + 'T12:00:00Z') - Date.parse(prev + 'T12:00:00Z')) / 864e5;
+    if (gap > 3) return [];
+    var n = {};
+    Object.keys(all[prev] || {}).forEach(function (k) {
+      if (k.charAt(0) === '_') return;
+      var p = all[prev][k] && all[prev][k].personId;
+      if (p) n[p] = (n[p] || 0) + 1;
+    });
+    return Object.keys(n).filter(function (p) { return n[p] >= 2; }).sort();
+  }
+
   function planDay(opts) {
     var shifts = opts.shifts || [], pool = poolFor(opts.available, opts.team, opts.exclude);
     var hist = opts.history || {}, declined = opts.declined || {}, existing = opts.existing || {}, busy = opts.busy || {};
+    /* who did two shifts on the last working day (Dan, 25 November 2026: "try and avoid giving people double
+       shifts 2 days in a row"). Only ever a preference: they go behind anyone else for a SECOND shift today,
+       never for a first, and never at the cost of an empty seat. */
+    var dbl = {}; (opts.doubledBefore || []).forEach(function (id) { dbl[id] = 1; });
     var out = {}, short = [], today = {}, skip = opts.skip || [];
     var byId = {}; shifts.forEach(function (s) { byId[s.id] = s; });
     /* is this person on a seat too close to s (same shift, or back to back) */
@@ -135,9 +155,13 @@
       /* a second shift only with a gap: never both seats of one shift, never back to back.
          Fewest shifts today sorts first, so a double only happens when nobody else is free. */
       var cand = pool.filter(function (id) { return free(id) && !near(id, s); });
+      var pairable = shifts.some(function (o) { return o.id !== s.id && !sameTime(o, s) && !tooClose(o, s); });
       if (!cand.length) { out[s.id] = null; short.push(s.id); return; }
       cand.sort(function (a, b) {
-        return ((today[a] || 0) - (today[b] || 0)) || ((hist[a] || 0) - (hist[b] || 0)) || (pool.indexOf(a) - pool.indexOf(b));
+        /* a first shift in a seat that could become half of a double (morning or afternoon) also goes to
+           somebody else first, so they land on midday, which touches both and can never be doubled */
+        var ra = dbl[a] && ((today[a] || 0) > 0 || pairable) ? 1 : 0, rb = dbl[b] && ((today[b] || 0) > 0 || pairable) ? 1 : 0;
+        return ((today[a] || 0) - (today[b] || 0)) || (ra - rb) || ((hist[a] || 0) - (hist[b] || 0)) || (pool.indexOf(a) - pool.indexOf(b));
       });
       out[s.id] = cand[0];
       today[cand[0]] = (today[cand[0]] || 0) + 1;
@@ -570,6 +594,6 @@ function publicRota(day, date, dow, team) {
   });
 }
 
-var api = { needsWords: needsWords, startEmail: startEmail, LOCATIONS: LOCATIONS, locationOf: locationOf, isHeld: isHeld, heldCount: heldCount, STATE_WORDS: STATE_WORDS, linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
+var api = { doubledBefore: doubledBefore, needsWords: needsWords, startEmail: startEmail, LOCATIONS: LOCATIONS, locationOf: locationOf, isHeld: isHeld, heldCount: heldCount, STATE_WORDS: STATE_WORDS, linkUrl: linkUrl, tapLinks: tapLinks, nagEmail: nagEmail, unconfirmedNote: unconfirmedNote, TOKEN_RE: TOKEN_RE, LINK_SITE: LINK_SITE, SEATS: SEATS, BASE: BASE, sameTime: sameTime, tooClose: tooClose, activeShiftsAt: activeShiftsAt, PAGE_URL: PAGE_URL, longDate: longDate, shortNote: shortNote, TEST_ONLY: TEST_ONLY, ONE_OFF_IN: ONE_OFF_IN, RECEPTION_ROOT: TEST_ONLY ? 'lockupTest' : 'lockup', RECEPTION_LOG: TEST_ONLY ? 'receptionLogTest' : 'receptionLog', busyIntervals: busyIntervals, clashes: clashes, APPT_MINS: APPT_MINS, APPT_NAMES: APPT_NAMES, stats: stats, historyRows: historyRows, bankCover: bankCover, remainCover: remainCover, COVER_REASONS: COVER_REASONS, takenEmail: takenEmail, minsOf: minsOf, hmOf: hmOf, SHIFTS: SHIFTS, REASONS: REASONS, NEVER: NEVER, shiftsFor: shiftsFor, poolFor: poolFor, planDay: planDay, answer: answer, coverEmail: coverEmail, absentEmail: absentEmail, coverPageUrl: coverPageUrl, SITE: SITE, managerNote: managerNote, normName: normName, matchPersonByName: matchPersonByName, activeShiftAt: activeShiftAt, walkinCoverReallocate: walkinCoverReallocate, publicRota: publicRota, initialsOf: initialsOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReceptionRota = api;
 })(this);

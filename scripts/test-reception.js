@@ -65,6 +65,39 @@ const fiveIds = Object.keys(five.assignments).map(k => five.assignments[k]);
 assert.strictEqual(new Set(fiveIds).size, 5, 'everyone on at least once before anyone twice');
 assert.deepStrictEqual(five.short, []);
 
+// no double two working days running (Dan, 25 November 2026)
+{
+  const fourAvail = ['tomi', 'carl', 'dan', 'will'];
+  const base4 = R.planDay({ shifts: wk, available: fourAvail, team, history: {} });
+  const dbl4 = base4.assignments.am; /* doubled without the rule */
+  const again = R.planDay({ shifts: wk, available: fourAvail, team, history: {}, doubledBefore: [dbl4] });
+  const count = (p, id) => Object.keys(p.assignments).filter(k => p.assignments[k] === id).length;
+  assert.strictEqual(count(base4, dbl4), 2, 'without the rule they would double again');
+  assert.strictEqual(count(again, dbl4), 1, 'with the rule they do one shift: ' + JSON.stringify(again.assignments));
+  assert.deepStrictEqual(again.short, []);
+  sound(again, wk);
+  const fiveAvail = ['tomi', 'carl', 'dan', 'will', 'ben'];
+  const base5 = R.planDay({ shifts: wk, available: fiveAvail, team, history: {} });
+  const d5 = fiveAvail.filter(id => count(base5, id) === 2)[0];
+  const again5 = R.planDay({ shifts: wk, available: fiveAvail, team, history: {}, doubledBefore: [d5] });
+  assert.strictEqual(count(again5, d5), 1, 'five people: the double goes to somebody else');
+  assert.strictEqual(fiveAvail.filter(id => count(again5, id) === 2).length, 1, 'still only one double');
+  /* only a preference: with nobody else able to take it, the seat is still filled */
+  const two = R.planDay({ shifts: wk, available: ['tomi', 'carl'], team, history: {}, doubledBefore: ['tomi', 'carl'] });
+  const twoBase = R.planDay({ shifts: wk, available: ['tomi', 'carl'], team, history: {} });
+  assert.deepStrictEqual(two.short.length, twoBase.short.length, 'never an empty seat to avoid a double');
+  /* a single shift is never refused: seven people, the one who doubled yesterday is still on today */
+  const seven = R.planDay({ shifts: wk, available: six.concat('chloe'), team: t6, history: {}, doubledBefore: ['tomi'] });
+  assert.ok(count(seven, 'tomi') === 1, 'they still get one shift');
+  /* which day counts as yesterday: the last day with a plan, Saturday for Monday, nothing after a week away */
+  const all = { '2026-11-21': { _day: {}, am: { personId: 'tomi' }, pm: { personId: 'tomi' }, mid: { personId: 'carl' } },
+                '2026-11-14': { am: { personId: 'carl' }, pm: { personId: 'carl' } } };
+  assert.deepStrictEqual(R.doubledBefore(all, '2026-11-23'), ['tomi'], 'Saturday counts for Monday');
+  assert.deepStrictEqual(R.doubledBefore(all, '2026-11-28'), [], 'a week later is not two days running');
+  assert.deepStrictEqual(R.doubledBefore({}, '2026-11-23'), []);
+  console.log('ok: nobody is given a double two working days running unless nobody else can take it');
+}
+
 // fairness: the person with fewest recent shifts goes first
 const fair = R.planDay({ shifts: [W('am')], available: ['tomi', 'carl'], team, history: { tomi: 4, carl: 1 } });
 assert.strictEqual(fair.assignments.am, 'carl');
