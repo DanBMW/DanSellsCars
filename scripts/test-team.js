@@ -104,17 +104,4 @@ assert.strictEqual(T.newPersonId('   ', []), 'person');
 assert.ok(T.newPersonId('x'.repeat(60), []).length <= 20);
 console.log('ok: new person ids are safe, short and unique');
 
-// a personal Google account on the staff list is Dan, with admin (26 November 2026)
-{
-  const r = T.resolve(Object.assign({}, base, { user: ok('someone@gmail.com'), staffAdmin: true }));
-  assert.strictEqual(r.status, 'team');
-  assert.strictEqual(r.personId, 'dan', 'a staff account acts as the creator');
-  assert.ok(r.admin && r.canManage && r.role === 'admin' && !r.linkNeeded, 'admin, manages, never writes a link');
-  assert.strictEqual(T.resolve(Object.assign({}, base, { user: ok('someone@gmail.com', { emailVerified: false }), staffAdmin: true })).status, 'wrongdomain', 'unverified, even on the staff list, is refused');
-  assert.strictEqual(T.resolve(Object.assign({}, base, { user: ok('someone@gmail.com'), staffAdmin: false })).status, 'wrongdomain', 'not on the staff list is refused');
-  assert.strictEqual(T.resolve({ team: { tomi: team.tomi }, managers, user: ok('someone@gmail.com'), staffAdmin: true }).status, 'unlinked', 'no creator on the list, no person');
-  assert.ok(T.cardsFor(r).some(c => c.id === 'admin'), 'and sees Team admin');
-  console.log('ok: a personal account on the staff list is Dan, with admin');
-}
-
 console.log('all team identity tests passed');

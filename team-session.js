@@ -23,11 +23,7 @@
   /* the roster (people, managers) is always the live one: test mode changes the rota data only */
   function fresh() { D.link = null; D.admin = false; D.mgrs = {}; loaded.link = loaded.admin = loaded.mgrs = false; linkWritten = false; }
 
-  /* a verified account that is not a Hedin address can only be a staff account;
-     until staff/<uid> has answered it is loading, not the wrong account */
-  function staffCandidate() { return !!user && user.emailVerified === true && !TI.emailOk(user); }
   function view() {
-    if (staffCandidate() && !(loaded.admin && loaded.cfg)) return { status: 'loading', canManage: false };
     return TI.resolve({
       user: user, team: (D.lcfg || {}).team, managers: (D.lcfg || {}).managers,
       link: D.link, staffAdmin: D.admin, shiftsManagers: D.mgrs
@@ -35,7 +31,6 @@
   }
   function settled() {
     if (!authKnown) return false;
-    if (staffCandidate()) return !!(loaded.cfg && loaded.admin);
     if (!user || !TI.emailOk(user)) return true;
     return !!(loaded.cfg && loaded.link && loaded.admin && loaded.mgrs);
   }
@@ -59,9 +54,6 @@
       on(RS + '/links/' + user.uid, function (v) { D.link = v || null; loaded.link = true; });
       on('staff/' + user.uid, function (v) { D.admin = v === true; loaded.admin = true; });
       on(RS + '/managers', function (v) { D.mgrs = v || {}; loaded.mgrs = true; });
-    } else if (staffCandidate()) {
-      loaded.link = loaded.mgrs = true;
-      on('staff/' + user.uid, function (v) { D.admin = v === true; loaded.admin = true; });
     } else {
       loaded.link = loaded.admin = loaded.mgrs = true;
     }

@@ -137,7 +137,7 @@
     if (!st) { show('loading'); return; }
     if (st.status === 'signedout') { show(/[?&]signup=1\b/.test(location.search) ? 'signup' : 'signin'); return; }
     if (st.status === 'unverified') { $('unv-email').textContent = TS.email(); $('bottomnav').hidden = true; show('unverified'); pollVerified(); return; }
-    if (st.status === 'wrongdomain') { $('wrong-email').textContent = (TS.email()) || ''; $('wrong-uid').textContent = TS.uid(); show('wrong'); return; }
+    if (st.status === 'wrongdomain') { $('wrong-email').textContent = (TS.email()) || ''; show('wrong'); return; }
     if (st.status === 'unlinked') { $('unlinked-email').textContent = TS.email(); show('unlinked'); return; }
     if (st.status === 'loading') { $('loading-msg').textContent = 'Loading…'; show('loading'); return; }
     if (!Object.keys(TS.config().team || {}).length) {

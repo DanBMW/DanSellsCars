@@ -60,7 +60,7 @@ const FIX = {
     },
     audit: {}
   },
-  staff: { dan1: true, g2: true },
+  staff: { dan1: true },
   /* email + PIN accounts (Firebase email/password). verified is what the person's email link does */
   accounts: {
     'tomiwa.adelaja@hedinautomotive.co.uk': { pin: '246810', uid: 'tomi1', verified: true },
@@ -74,7 +74,6 @@ const U = {
   will: { uid: 'will1', email: 'will.potter@hedinautomotive.co.uk', emailVerified: true },
   dan: { uid: 'dan1', email: 'daniel.cane@hedinautomotive.co.uk', emailVerified: true },
   gmail: { uid: 'g1', email: 'someone@gmail.com', emailVerified: true },
-  dangmail: { uid: 'g2', email: 'dan.personal@gmail.com', emailVerified: true },
   unverified: { uid: 'u1', email: 'new.person@hedinautomotive.co.uk', emailVerified: false },
   stranger: { uid: 's1', email: 'stranger@hedinautomotive.co.uk', emailVerified: true },
   nathan: { uid: 'nathan1', email: 'nathan.jobson@hedinautomotive.co.uk', emailVerified: true },
@@ -153,29 +152,7 @@ async function scenarios(browser, base) {
     if (!(await visible(p, '#v-wrong'))) console.log('DEBUG gmail', JSON.stringify(await p.evaluate(() => ({ st: window.TeamSession && TeamSession.state(), sections: [...document.querySelectorAll('main section')].map(x => x.id + ':' + x.hidden) }))), p.__errors);
     await p.waitForSelector('#v-wrong:not([hidden])', { timeout: 8000 });
     check('home: a personal Gmail is refused', (await txt(p, '#wrong-email')).indexOf('gmail') >= 0);
-    check('home: the refusal shows the account id, to add to the staff list', (await txt(p, '#wrong-uid')) === 'g1', await txt(p, '#wrong-uid'));
     await p.close();
-  }
-  /* Dan's own Google account, once its uid is on staff/ (26 November 2026) */
-  {
-    const p = await open(browser, base, null, '/team.html', U.dangmail, { popupUser: U.dangmail });
-    await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 }).catch(() => {});
-    const cards = await p.locator('#cards a b').allTextContents();
-    check('home: a personal account on the staff list gets in as Dan', (await txt(p, '#home-hello')) === 'Hello, Dan', await txt(p, '#home-hello'));
-    check('home: and sees Team admin', cards.some(c => c.indexOf('Team admin') === 0), cards.join(' | '));
-    const gst = await store(p);
-    check('home: it never writes a link for a personal account', !gst.log.some(l => l[0] === 'set' && l[1] === 'shifts/links/g2'));
-    check('home: no page errors for the staff account', p.__errors.length === 0, p.__errors.join(' | '));
-    await p.close();
-    const q = await open(browser, base, null, '/team-admin.html', U.dangmail);
-    await q.waitForSelector('#v-app:not([hidden])', { timeout: 8000 }).catch(() => {});
-    check('admin: the staff account has the write controls', await visible(q, '#btn-add'));
-    await q.close();
-    const r = await open(browser, base, null, '/shifts.html', U.dangmail);
-    await r.waitForSelector('#cal .dc', { timeout: 8000 }).catch(() => {});
-    check('calendar: the staff account reaches the calendar', (await r.locator('#cal .dc').count()) > 20, 'cells ' + (await r.locator('#cal .dc').count()));
-    check('calendar: no page errors for the staff account', r.__errors.length === 0, r.__errors.join(' | '));
-    await r.close();
   }
   {
     const p = await open(browser, base, null, '/team.html', U.unverified);
