@@ -127,7 +127,8 @@ async function scenarios(browser, base) {
   {
     let p = await open(browser, base, null, '/team.html', null);
     await p.waitForSelector('#v-signin:not([hidden])', { timeout: 8000 });
-    check('home: signed out shows the sign in card', await visible(p, '#btn-signin'));
+    check('home: signed out shows the PIN sign in card', await visible(p, '#pin-form'));
+    check('home: there is no Google sign in any more', (await p.locator('#btn-signin').count()) === 0 && !/Google/.test(await txt(p, '#v-signin')));
     check('home: signed out has no cards', (await p.locator('#cards a').count()) === 0);
     await p.fill('#pin-email', 'tomiwa.adelaja@hedinautomotive.co.uk');
     await p.fill('#pin-code', '000000');
@@ -139,12 +140,6 @@ async function scenarios(browser, base) {
     await p.waitForSelector('#v-home:not([hidden])', { timeout: 8000 });
     check('home: the right PIN signs Tomi in with no Google window', await visible(p, '#v-home'));
     await p.close();
-    p = await open(browser, base, null, '/team.html', null);
-    await p.waitForSelector('#v-signin:not([hidden])', { timeout: 8000 });
-    await p.click('#btn-signin');
-    await p.waitForTimeout(300);
-    check('home: a cancelled popup is not an error message', (await txt(p, '#signin-msg')).trim() === '');
-    await p.close();
   }
   {
     const p = await open(browser, base, null, '/team.html', U.gmail, { popupUser: U.gmail });
@@ -152,6 +147,9 @@ async function scenarios(browser, base) {
     if (!(await visible(p, '#v-wrong'))) console.log('DEBUG gmail', JSON.stringify(await p.evaluate(() => ({ st: window.TeamSession && TeamSession.state(), sections: [...document.querySelectorAll('main section')].map(x => x.id + ':' + x.hidden) }))), p.__errors);
     await p.waitForSelector('#v-wrong:not([hidden])', { timeout: 8000 });
     check('home: a personal Gmail is refused', (await txt(p, '#wrong-email')).indexOf('gmail') >= 0);
+    await p.click('#btn-signin2');
+    await p.waitForSelector('#v-signin:not([hidden])', { timeout: 8000 }).catch(() => {});
+    check('home: the way out signs the personal account out, back to the PIN card', await visible(p, '#pin-form'));
     await p.close();
   }
   {

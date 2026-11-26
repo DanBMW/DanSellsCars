@@ -152,16 +152,14 @@ select[data-off]{background:#0e1626;border:1px solid var(--line);border-radius:1
       <h1>Sign in with your work email</h1>
       <p class="muted">Shifts, days off, holidays and bank holidays. Use your <b>@hedinautomotive.co.uk</b> account.</p>
       <a class="big" id="btn-pin" href="team.html?next=shifts.html" style="display:block;text-align:center;text-decoration:none">Sign in with work email and PIN</a>
-      <p class="muted small" style="margin:14px 0 8px">or, if your work address has a Google account</p>
-      <button class="ghost" id="btn-signin" type="button">Sign in with Google</button>
       <p class="muted small" id="signin-msg" style="margin-top:12px"></p>
     </div>
   </section>
 
   <section id="v-wrong" hidden>
     <div class="card"><b>That isn&rsquo;t a work account</b>
-      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Sign in with your Hedin address (it has to be verified by Google).</p>
-      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. The team pages use your Hedin work email and your PIN.</p>
+      <button class="big" id="btn-signin2" type="button">Sign out and use my work email</button>
     </div>
   </section>
 
@@ -218,9 +216,7 @@ const backend={
 };
 window.ShiftsApp.start(backend);
 document.getElementById('btn-out').onclick=()=>signOut(auth);
-const signin=()=>backend.signIn().catch(e=>{ const m=document.getElementById('signin-msg'); if(m) m.textContent=(e&&e.code==='auth/popup-closed-by-user')?'':'Sign-in did not work ('+((e&&e.code)||e)+'). Try again.' });
-document.getElementById('btn-signin').onclick=signin;
-document.getElementById('btn-signin2').onclick=signin;
+document.getElementById('btn-signin2').onclick=()=>backend.signOut();
 </script>
 </body>
 </html>

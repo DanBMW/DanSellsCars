@@ -41,8 +41,6 @@
         <button class="ghost" id="pin-new" type="button">Set my PIN</button>
         <button class="ghost" id="pin-reset" type="button">Forgot my PIN?</button>
       </div>
-      <p class="muted small" style="margin:16px 0 8px">or, if your work address has a Google account</p>
-      <button class="ghost" id="btn-signin" type="button" style="width:100%">Sign in with Google</button>
       <p class="msg" id="signin-msg" style="margin-top:12px" aria-live="polite"></p>
     </div>
   </section>
@@ -79,8 +77,8 @@
 
   <section id="v-wrong" hidden>
     <div class="card"><b>That isn&rsquo;t a work account</b>
-      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. Use your Hedin address.</p>
-      <button class="big" id="btn-signin2" type="button">Sign in with a different account</button>
+      <p class="muted small" style="margin:6px 0 12px">You&rsquo;re signed in as <span id="wrong-email"></span>. The team pages use your Hedin work email and your PIN.</p>
+      <button class="big" id="btn-signin2" type="button">Sign out and use my work email</button>
     </div>
   </section>
 
@@ -150,8 +148,8 @@ const errText=(e)=>{ const c=e&&e.code||'';
   return 'That didn\u2019t work ('+(c||e)+'). Try again.'; };
 const pinOk=p=>/^[0-9]{6}$/.test(p);
 const emailVal=()=>$('pin-email').value.trim().toLowerCase();
-$('btn-signin').onclick=()=>TeamSession.signIn().catch(e=>{ const t=errText(e); if(t) say('signin-msg',t,false); });
-$('btn-signin2').onclick=$('btn-signin').onclick;
+/* no Google sign in on the team pages (Dan, 26 November 2026): work email and PIN only */
+$('btn-signin2').onclick=()=>TeamSession.signOut();
 $('btn-out').onclick=()=>TeamSession.signOut();
 $('pin-form').onsubmit=e=>{ e.preventDefault(); const em=emailVal(), p=$('pin-code').value;
   if(!DOMAIN.test(em)) return say('signin-msg','Use your Hedin work address.',false);

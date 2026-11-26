@@ -482,7 +482,7 @@
     $('pin-form').onsubmit = function (e) { e.preventDefault(); if (!/^[0-9]{6}$/.test($('pin-code').value)) return say('signin-msg', 'Your PIN is six digits.', false); B.signInPin(DOM(), $('pin-code').value).catch(function (x) { say('signin-msg', err(x), false); }); };
     $('pin-new').onclick = function () { if (!/^[0-9]{6}$/.test($('pin-code').value)) return say('signin-msg', 'Type your email and the six digit PIN you want, then press Set my PIN.', false); B.signUpPin(DOM(), $('pin-code').value).then(function () { say('signin-msg', 'Wait up to 60 seconds for our email, then click the link in it to finish signing in.', true); }).catch(function (x) { say('signin-msg', err(x), false); }); };
     $('pin-reset').onclick = function () { if (!DOM()) return say('signin-msg', 'Type your email first.', false); B.resetPin(DOM()).then(function () { say('signin-msg', 'If that email has a PIN, a reset link is on its way.', true); }); };
-    $('g-in').onclick = function () { B.signIn().catch(function (x) { var t = err(x); if (t) say('signin-msg', t, false); }); };
+    if ($('g-in')) $('g-in').onclick = function () { B.signIn().catch(function (x) { var t = err(x); if (t) say('signin-msg', t, false); }); };
     $('unv-out').onclick = $('nl-out').onclick = function () { B.signOut(); };
     setInterval(function () { paint(); }, 30000);
   }

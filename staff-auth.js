@@ -4,8 +4,8 @@
  *   - "signed in": any Firebase sign-in, including the invisible anonymous
  *     one this file does for you (mug shot deck, Nathan's upload, forecourt
  *     tools, the board's own stock/pairing writes);
- *   - "staff": a Google account whose uid Dan has added under /staff in the
- *     database (admin console, board manager actions).
+ *   - "staff": Dan's work login (email and PIN), or an account whose uid is
+ *     under /staff in the database (admin console, board manager actions).
  * Reads of the board's own data stay public so the office TV needs nothing.
  *
  * Everything here is lazy and fails soft: the Firebase Auth SDK is imported
@@ -66,8 +66,14 @@ export function ensureSignedIn(app) {
   return anonP;
 }
 
+/* Dan's own work login (email and PIN, the team pages' sign in) is staff
+   everywhere: every staff rule in database.rules.json also accepts the
+   creator's verified email, so no Google account is needed (Dan, 26 November
+   2026: "thought we were removing Google login?"). */
+const CREATOR = 'daniel.cane@hedinautomotive.co.uk';
 async function isStaff(app, user) {
   if (!user || user.isAnonymous) return false;
+  if (user.emailVerified === true && String(user.email || '').trim().toLowerCase() === CREATOR) return true;
   try {
     const { D } = await mods();
     const s = await D.get(D.ref(D.getDatabase(app), 'staff/' + user.uid));
@@ -90,30 +96,25 @@ export function staffSignIn(app, opts) {
         '<div style="background:#fff;color:#12263a;max-width:380px;width:100%;border-radius:14px;padding:22px 20px;box-shadow:0 18px 50px rgba(0,0,0,.35)">' +
         '<div style="font-weight:800;font-size:18px;margin-bottom:6px">Staff sign-in</div>' +
         '<p data-r style="margin:0 0 14px;color:#3b4f63"></p>' +
-        '<button data-go type="button" style="width:100%;padding:12px 14px;border:0;border-radius:10px;background:#1c69d4;color:#fff;font-weight:700;font-size:15px;cursor:pointer">Sign in with Google</button>' +
+        '<button data-go type="button" style="width:100%;padding:12px 14px;border:0;border-radius:10px;background:#1c69d4;color:#fff;font-weight:700;font-size:15px;cursor:pointer">Sign in with work email and PIN</button>' +
         '<p data-msg style="margin:12px 0 0;font-size:13px;color:#3b4f63;word-break:break-all"></p>' +
         '<button data-x type="button" style="margin-top:12px;width:100%;padding:10px;border:1px solid #c9d4df;border-radius:10px;background:#fff;color:#12263a;font-size:14px;cursor:pointer">Cancel</button>' +
         '</div>';
       const q = (s) => wrap.querySelector(s);
-      q('[data-r]').textContent = (opts && opts.reason) || 'That needs a staff account. Sign in with the Google account Dan has added to the staff list.';
+      q('[data-r]').textContent = (opts && opts.reason) || 'That needs Dan\'s staff login. Sign in with his work email and PIN on the Team page, and it brings you back here.';
       const msg = q('[data-msg]');
       const close = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); staffP = null; };
       const check = async (u) => {
         if (await isStaff(app, u)) { close(); resolve(u); return; }
-        msg.innerHTML = '';
-        msg.appendChild(document.createTextNode('Signed in as ' + (u.email || 'this account') +
-          ', but it is not on the staff list yet. To add it, Dan puts this ID under "staff" in the Firebase database with the value true: '));
-        const b = document.createElement('b'); b.textContent = u.uid; msg.appendChild(b);
-        q('[data-go]').textContent = 'Use a different Google account';
+        msg.textContent = 'Signed in as ' + (u.email || 'this account') + ', which is not a staff login.';
+        q('[data-go]').textContent = 'Sign in as Dan with work email and PIN';
       };
+      /* no Google popup any more: the team page's email and PIN sign in, then
+         back to this page (team.html?next=, which takes a bare page name) */
       q('[data-go]').onclick = () => {
-        msg.textContent = 'Opening Google...';
-        const provider = new A.GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-        /* called straight from the click so the popup is not blocked */
-        A.signInWithPopup(auth, provider).then((r) => check(r.user)).catch((e) => {
-          msg.textContent = (e && e.code === 'auth/popup-closed-by-user') ? '' : 'Sign-in did not work (' + ((e && e.code) || e) + ').';
-        });
+        const page = (location.pathname.split('/').pop() || 'index.html');
+        const next = /^[A-Za-z0-9_-]+\.html$/.test(page) ? '?next=' + page : '';
+        location.href = 'team.html' + next;
       };
       q('[data-x]').onclick = () => { close(); reject(new Error('PERMISSION_DENIED: staff sign-in cancelled')); };
       document.body.appendChild(wrap);
