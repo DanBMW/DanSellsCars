@@ -56,9 +56,15 @@ for (const r of urls.slice(0, limit)) {
   await pg.setRequestInterception(true);
   pg.on('request', q => ['image', 'media', 'font'].includes(q.resourceType()) ? q.abort() : q.continue());
   const rec = { vin: null, quote: null };
+  // Why a car gave nothing, for the log only: statuses, product keys and
+  // errors, never a key, token, quote id or figure.
+  const why = { seen: 0, status: [], products: [], errors: [] };
   pg.on('response', async x => {
     if (!/codeweavers\.net\/api\/finance\/quote\//i.test(x.url())) return;
-    let t; try { t = JSON.parse(await x.text()); } catch (e) { return; }
+    if (x.request().method() === 'OPTIONS') return;
+    why.seen++; why.status.push(x.status());
+    let t; try { t = JSON.parse(await x.text()); } catch (e) { why.errors.push(String(e.message).slice(0, 80)); return; }
+    const k = t && t.Finance && t.Finance.Product && t.Finance.Product.Key; if (k) why.products.push(k);
     const v = t && t.Vehicle && t.Vehicle.Physical && t.Vehicle.Physical.Vin;
     if (v && /^W[A-Z0-9]{16}$/.test(v)) rec.vin = v;
     const p = pick(t); if (p) rec.quote = p;
@@ -74,6 +80,7 @@ for (const r of urls.slice(0, limit)) {
   else if (rec.vin) quotes[r.order] = { vin: rec.vin };
   if (rec.vin) vins++;
   console.log(r.order, rec.vin || 'no vin', rec.quote ? rec.quote.monthly : 'no quote');
+  if (!rec.quote) console.log('  why:', why.seen ? `${why.seen} quote responses, status ${[...new Set(why.status)].join('/')}, products ${[...new Set(why.products)].join('/') || 'none'}${why.errors.length ? ', errors ' + [...new Set(why.errors)].join(' | ') : ''}` : 'the page made no Codeweavers quote request');
   await sleep(3000);
 }
 await browser.close();
