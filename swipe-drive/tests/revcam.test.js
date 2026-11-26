@@ -23,7 +23,7 @@ const car = (id, reg) => ({ listing_id: id, reg, model: 'BMW 420i', series: '4 S
 const cars = [car('b', 'B1'), car('c', 'C1'), car('a', 'A1')];
 let r = M.rank(cars, { specs: ['feat:revcam'], specs_must: ['feat:revcam'] });
 assert.deepStrictEqual(r.map(x => x.car.reg), ['A1', 'B1']);
-assert.deepStrictEqual(r[1].notes, ['Check with Dan: reversing camera not confirmed']);
+assert.deepStrictEqual(r[1].notes, ['Check with us: reversing camera not confirmed']);
 assert.deepStrictEqual(r[0].notes, []);
 r = M.rank(cars, { specs: ['feat:revcam'] });
 const sc = Object.fromEntries(r.map(x => [x.car.reg, x.score]));

@@ -37,7 +37,7 @@
         return M.noStock(d.pool(), p).map(function (x) { return M.noStockText(x, { alerts: alerts }); }).join(' '); }; }); return fs; }
   var ov = document.createElement('div'); ov.className = 'ct-sheet rv'; ov.id = 'revvy'; ov.hidden = true;
   ov.innerHTML = '<div class="ct-sheet-in rv-in" role="dialog" aria-modal="true" aria-label="Chat to Revvy"><button class="ct-x" type="button" data-rv-x aria-label="Close">&times;</button>' +
-    '<div class="rv-top"><img src="icons/icon-192.png" alt="" width="36" height="36"><div><b>Revvy</b><small>Dan\'s SwipeToDrive assistant</small></div></div><div class="rv-log" id="rvLog"></div><div class="rv-tray" id="rvTray"></div></div>';
+    '<div class="rv-top"><img src="icons/icon-192.png" alt="" width="36" height="36"><div><b>Revvy</b><small>Your SwipeToDrive assistant</small></div></div><div class="rv-log" id="rvLog"></div><div class="rv-tray" id="rvTray"></div></div>';
   document.body.appendChild(ov);
   function close() { ov.hidden = true; if (history.state && history.state.rv) history.back(); }
   ov.addEventListener('click', function (e) { if (e.target === ov || e.target.closest('[data-rv-x]')) close(); });
@@ -48,7 +48,7 @@
   function open() { var c = S().cust; if (!c) { location.hash = 'profile'; return; }
     var nm = c.name ? ' ' + String(c.name).split(' ')[0] : '';
     $('#rvLog').innerHTML = ''; $('#rvTray').innerHTML = ''; ov.hidden = false; history.pushState({ rv: 1 }, '', location.href);
-    var b = document.createElement('div'); b.className = 'rv-m bot'; b.textContent = 'Hi' + nm + ", I'm Revvy, Dan's assistant. Let's go through everything you are looking for, one thing at a time. Anything already set I'll check with you, anything missing I'll ask. Skip whatever you like.";
+    var b = document.createElement('div'); b.className = 'rv-m bot'; b.textContent = 'Hi' + nm + ", I'm Revvy, your SwipeToDrive assistant. Let's go through everything you are looking for, one thing at a time. Anything already set I'll check with you, anything missing I'll ask. Skip whatever you like.";
     $('#rvLog').appendChild(b);
     window.RevvyFlow.run({ log: $('#rvLog'), tray: $('#rvTray'), values: values(c), fields: withNoStock(window.RevvyFlow.fields(lists(), { px: true })), cls: CLS, open: section,
       save: function (p) { var st = D().store, cur = S().cust; return st.saveCustomer(onto(cur, p)).then(function (saved) { D().S.cust = saved; D().S.deck = []; D().S.relax = null; /* a wider search (e.g. Any fuel) must not override new answers */ }); },

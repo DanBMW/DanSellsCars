@@ -64,7 +64,7 @@
      say Oyster or Black) but not on a used car (its equipment list has no seat colour), so a used car is never
      removed because someone picks a light interior. An unknown "must have" keeps the car, ranks it a touch
      lower and adds a "Not confirmed" note, exactly like the reversing camera has always worked.
-     Evidence: used cars carry the Hedin equipment list (automation/car-details.json); new cars carry BMW's
+     Evidence: used cars carry the retailer equipment list (automation/car-details.json); new cars carry BMW's
      standard and options lists, wheels and upholstery (lookup/new-stock.json). A used list is complete, so a
      missing line means "no". A new car's standard list is NOT complete, so a missing line is only "no" for
      things that are extras on every BMW (panoramic roof, tow bar).
@@ -262,7 +262,7 @@
   }
   /* Reversing camera: a must have keeps cars with no clear answer, ranked below confirmed cars with a note.
      A would like gives them no boost. Rules live in stock-core.js reversingCamera. */
-  var CAM = 'feat:revcam', CAM_NOTE = 'Check with Dan: reversing camera not confirmed';
+  var CAM = 'feat:revcam', CAM_NOTE = 'Check with us: reversing camera not confirmed';
   /* Arrival dates from automation/stock-arrivals.json (the ledger stock.html uses): first morning the repo saw the
      car in a snapshot, keyed by listing id per list. A car already there when the history began has no arrival. */
   var JUST_DAYS = 7;
@@ -338,14 +338,16 @@
     if (p.budget_type === 'cash' && p.cash_gbp > 0) { var pr = real.map(function (c) { return c.price_gbp; }).filter(function (v) { return v > 0; }).sort(asc);
       return pr.length ? { type: 'cash', budget: p.cash_gbp, from: pr[0], over: pr[0] - p.cash_gbp } : null; }
     return null; }
-  function budgetGapText(g, who) { if (!g) return ''; who = who || 'Dan';
+  /* SwipeToDrive's FCA credit broker line: the one place the dealership's legal name appears (BETA rule, 26 Nov 2026), with no site name */
+  var STD_BROKER = 'Finance is arranged by Stephen James (Automotive) Limited trading as Hedin Automotive, an Appointed Representative of ITC Compliance Limited (FRN 313486), authorised and regulated by the Financial Conduct Authority. A credit broker, not a lender. Guarantees and indemnities may be required.';
+  function budgetGapText(g, who) { if (!g) return ''; who = who || 'us';
     if (g.type === 'cash') return 'The cheapest used car that fits everything else you chose is ' + gbp(g.from) + '. Raise your budget to see what is close, or ask ' + who + ' what is coming in.';
     if (!g.from) return 'None of the cars that fit everything else you chose has a monthly figure yet. Ask ' + who + ' for figures, or raise your monthly budget.';
     return 'The lowest monthly payment on a car that fits everything else you chose is ' + gbp2(g.from) + ' a month' + (g.over > 0 ? ', ' + gbp2(g.over) + ' over your ' + gbp(g.budget) + ' a month budget' : '') +
       '. That is the lender\'s representative example, so a bigger deposit or longer term can bring it down. Raise your monthly budget to see what is close, or ask ' + who + '.'; }
   function stampEstimates(cars) { (cars || []).forEach(function (c) { if (c && c.kind !== 'new' && !(c.finance && c.finance.monthly) && c.est_monthly === undefined) c.est_monthly = estimateMonthly(c, cars); }); return cars; }
   function maybeMonthly(car, p) { var e = car.est_monthly; return !!(e > 0 && p && p.monthly_gbp > 0 && e <= p.monthly_gbp * EST_KEEP); }
-  /* for the card and detail views: show 'This may be in budget, ask Dan for figures' instead of a monthly price */
+  /* for the card and detail views: show 'This may be in budget, ask us for figures' instead of a monthly price */
   function budgetMaybe(car, p) { return !!(car && car.kind !== 'new' && !(car.finance && car.finance.monthly) && p && p.budget_type === 'monthly' && maybeMonthly(car, p)); }
   /* Real new car in retailer stock (lookup/new-stock.json). The id 'NEW' + order number is the same one the alerts job
      stores in stock_seen, so app, alerts and buy requests all agree. Monthly only with a complete representative example. */
@@ -356,7 +358,7 @@
       ', cash price ' + gbp2(fe.cash_price) + ', amount of credit ' + gbp2(fe.amount_of_credit) + ', optional final payment ' + gbp2(fe.final_payment) +
       ', total amount payable ' + gbp2(fe.total_payable) + ', ' + fe.term_months + ' month agreement, ' + Number(fe.annual_mileage).toLocaleString('en-GB') + ' miles a year, representative APR ' + fe.apr + '%.' +
       ' The final payment and totals are worked out from the figures BMW publish and are not a quotation.';
-    return { monthly: fe.monthly, product: fe.product, representative_example: ex, legal: 'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.' };
+    return { monthly: fe.monthly, product: fe.product, representative_example: ex, legal: 'Finance subject to status, 18+, UK residents. Stephen James (Automotive) Limited trading as Hedin Automotive acts as a credit broker and not a lender.' };
   }
   function fromNewStock(c) { var f = newStockFinance(c.finance_example);
     return { kind: 'new_stock', reg: 'NEW' + c.order_number, id: String(c.order_number), order_number: String(c.order_number), model: c.range || ('BMW ' + c.description), description: c.description, series: c.series,
@@ -375,11 +377,11 @@
      quote shows no monthly, so a monthly budget never matches it on a guess. fin is window.dsFin. */
   function applyLenderQuotes(cars, file, fin, now) { var q = (file && file.quotes) || {}, gen = file && file.generated_at;
     (cars || []).forEach(function (c) { if (c.kind !== 'new_stock') return; var e = q[String(c.order_number)];
-      if (fin && e && fin.newOk(c, e, gen, now)) { c.finance = { monthly: e.monthly, product: e.product, lender: e.lender, representative_example: fin.newRep(e), legal: fin.BROKER, source: 'lender' }; c.monthly_gbp = e.monthly; }
+      if (fin && e && fin.newOk(c, e, gen, now)) { c.finance = { monthly: e.monthly, product: e.product, lender: e.lender, representative_example: fin.newRep(e), legal: STD_BROKER, source: 'lender' }; c.monthly_gbp = e.monthly; }
       else { c.finance = null; c.monthly_gbp = null; c.est_monthly = undefined;   /* re-estimated by stampEstimates */
         c.stale_quote = e && e.monthly > 0 && e.cash_price > 0 ? { monthly: e.monthly, cash_price: e.cash_price, deposit: e.deposit } : null; } });
     return cars; }
-  /* Hedin's own new car stock deals (lookup/new-offers.json, kept by hand from the Hedin offers page and the BMW
+  /* the retailer's own new car stock deals (lookup/new-offers.json, kept by hand from the retailer offers page and the BMW
      Financial Services quote each deal links to). A deal sits on top of the real stock car with the same order number:
      its monthly, deposit, contribution and saving replace the standard lender quote for that car. Only an active deal,
      inside its valid_to, whose figures add up (deposit + contribution + payments x monthly, plus the final payment on
@@ -396,13 +398,13 @@
   function offerDeposit(o) { return o.customer_deposit + (o.deposit_contribution || 0); }
   /* the full figures in plain words, same style as the lender examples (no dashes) */
   function offerRep(o) { var pcp = o.apr != null, dc = o.deposit_contribution > 0;
-    return o.product + ', ' + o.term_months + ' months. ' + o.payments + ' monthly payments of ' + gbp2(o.monthly) + '. ' +
+    return (o.product + ', ' + o.term_months + ' months. ' + o.payments + ' monthly payments of ' + gbp2(o.monthly) + '. ' +
       'Cash price ' + gbp2(o.cash_price) + '. Customer deposit ' + gbp2(o.customer_deposit) + '. ' +
       (dc ? 'Plus ' + gbp2(o.deposit_contribution) + ' ' + (o.deposit_contribution_label || 'deposit contribution') + '. ' : '') +
       (pcp ? 'Total amount of credit ' + gbp2(o.amount_of_credit) + '. Optional final payment ' + gbp2(o.final_payment) + '. ' : '') +
       'Total amount payable ' + gbp2(o.total_payable) + '. ' + (pcp ? 'Total charge for credit ' + gbp2(o.charge_for_credit) + '. ' : '') +
       Number(o.annual_mileage).toLocaleString('en-GB') + ' miles a year' + (o.excess_pence != null ? ', ' + o.excess_pence + 'p per excess mile' : '') + '. ' +
-      (pcp ? o.apr + '% APR representative. ' : '') + 'Offer from Hedin Automotive ' + (o.location || '').replace(/^Hedin Automotive /, '') + '.'; }
+      (pcp ? o.apr + '% APR representative.' : '')).trim(); }
   function applyOffers(cars, file, now) { var list = (file && file.offers) || [], legal = (file && file.legal) || 'Finance subject to status. 18+. T&Cs apply.', by = {};
     list.forEach(function (o) { if (offerOk(o, now)) by[String(o.order_number)] = o; });
     (cars || []).forEach(function (c) { if (c.kind !== 'new_stock') return; var o = by[String(c.order_number)]; if (!o) return;
@@ -521,5 +523,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { seriesOf: seriesOf, plateYear: plateYear, carYear: carYear, bodyMust: bodyMust, bodyFit: bodyFit, BODY_OK: BODY_OK, variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, applyOffers: applyOffers, offerOk: offerOk, offerRep: offerRep, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, budgetGap: budgetGap, budgetGapText: budgetGapText, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
+  root.ctMatch = { seriesOf: seriesOf, plateYear: plateYear, carYear: carYear, bodyMust: bodyMust, bodyFit: bodyFit, BODY_OK: BODY_OK, variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, applyOffers: applyOffers, offerOk: offerOk, offerRep: offerRep, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, budgetGap: budgetGap, budgetGapText: budgetGapText, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS, STD_BROKER: STD_BROKER };
 })(typeof window !== 'undefined' ? window : globalThis);

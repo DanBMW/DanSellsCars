@@ -9,12 +9,12 @@
   function checkAlerts() { var st = D().store; if (!st || !st.notify) return;
     st.notify().then(function (v) { var push = (v === 'push' || v === 'both') && typeof Notification !== 'undefined' && Notification.permission === 'granted';
       var email = (v === 'email' || v === 'both') && !!(window.CT_CONFIG || {}).CUSTOMER_EMAIL_ENABLED; var was = alertsOn; alertsOn = push || email; if (was !== alertsOn) paint(); }).catch(function () {}); }
-  function acts(x, i) { var a = [], who = 'Hi Dan, I am looking for a ' + x.model + ' on SwipeToDrive. Can you help?';
+  function acts(x, i) { var a = [], who = 'Hi, I am looking for a ' + x.model + ' on SwipeToDrive. Can you help?';
     if (x.kind === 'none') { if (!alertsOn) a.push('<a class="ct-btn ct-sm" href="#me" data-ns-alerts>Turn on alerts</a>'); if (x.new_avail || (x.m_car && !x.budget_set)) a.push('<a class="ct-btn ct-btn-ghost ct-sm" href="../find-my-bmw.html">Look at ordering new</a>'); }
     if (x.kind === 'budget') a.push('<button class="ct-btn ct-sm" type="button" data-ns-open="budget">Adjust my budget</button>');
     var w = M.noStockWiden(x); if (w) a.push('<button class="ct-btn ct-sm" type="button" data-ns-widen="' + i + '">' + esc(w.label) + '</button>');
     if (x.kind === 'narrow') a.push('<button class="ct-btn ct-sm" type="button" data-ns-open="car">Change my choices</button>');
-    a.push('<a class="ct-btn ct-btn-ghost ct-sm" target="_blank" rel="noopener" href="' + WA + '?text=' + encodeURIComponent(who) + '">Message Dan</a>');
+    a.push('<a class="ct-btn ct-btn-ghost ct-sm" target="_blank" rel="noopener" href="' + WA + '?text=' + encodeURIComponent(who) + '">Message us</a>');
     return a.join(''); }
   function item(x, i, dismiss) { return '<div class="ct-ns-i" data-ns-model="' + esc(x.model) + '"><p>' + esc(M.noStockText(x, { alerts: alertsOn })) + '</p><div class="ct-row ct-ns-acts">' + acts(x, i) +
     (dismiss ? '<button class="ct-ns-x" type="button" data-ns-hide="' + esc(x.model) + '" aria-label="Hide this note">&times;</button>' : '') + '</div></div>'; }

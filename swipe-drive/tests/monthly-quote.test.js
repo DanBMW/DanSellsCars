@@ -1,5 +1,5 @@
 /* Cars with no lender quote on a monthly budget: a rough estimate (never shown) decides.
-   May fit (up to 15% over): kept, flagged budgetMaybe, label 'This may be in budget, ask Dan for figures'.
+   May fit (up to 15% over): kept, flagged budgetMaybe, label 'This may be in budget, ask us for figures'.
    Clearly over: hidden. Cash and no-budget customers are unchanged.
    Run with: node swipe-drive/tests/monthly-quote.test.js */
 var path = require('path');

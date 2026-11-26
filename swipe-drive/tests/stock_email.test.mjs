@@ -9,7 +9,7 @@ const used = { kind: 'used', reg: 'AB12CDE', model: 'BMW 320i M Sport', series: 
 const nw = { kind: 'new_stock', reg: 'NEW123', model: 'BMW X1 sDrive20i', series: 'X1', fuel: 'Petrol', price: '£40,000', price_gbp: 40000, image: '' };
 const u = { interested: 'https://f/stock-reply?t=1', offmarket: 'https://f/stock-reply?t=2', keepinformed: 'https://f/stock-reply?t=3' };
 const m = renderStockEmail({ toName: 'Lorna', items: [{ car: used, finance: M.finance(used) }, { car: nw, finance: null }], replyUrls: u, unsubUrl: 'https://f/unsubscribe?t=x' });
-ok(m.html.includes(OPENING) && OPENING.startsWith('Dan has seen some vehicles in stock'), 'opens with the agreed line');
+ok(m.html.includes(OPENING) && OPENING.startsWith('We have seen some vehicles in stock') && !/\bDan\b|Sidcup|Hedin|Ruxley/.test(m.html + m.subject), 'opens with the agreed line');
 ok(Object.values(REPLIES).every(r => m.html.includes(r.replace(/'/g, "&#39;")) || m.html.includes(r)), 'all three reply buttons present');
 ok(m.html.includes('Unsubscribe from these emails'), 'GDPR unsubscribe button present');
 ok((m.html.match(/swipe-drive\/\?reg=AB12CDE/g) || []).length === 2 && !/hedin|ruxley/i.test(m.html + m.text + m.subject), 'SwipeToDrive link for the used car only, none for the new order number car, and no dealer group name anywhere');

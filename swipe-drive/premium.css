@@ -229,7 +229,7 @@ a{color:var(--acc2)}
 }
 /* the plain toast is only a message: touches pass through it to whatever is underneath */
 #toast{pointer-events:none}
-/* Hedin new car stock deals (lookup/new-offers.json): badge, Deal tag, big monthly, deposit and saving chips, legal line */
+/* Retailer new car stock deals (lookup/new-offers.json): badge, Deal tag, big monthly, deposit and saving chips, legal line */
 .ct-deal-tag{display:inline-block;margin:0 0 6px 6px;padding:2px 8px;border-radius:999px;background:var(--amber);color:#111;font:700 11px/1.6 var(--sans);letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
 .ct-deal-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
 .ct-deal .ct-deal-mon{font:700 20px/1.2 var(--sans);color:var(--tx);letter-spacing:-.01em}

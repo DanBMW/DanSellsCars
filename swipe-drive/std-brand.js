@@ -10,7 +10,7 @@
   var DROP = [/hedin|ruxley/i, /enquiryhub@/i, /contact us at BMW\b/i, /^\s*welcome to BMW\b/i];
   /* sentences worth keeping once the name is swapped */
   var SWAP = [
-    [/(?:\uD83D\uDE97\s*)?Hedin\s+BMW\s+Ruxley\s+(?:are|is)\s+pleased\s+to\s+offer/gi, 'Dan is pleased to offer'],
+    [/(?:\uD83D\uDE97\s*)?Hedin\s+BMW\s+Ruxley\s+(?:are|is)\s+pleased\s+to\s+offer/gi, 'We are pleased to offer'],
     [/Hedin\s+Club\s*Care(?:\s+SMART)?(?:\s+protection)?/gi, 'cosmetic repair cover']
   ];
   function sentences(p) { return String(p).match(/[^.!?]+(?:[.!?]+|$)/g) || []; }

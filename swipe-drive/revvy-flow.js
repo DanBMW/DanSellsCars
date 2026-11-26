@@ -52,7 +52,7 @@
     function edit(f, done) { if (f.kind === 'num' || f.kind === 'text') ask(f, done); else picker(f, done); }
     function apply(f, p, next) { if (!p) return next(); var before = show(f, v);
       Object.keys(p).forEach(function (k) { v[k] = p[k]; }); if (show(f, v) === before && before) return next();
-      Promise.resolve().then(function () { return o.save(p, f); }).then(function () { changed.push(f.label); next(); }, function () { failed.push(f.label); bot('That one did not save, sorry. Dan will go through it with you.'); next(); }); }
+      Promise.resolve().then(function () { return o.save(p, f); }).then(function () { changed.push(f.label); next(); }, function () { failed.push(f.label); bot('That one did not save, sorry. We will go through it with you.'); next(); }); }
     var n = 0;
     var prev = null;
     function step() { if (prev && prev.after) { var said = ''; try { said = prev.after(v); } catch (e) {} if (said) bot(said); } prev = null; var f = fields[n++]; prev = f; if (!f) return end(); if (f.when && !f.when(v)) return step(); if (!f.kind && f.open) return section(f);
@@ -63,7 +63,7 @@
     function section(f) { bot(f.q); chips([{ t: f.openText || 'Open it in my profile', go: 1, f: function () { o.open(f.open); } }, { t: 'Carry on', f: step }]); }
     function end() { var lines = fields.filter(function (f) { return f.kind && (!f.when || f.when(v)); }).map(function (f) { return f.label + ': ' + (show(f, v) || 'not set'); });
       bot('Here is everything I have for you:'); log.appendChild(el('div', o.cls.bot + ' ' + o.cls.sum, lines.join('\n'))); scroll();
-      bot(failed.length ? 'Some answers did not save: ' + failed.join(', ') + '. Dan will sort those.' : changed.length ? 'All saved. Your deck and alerts use these straight away.' : 'Nothing changed, so you are all set.');
+      bot(failed.length ? 'Some answers did not save: ' + failed.join(', ') + '. We will sort those.' : changed.length ? 'All saved. Your deck and alerts use these straight away.' : 'Nothing changed, so you are all set.');
       o.done({ changed: changed, failed: failed, values: v }); }
     step();
   }

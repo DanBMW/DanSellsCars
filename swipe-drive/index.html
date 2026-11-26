@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>SwipeToDrive BETA | Find your perfect BMW</title>
-<meta name="description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive with Dan.">
+<meta name="description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive.">
 <link rel="canonical" href="https://dan-sells.co.uk/swipe-drive/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SwipeToDrive">
 <meta property="og:title" content="SwipeToDrive BETA | Find your perfect BMW">
-<meta property="og:description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive with Dan.">
+<meta property="og:description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive.">
 <meta property="og:url" content="https://dan-sells.co.uk/swipe-drive/">
-<meta property="og:image" content="https://dan-sells.co.uk/swipe-drive/img/og-1200x630.jpg">
+<meta property="og:image" content="https://dan-sells.co.uk/swipe-drive/img/og-1200x630.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="SwipeToDrive BETA. Find your perfect BMW.">
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SwipeToDrive BETA | Find your perfect BMW">
-<meta name="twitter:description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive with Dan.">
-<meta name="twitter:image" content="https://dan-sells.co.uk/swipe-drive/img/og-1200x630.jpg">
+<meta name="twitter:description" content="Swipe through 600+ BMWs in and around London. Match, then book a test drive.">
+<meta name="twitter:image" content="https://dan-sells.co.uk/swipe-drive/img/og-1200x630.jpg?v=2">
 <meta name="twitter:image:alt" content="SwipeToDrive BETA. Find your perfect BMW.">
 <meta name="theme-color" content="#0a0c0f">
 <link rel="manifest" href="manifest.webmanifest">
@@ -42,7 +42,7 @@
 <link rel="stylesheet" href="crm/hub.css?v=48">
 <link rel="stylesheet" href="crd.css?v=1">
 <link rel="stylesheet" href="../motion.css?v=1"/>
-<link rel="stylesheet" href="premium.css?v=6">
+<link rel="stylesheet" href="premium.css?v=7">
 <link rel="stylesheet" href="guest-free.css?v=1">
 <script src="../motion.js?v=1" defer></script>
 <!-- Google Analytics loads only after the visitor accepts the cookie bar (consent.js) -->
@@ -50,15 +50,15 @@
 <script src="../analytics.js" defer></script>
 </head>
 <body class="ct">
-<script src="intro/intro.js"></script>
+<script src="intro/intro.js?v=2"></script>
 <div class="ct-loader" id="loader" role="status" aria-label="Loading SwipeToDrive"><svg class="ct-wheel" viewBox="0 0 100 100" width="76" height="76" aria-hidden="true"><circle cx="50" cy="50" r="47" class="w-tyre"/><circle cx="50" cy="50" r="36" class="w-rim"/><g class="w-spokes"><path d="M50 50 L46 16 L54 16 Z" transform="rotate(0 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(72 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(144 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(216 50 50)"/><path d="M50 50 L46 16 L54 16 Z" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="9" class="w-hub"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(36 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(108 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(180 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(252 50 50)"/><circle cx="50" cy="44" r="1.6" class="w-nut" transform="rotate(324 50 50)"/></svg><p>Warming up the engine</p></div>
 <div class="ct-app" id="app">
   <header class="ct-top">
-    <div class="ct-brand"><img class="ct-logo" src="icons/logo.svg?v=10" width="32" height="32" alt=""><span class="ct-brand-t"><span class="ct-brand-w">SwipeTo<b>Drive</b><span class="ct-beta" aria-label="beta">BETA</span></span><small>powered by Dan Sells</small></span></div>
+    <div class="ct-brand"><img class="ct-logo" src="icons/logo.svg?v=10" width="32" height="32" alt=""><span class="ct-brand-t"><span class="ct-brand-w">SwipeTo<b>Drive</b><span class="ct-beta" aria-label="beta">BETA</span></span><small>BMW stock, matched to you</small></span></div>
     <div class="ct-acting" id="acting" hidden></div>
     <button class="ct-install-btn" id="installBtn" type="button" hidden>Install the app</button>
   </header>
-  <div class="ct-demo" id="demoBar" hidden>Demo mode: your profile stays on this phone. Real sign in switches on when Dan connects the backend.</div>
+  <div class="ct-demo" id="demoBar" hidden>Demo mode: your profile stays on this phone. Real sign in switches on when the backend is connected.</div>
 
   <!-- 0. public start: browse first, no account (guest) -->
   <section class="ct-screen ct-start" data-screen="start" hidden>
@@ -116,7 +116,7 @@
       <div class="ct-demo-box" id="demoBox" hidden>
         <p><b>Sign in link placeholder.</b> The email step is not connected yet, so nothing is sent. Carry on in demo mode:</p>
         <div class="ct-row"><button class="ct-btn ct-btn-ghost" type="button" data-demo="customer">Carry on as a customer</button></div>
-        <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-demo="staff">Demo: colleague view</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-demo="admin">Demo: Dan's admin view</button></div>
+        <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-demo="staff">Demo: colleague view</button><button class="ct-btn ct-btn-ghost ct-sm" type="button" data-demo="admin">Demo: admin view</button></div>
       </div>
     </form>
     <form class="ct-panel" id="codeForm" novalidate><div id="codeBox" hidden>
@@ -124,7 +124,7 @@
       <button class="ct-btn ct-btn-ghost" type="submit">Sign in with code</button></div>
     </form>
     <div class="ct-pw" id="pwBox" hidden><p class="ct-alt-t">Or sign in with a password</p><div id="pwMount"></div></div>
-    <div class="ct-panel ct-alt-start"><p class="ct-alt-t">Rather not sign in yet? Tell Dan what you're after:</p><a class="ct-btn ct-btn-ghost" href="chat/">Chat with Dan's assistant</a><a class="ct-btn ct-btn-ghost" href="chat/quick.html">Quick 60 second version</a></div>
+    <div class="ct-panel ct-alt-start"><p class="ct-alt-t">Rather not sign in yet? Tell us what you're after:</p><a class="ct-btn ct-btn-ghost" href="chat/">Chat with Revvy</a><a class="ct-btn ct-btn-ghost" href="chat/quick.html">Quick 60 second version</a></div>
     <p class="ct-legal ct-signin-legal"><a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a></p>
   </section>
 
@@ -236,7 +236,7 @@
       <p class="ct-sub" id="mSub"></p>
       <div id="matchList" class="ct-mlist"></div>
       <div class="ct-send" id="sendBox">
-        <button class="ct-btn ct-btn-big" id="sendBtn" type="button">Send my matches to Dan</button>
+        <button class="ct-btn ct-btn-big" id="sendBtn" type="button">Send my matches to us</button>
         <p class="ct-msg" id="sendMsg" role="status"></p>
       </div>
     </div>
@@ -264,7 +264,7 @@
       <h3>Get the app</h3>
       <div id="installInfo"></div>
       <div class="ct-card-lite" id="meTerms"></div>
-      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender. <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <button type="button" class="ct-linkbtn" onclick="window.ctConsent&&window.ctConsent.open()">Cookie settings</button></p>
+      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Stephen James (Automotive) Limited trading as Hedin Automotive acts as a credit broker and not a lender. <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <button type="button" class="ct-linkbtn" onclick="window.ctConsent&&window.ctConsent.open()">Cookie settings</button></p>
       <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" id="signOut" type="button">Sign out</button></div>
     </div>
   </section>
@@ -355,13 +355,13 @@
       <h2 id="gmTitle">You are browsing as a guest</h2>
       <p class="ct-sub" id="gmSub">Your answers and swipes are saved on this phone only.</p>
       <div class="ct-revvy-row" data-revvy-row hidden><button class="ct-revvy" type="button" data-revvy><img src="icons/icon-192.png" alt="">Chat to Revvy</button></div>
-      <div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" id="gmWa" href="https://wa.me/447827138197">WhatsApp Dan</a></div>
+      <div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" id="gmWa" href="https://wa.me/447827138197">WhatsApp us</a></div>
       <div class="ct-card-lite" id="gmSummary"></div>
-      <div class="ct-row"><button class="ct-btn" type="button" id="gmSave">Save my details for Dan</button><a class="ct-btn ct-btn-ghost" href="#start" id="gmEdit">Change my answers</a></div>
+      <div class="ct-row"><button class="ct-btn" type="button" id="gmSave">Save my details</button><a class="ct-btn ct-btn-ghost" href="#start" id="gmEdit">Change my answers</a></div>
       <h3>Keep your swipes on any device</h3>
       <p class="ct-sub">Sign in or create a free account and everything you have swiped comes with you.</p>
       <div class="ct-row"><a class="ct-btn ct-btn-ghost" href="#signin">Sign in or create an account</a></div>
-      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender. <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <button type="button" class="ct-linkbtn" onclick="window.ctConsent&&window.ctConsent.open()">Cookie settings</button></p>
+      <p class="ct-legal">Monthly figures are the lender's own representative examples. Finance subject to status, 18+, UK residents. Stephen James (Automotive) Limited trading as Hedin Automotive acts as a credit broker and not a lender. <a href="privacy.html">Privacy</a> &middot; <a href="terms.html">Terms</a> &middot; <button type="button" class="ct-linkbtn" onclick="window.ctConsent&&window.ctConsent.open()">Cookie settings</button></p>
       <div class="ct-row"><button class="ct-btn ct-btn-ghost ct-sm" id="gmForget" type="button">Clear my answers from this phone</button></div>
     </div>
   </section>
@@ -376,7 +376,7 @@
 </div>
 
 <div class="ct-sheet" id="sheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-label="Car details"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><div id="sheetBody"></div></div></div>
-<div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart"><svg class="pa-ic" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></span><img src="icons/icon-192.png" alt="Dan Sells"></div><p id="mmText"></p><button class="ct-btn ct-btn-big ct-short" id="mmSave" type="button" hidden>Save it with Dan</button><a class="ct-btn ct-btn-big ct-short" id="mmShort" href="#matches" data-close>View shortlist</a><a class="ct-btn ct-wa" id="mmWa" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5l1.2-3.4A7.5 7.5 0 1 1 9 18z"/></svg>Message on WhatsApp</a><a class="ct-btn ct-td" id="mmTd" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>Book a test drive</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
+<div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart"><svg class="pa-ic" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></span><img src="icons/icon-192.png" alt="SwipeToDrive"></div><p id="mmText"></p><button class="ct-btn ct-btn-big ct-short" id="mmSave" type="button" hidden>Save it</button><a class="ct-btn ct-btn-big ct-short" id="mmShort" href="#matches" data-close>View shortlist</a><a class="ct-btn ct-wa" id="mmWa" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5l1.2-3.4A7.5 7.5 0 1 1 9 18z"/></svg>Message on WhatsApp</a><a class="ct-btn ct-td" id="mmTd" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>Book a test drive</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
 <div class="ct-rvp" id="revvyPrompt" hidden><div class="ct-rvp-scrim" data-rvp-later></div>
   <div class="ct-rvp-card" role="dialog" aria-modal="true" aria-labelledby="rvpTitle" aria-describedby="rvpP">
     <div class="ct-rvp-hud" aria-hidden="true"><span>REVVY</span><span>PROFILE 01</span></div>
@@ -392,7 +392,7 @@
 </div>
 <div class="ct-sheet ct-ask" id="askSheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-labelledby="askTitle"><button class="ct-x" type="button" data-ask-x aria-label="Close">&times;</button>
   <form id="askForm" novalidate>
-    <div class="ct-ask-head"><span class="ct-ask-rv" id="askRv"></span><div><h2 id="askTitle">Save this car with Dan</h2><p class="ct-sub" id="askWhy">Leave your name and a mobile or email, and Dan will hold onto the cars you like and get back to you.</p></div></div>
+    <div class="ct-ask-head"><span class="ct-ask-rv" id="askRv"></span><div><h2 id="askTitle">Save this car</h2><p class="ct-sub" id="askWhy">Leave your name and a mobile or email, and we will hold onto the cars you like and get back to you.</p></div></div>
     <div class="ct-ask-car" id="askCar" hidden></div>
     <label class="ct-f"><span>Name <em class="ct-req">required</em></span><input name="name" autocomplete="name" required maxlength="40"></label>
     <label class="ct-f"><span>Mobile</span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="07700 900123"></label>
@@ -400,10 +400,10 @@
     <p class="ct-hint">A mobile or an email is enough. You do not need both.</p>
     <label class="ct-check"><input type="checkbox" name="consent" id="askConsent"> <span id="askConsentText"></span></label>
     <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="ct-hp" aria-hidden="true">
-    <button class="ct-btn ct-btn-big" type="submit" id="askGo">Send to Dan</button>
+    <button class="ct-btn ct-btn-big" type="submit" id="askGo">Send to us</button>
     <button class="ct-btn ct-btn-ghost" type="button" data-ask-x>Not now, keep swiping</button>
     <p class="ct-msg" id="askMsg" role="status" aria-live="polite"></p>
-    <p class="ct-legal"><a href="privacy.html" target="_blank" rel="noopener">How Dan uses your details</a></p>
+    <p class="ct-legal"><a href="privacy.html" target="_blank" rel="noopener">How we use your details</a></p>
   </form>
   <div id="askDone" hidden>
     <h2 id="askDoneT">Thanks</h2><p id="askDoneP" role="status"></p>
@@ -431,23 +431,23 @@
 <div class="ct-toast ct-undo" id="undoToast" role="status" hidden><span id="undoText"></span><button type="button" id="undoBtn">Undo</button></div>
 <div class="ct-toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=42"></script>
-<script src="auth-ui.js?v=41"></script>
+<script src="config.js?v=43"></script>
+<script src="auth-ui.js?v=42"></script>
 <script src="chat/profile-save.js?v=41"></script>
 <script src="../stock-core.js?v=41"></script>
 <script src="../dsfinance.js?v=41"></script>
-<script src="match-core.js?v=46"></script>
-<script src="std-brand.js?v=1"></script>
+<script src="match-core.js?v=47"></script>
+<script src="std-brand.js?v=2"></script>
 <script src="alert-save.js?v=41"></script>
 <script src="guest-free.js?v=1"></script>
-<script src="app.js?v=60"></script>
+<script src="app.js?v=61"></script>
 <script src="../product-email.js?v=42"></script>
 <script src="../quote-email.js?v=41"></script>
 <script src="../email-signature.js?v=2"></script>
 <script src="crm/followups-core.js?v=51"></script>
-<script src="nostock-ui.js?v=41"></script>
-<script src="revvy-flow.js?v=42"></script>
-<script src="revvy.js?v=42"></script>
+<script src="nostock-ui.js?v=42"></script>
+<script src="revvy-flow.js?v=43"></script>
+<script src="revvy.js?v=43"></script>
 <script src="revvy-character.js?v=2"></script>
 <script src="px-capture.js?v=3"></script>
 <script src="crm/hub.js?v=48"></script>

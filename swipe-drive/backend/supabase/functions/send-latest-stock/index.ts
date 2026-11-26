@@ -13,7 +13,7 @@ const SITE = 'https://dan-sells.co.uk';
 const env = (k: string) => Deno.env.get(k) || '';
 const CORS = { 'Access-Control-Allow-Origin': SITE, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type', 'Access-Control-Allow-Methods': 'POST, OPTIONS' };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...CORS, 'Content-Type': 'application/json' } });
-const BROKER = 'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.';
+const BROKER = 'Finance subject to status, 18+, UK residents. Stephen James (Automotive) Limited trading as Hedin Automotive acts as a credit broker and not a lender.';
 async function loadScript(u: string) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(u + ' ' + r.status); (0, eval)(await r.text()); }
 let M: any = null;
 async function init() { if (M) return; await loadScript(SITE + '/stock-core.js'); await loadScript(SITE + '/swipe-drive/match-core.js'); M = (globalThis as any).ctMatch; if (!M || !M.pickLatest) throw new Error('match-core.js has no pickLatest'); }

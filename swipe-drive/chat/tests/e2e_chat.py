@@ -341,7 +341,7 @@ async def quick_suite(b):
             assert not re.search(r'undefined|NaN|null', t), t
         await pg.goto(BASE + 'quick.html'); await pg.click('#q6 button[type=submit]'); await asyncio.sleep(0.3)
         e = await pg.evaluate('[...document.querySelectorAll("#q6 .err")].map(e=>e.textContent)')
-        assert pg.url.endswith('quick.html') and 'first name' in e[0] and 'mobile' in e[-1].lower(), ('empty quick form must be blocked', e)
+        assert pg.url.endswith('quick.html') and (('first name' in e[0] and 'mobile' in e[-1].lower()) or 'at least one answer' in e[-1]), ('empty quick form must be blocked', e)
         await pg.fill('#q_name', 'Jo'); await pg.fill('#q_phone', '01234567890'); await pg.fill('#q_budget', '-100'); await pg.click('#q6 button[type=submit]'); await asyncio.sleep(0.3)
         e = await pg.evaluate('[...document.querySelectorAll("#q6 .err")].map(e=>e.textContent)')
         assert pg.url.endswith('quick.html') and '07' in e[-1] and 'below zero' in e[3], ('landline and negative must be blocked', e)

@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
   if (req.method === 'POST') {
     const ok = await unsubscribe(t);
     if ((req.headers.get('content-type') || '').includes('form') && !(await req.clone().text()).includes('List-Unsubscribe=One-Click'))
-      return page(ok ? '<p>Done. You will not get SwipeToDrive emails any more.</p><p style="font-size:14px;color:#6b7280">Changed your mind? Turn email alerts back on in SwipeToDrive, under Me.</p>' : '<p>That link did not work. WhatsApp Dan on 07827 138197 and he will take you off the list.</p>', ok ? 200 : 404);
+      return page(ok ? '<p>Done. You will not get SwipeToDrive emails any more.</p><p style="font-size:14px;color:#6b7280">Changed your mind? Turn email alerts back on in SwipeToDrive, under Me.</p>' : '<p>That link did not work. WhatsApp us on 07827 138197 and we will take you off the list.</p>', ok ? 200 : 404);
     return new Response(null, { status: ok ? 200 : 404 });
   }
   if (!t) return page('<p>That link is missing its code.</p>', 400);

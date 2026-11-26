@@ -19,7 +19,7 @@ function nice(e){var m=(e&&(e.message||e.error_description))||"";
  if(/password.*(at least|short|weak)/i.test(m))return "Pick a longer password, at least 8 characters.";
  if(/rate|too many|security purposes/i.test(m))return "Too many tries. Wait a minute and try again.";
  if(/token|otp|expired/i.test(m))return "That code did not work. Check it, or send a new one.";
- return "That did not work. Try again, or WhatsApp Dan on 07827 138197."}
+ return "That did not work. Try again, or WhatsApp us on 07827 138197."}
 function emailOk(s){return /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(s)}
 /* opts: sb (client), cfg, redirect (url), code (bool: show email code tab), onDone(session), track(name) */
 function mount(box,o){css();var cfg=o.cfg||g.CT_CONFIG||{},sb=o.sb,tr=o.track||function(){},mode=o.start||"in",sentTo="";

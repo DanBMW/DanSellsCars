@@ -65,7 +65,7 @@ async def main():
             if await pg.evaluate("!document.getElementById('matchModal').hidden"):
                 ok(await pg.locator('#mmSave').is_visible(), f'{size} guest match pop up offers Save it with Dan'); await pg.click('#mmSave'); await pg.wait_for_timeout(300)
             ok(await pg.locator('#askSheet').is_visible(), f'{size} contact ask opens on first like')
-            ok('Dan Cane of Dan Sells, Sidcup' in await pg.inner_text('#askConsentText'), f'{size} consent wording names Dan Sells, Sidcup')
+            ok('I agree that SwipeToDrive can contact me' in await pg.inner_text('#askConsentText'), f'{size} consent wording names SwipeToDrive')
             await shot(pg, f'guest-contact-ask-{size}')
             await pg.click('#askGo'); await pg.wait_for_timeout(200)
             ok(await pg.locator('.ct-ferr').count() >= 2, f'{size} empty ask shows errors (name, contact, consent)')

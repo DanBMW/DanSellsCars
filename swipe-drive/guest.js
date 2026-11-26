@@ -2,7 +2,7 @@
    URL hash, so it never reaches a server log. This page talks to ONE server function (guest-deck), which only
    returns car cards and records swipes and requests to Dan. No customer details are loaded or shown here. */
 (function () {
-  var MAYBE = 'This may be in budget, ask Dan for figures';
+  var MAYBE = 'This may be in budget, ask us for figures';
   var CFG = window.CT_CONFIG || {}, $ = function (s) { return document.querySelector(s); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var tok = (location.hash.match(/[#&]t=([^&]+)/) || [])[1]; tok = tok ? decodeURIComponent(tok) : '';
@@ -14,7 +14,7 @@
     .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j._status = r.status; return j; }); }); }
   function fail(st) {
     $('#g-err-h').textContent = st === 410 ? 'This link is no longer active' : st === 429 ? 'Give it a moment' : st === 401 ? 'This link did not work' : 'Something went wrong';
-    $('#g-err-p').textContent = st === 429 ? 'Too many taps at once. Wait a minute and try again.' : 'Message Dan on WhatsApp and he will send you a fresh link or the cars directly.';
+    $('#g-err-p').textContent = st === 429 ? 'Too many taps at once. Wait a minute and try again.' : 'Message us on WhatsApp and we will send you a fresh link or the cars directly.';
     show('#g-err'); }
   function spec(c) { return (c.kind === 'new_stock' ? ['Brand new', c.colour, c.fuel] : [c.year, c.mileage, c.fuel, c.gearbox]).filter(Boolean).join(' \u00b7 '); }
   function cardHtml(c, under) { return '<div class="g-card' + (under ? ' under' : '') + '" data-reg="' + esc(c.reg) + '"><div class="ph" style="--ph:url(\'' + esc(c.image || 'icons/icon-512.png') + '\')"><img src="' + esc(c.image || 'icons/icon-512.png') + '" alt="" draggable="false"></div>' +
@@ -44,24 +44,24 @@
       (c.finance ? '<div class="g-fin"><b>' + esc(c.finance.headline) + '</b><strong>Representative example.</strong> ' + esc(c.finance.example) + (c.finance.legal ? ' ' + esc(c.finance.legal) : '') + '</div>' : c.maybe ? '<div class="g-maybe">' + MAYBE + '</div>' : '') +
       '<dl>' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' +
       '<button type="button" class="g-btn" id="g-buy">Buy this car</button><p class="g-ok" id="g-buy-msg" role="status"></p>' +
-      '<a class="g-btn g-ghost g-wa3" target="_blank" rel="noopener" href="https://wa.me/' + esc(S.wa) + '?text=' + encodeURIComponent('Hi Dan, I like the ' + c.model + (c.reg && c.kind !== 'new_stock' ? ', reg ' + c.reg : '') + ' on SwipeToDrive. Is it still available?') + '">WhatsApp Dan about this car</a>' +
+      '<a class="g-btn g-ghost g-wa3" target="_blank" rel="noopener" href="https://wa.me/' + esc(S.wa) + '?text=' + encodeURIComponent('Hi, I like the ' + c.model + (c.reg && c.kind !== 'new_stock' ? ', reg ' + c.reg : '') + ' on SwipeToDrive. Is it still available?') + '">WhatsApp us about this car</a>' +
       '<div class="g-acts"><button type="button" class="g-round g-pass" id="g-s-pass" aria-label="Pass"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg></button><button type="button" class="g-round g-like" id="g-s-like" aria-label="Like"><svg class="pa-ic" viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></button></div></div>';
     $('#g-sheet').hidden = false;
-    $('#g-buy').onclick = function () { var b = this; if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Tap again to send to Dan'; return; }
-      b.disabled = true; call({ action: 'buy', reg: c.reg }).then(function (r) { if (r.ok) { $('#g-buy-msg').textContent = 'Sent to Dan. He will be in touch to talk it through.'; b.textContent = 'Sent to Dan'; } else { b.disabled = false; b.textContent = 'Buy this car'; b.removeAttribute('data-sure'); toast('That did not send. Try again or WhatsApp Dan.'); } }); };
+    $('#g-buy').onclick = function () { var b = this; if (b.getAttribute('data-sure') !== '1') { b.setAttribute('data-sure', '1'); b.textContent = 'Tap again to send'; return; }
+      b.disabled = true; call({ action: 'buy', reg: c.reg }).then(function (r) { if (r.ok) { $('#g-buy-msg').textContent = 'Sent. We will be in touch to talk it through.'; b.textContent = 'Sent'; } else { b.disabled = false; b.textContent = 'Buy this car'; b.removeAttribute('data-sure'); toast('That did not send. Try again or WhatsApp us.'); } }); };
     $('#g-s-like').onclick = function () { $('#g-sheet').hidden = true; decide(true); }; $('#g-s-pass').onclick = function () { $('#g-sheet').hidden = true; decide(false); }; }
   /* why a chosen model has nothing to show, worked out on the server from real stock; next steps that need no sign in */
   function noStock() { var L = S.notes || [], wa = 'https://wa.me/447827138197';
     var html = L.map(function (x) { var a = [];
       if (x.kind === 'none') { a.push('<a class="g-chip go" href="./">Sign in for alerts</a>'); if (x.new_avail) a.push('<a class="g-chip" href="../find-my-bmw.html">Look at ordering new</a>'); }
       else if (x.kind === 'filter' || x.kind === 'narrow' || x.kind === 'must') a.push('<button type="button" class="g-chip go" data-confirm>Change with Revvy</button>');
-      if (x.model) a.push('<a class="g-chip" target="_blank" rel="noopener" href="' + wa + '?text=' + encodeURIComponent('Hi Dan, I am looking for a ' + x.model + '. Can you help?') + '">WhatsApp Dan</a>');
+      if (x.model) a.push('<a class="g-chip" target="_blank" rel="noopener" href="' + wa + '?text=' + encodeURIComponent('Hi, I am looking for a ' + x.model + '. Can you help?') + '">WhatsApp us</a>');
       return '<div class="g-ns-i"><p>' + esc(x.text) + '</p><div class="g-ns-acts">' + a.join('') + '</div></div>'; }).join('');
     ['#g-ns', '#g-ns-end'].forEach(function (id) { var e = $(id); if (e) { e.innerHTML = html; e.hidden = !L.length; } }); }
-  function end() { var n = S.liked.length; $('#g-end-p').textContent = n ? 'You liked ' + n + ' ' + (n === 1 ? 'car' : 'cars') + '. Send them to Dan and he will be in touch.' : 'Nothing caught your eye this time? No problem. Dan will keep looking.';
+  function end() { var n = S.liked.length; $('#g-end-p').textContent = n ? 'You liked ' + n + ' ' + (n === 1 ? 'car' : 'cars') + '. Send them to us and we will be in touch.' : 'Nothing caught your eye this time? No problem. We will keep looking.';
     $('#g-send').hidden = !n; $('#g-send').disabled = false; $('#g-send-msg').textContent = ''; $('#g-wa').href = 'https://wa.me/' + S.wa; show('#g-end');
     if (!S.confirmed && !S.autoChat) { S.autoChat = true; setTimeout(function () { if (!$('#g-end').hidden && $('#g-chat').hidden) confirmChat(); }, 900); } }
-  $('#g-send').onclick = function () { var b = this; b.disabled = true; call({ action: 'send', regs: S.liked }).then(function (r) { if (r.ok) { $('#g-send-msg').textContent = 'Sent to Dan. He will be in touch.'; b.textContent = 'Sent'; } else { b.disabled = false; toast('That did not send. Try again or WhatsApp Dan.'); } }); };
+  $('#g-send').onclick = function () { var b = this; b.disabled = true; call({ action: 'send', regs: S.liked }).then(function (r) { if (r.ok) { $('#g-send-msg').textContent = 'Sent. We will be in touch.'; b.textContent = 'Sent'; } else { b.disabled = false; toast('That did not send. Try again or WhatsApp us.'); } }); };
   $('#g-again').onclick = function () { S.i = 0; draw(); };
   $('#g-like').onclick = function () { decide(true); }; $('#g-pass').onclick = function () { decide(false); }; $('#g-info').onclick = function () { details(S.cars[S.i]); };
   $('#g-x').onclick = function () { $('#g-sheet').hidden = true; }; $('#g-sheet').onclick = function (e) { if (e.target === this) this.hidden = true; };
@@ -88,15 +88,15 @@
   var okEmail = function (v) { return /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(v) ? '' : 'That email does not look right. Have another go?'; };
   function confirmChat() {
     $('#g-chat').hidden = false; $('#g-log').innerHTML = ''; $('#g-tray').innerHTML = ''; $('#g-nudge').hidden = true;
-    var A = {}; bot("Hi, I'm Revvy, Dan's assistant. Let's make sure Dan has the right details so he can send you more cars like these.");
-    call({ action: 'hints' }).then(function (h) { if (h._status !== 200) { bot('Sorry, I cannot check your details right now. You can always WhatsApp Dan instead.'); return; }
+    var A = {}; bot("Hi, I'm Revvy, your SwipeToDrive assistant. Let's make sure we have the right details so we can send you more cars like these.");
+    call({ action: 'hints' }).then(function (h) { if (h._status !== 200) { bot('Sorry, I cannot check your details right now. You can always WhatsApp us instead.'); return; }
       function name() { bot("First, what's your first name?"); ask('Your first name', function (v) { return v.length > 40 ? 'Just your first name is fine.' : ''; }, function (v) { A.name = v; phone(); }); }
-      function phone() { if (h.has_phone) { bot('Dan has ' + h.phone_hint + ' for you. Is that still right?');
+      function phone() { if (h.has_phone) { bot('We have ' + h.phone_hint + ' for you. Is that still right?');
           chips([{ t: 'Yes, that is right', go: 1, f: function () { A.phone_ok = true; email(); } }, { t: 'It has changed', f: function () { bot("What's your new mobile?"); ask('Mobile number', okPhone, function (v) { A.phone = v; email(); }); } }]); }
-        else { bot("What's the best mobile for Dan to reach you on?"); ask('Mobile number', okPhone, function (v) { A.phone = v; email(); }, true); } }
-      function email() { if (h.has_email) { bot('And Dan has ' + h.email_hint + ' as your email. Still right?');
+        else { bot("What's the best mobile to reach you on?"); ask('Mobile number', okPhone, function (v) { A.phone = v; email(); }, true); } }
+      function email() { if (h.has_email) { bot('And we have ' + h.email_hint + ' as your email. Still right?');
           chips([{ t: 'Yes, that is right', go: 1, f: function () { A.email_ok = true; prefs(); } }, { t: 'It has changed', f: function () { bot("What's your new email?"); ask('Email address', okEmail, function (v) { A.email = v; prefs(); }); } }]); }
-        else { bot('What email should Dan send updates to?'); ask('Email address', okEmail, function (v) { A.email = v; prefs(); }, true); } }
+        else { bot('What email should we send updates to?'); ask('Email address', okEmail, function (v) { A.email = v; prefs(); }, true); } }
       /* car preferences one by one, with the same tap pickers as the main app. Saved straight to the profile. */
       var V = h.values || {}, O = h.options || {}, P = {}, changed = false;
       if (!Array.isArray(V.fuel_must)) V.fuel_must = (V.fuel || []).slice(); /* older profiles: every picked fuel was a must */
@@ -126,10 +126,10 @@
         window.RevvyFlow.run({ log: $('#g-log'), tray: $('#g-tray'), values: V, fields: FIELDS,
           cls: { bot: 'g-m bot', me: 'g-m me', chip: 'g-chip', go: 'go', legend: 'g-legend', picks: 'g-picks', pick: 'g-pick', row: 'g-row', form: 'g-form', input: 'g-inp2', sum: 'g-sum' },
           save: function (p) { Object.assign(P, p); changed = true; return Promise.resolve(); }, open: function () {}, done: function () { extra(); } }); }
-      function extra() { bot('Anything else Dan should know? A budget change, your part exchange, anything.'); ask('Optional note', function (v) { return v.length > 500 ? 'A bit shorter please.' : ''; }, function (v) { A.prefs_note = v; A.prefs_ok = !changed && !v; send(); }, true); }
-      function send() { bot('Saving that for Dan...'); (changed ? call(Object.assign({ action: 'prefs' }, P)) : Promise.resolve({ ok: true })).then(function (pr) { if (!pr.ok) bot('Your car preferences did not save, sorry. Dan will go through them with you.'); return call(Object.assign({ action: 'confirm' }, A)); }).then(function (r) {
-          if (!r.ok) { bot('That did not save, sorry. WhatsApp Dan and he will sort it.'); return; } S.confirmed = true; $('#g-confirm-end').hidden = true;
-          bot('All done, thank you. ' + (r.held && r.held.length ? 'Dan will check the new ' + r.held.join(' and ') + ' and update it for you. ' : '') + (changed ? 'Your car preferences are updated. ' : '') + 'Dan will keep sending cars that fit.');
+      function extra() { bot('Anything else we should know? A budget change, your part exchange, anything.'); ask('Optional note', function (v) { return v.length > 500 ? 'A bit shorter please.' : ''; }, function (v) { A.prefs_note = v; A.prefs_ok = !changed && !v; send(); }, true); }
+      function send() { bot('Saving that...'); (changed ? call(Object.assign({ action: 'prefs' }, P)) : Promise.resolve({ ok: true })).then(function (pr) { if (!pr.ok) bot('Your car preferences did not save, sorry. We will go through them with you.'); return call(Object.assign({ action: 'confirm' }, A)); }).then(function (r) {
+          if (!r.ok) { bot('That did not save, sorry. WhatsApp us and we will sort it.'); return; } S.confirmed = true; $('#g-confirm-end').hidden = true;
+          bot('All done, thank you. ' + (r.held && r.held.length ? 'We will check the new ' + r.held.join(' and ') + ' and update it for you. ' : '') + (changed ? 'Your car preferences are updated. ' : '') + 'We will keep sending cars that fit.');
           bot('Want to see your profile and save everything? Sign in or create a free account. Totally optional.');
           var tr = $('#g-tray'); tr.innerHTML = '<a class="g-chip go" href="./">Sign in to SwipeToDrive</a>'; var c = document.createElement('button'); c.type = 'button'; c.className = 'g-chip'; c.textContent = 'Back to the cars'; c.onclick = function () { $('#g-chat').hidden = true; }; tr.appendChild(c); }); }
       name(); }); }

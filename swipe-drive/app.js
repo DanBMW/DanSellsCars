@@ -14,11 +14,11 @@
   function plainErr(e) { e = e || {}; var m = String(e.message || e.error_description || e), c = String(e.code || '');
     if (/fetch|network|Failed to fetch|offline/i.test(m) && !c) return 'No connection right now. Check your signal and try again.';
     if (c === '23505' || /duplicate key/i.test(m)) return /staff_invites/.test(m) ? 'That email has already been invited.' : /user_id/.test(m) ? 'This customer already has their own profile.' : 'That already exists.';
-    if (c === '42501' || /row.level security/i.test(m)) return 'Your account is not allowed to save this. Sign out and back in, and if it still fails ask Dan to check your access.';
+    if (c === '42501' || /row.level security/i.test(m)) return 'Your account is not allowed to save this. Sign out and back in, and if it still fails ask us to check your access.';
     if (/px_needs_confirmation/.test(m)) return 'Part exchange details need the I confirm tick before they can be saved.';
     if (c === '23514' || /check constraint/i.test(m)) return 'One of the answers is not in the format the system expects (' + (m.match(/"([a-z_]+)"/) || [, 'check'])[1].replace(/_/g, ' ') + ').';
     if (c === '22P02' || /invalid input/i.test(m)) return 'One of the numbers or dates is not valid. Check the highlighted fields.';
-    if (c === 'PGRST204' || c === '42703' || /column .* does not exist|schema cache/i.test(m)) return 'That did not save just now. Please try again in a minute, or WhatsApp Dan on 07827 138197.';
+    if (c === 'PGRST204' || c === '42703' || /column .* does not exist|schema cache/i.test(m)) return 'That did not save just now. Please try again in a minute, or WhatsApp us on 07827 138197.';
     if (/JWT|expired|not authenticated/i.test(m)) return 'Your sign in has expired. Sign out and sign in again.';
     return 'That did not save: ' + m; }
   function fieldErr(f, name, text) { var el = typeof name === 'string' ? f.elements[name] : name; if (!el) return null;
@@ -264,7 +264,7 @@
       /* monthly figures for new cars: the lender's own quote only (dsfinance.js rules), else no monthly */
       return fetch('../lookup/new-stock-quotes.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
         .then(function (qf) { M.applyLenderQuotes(S.newStock, qf, window.dsFin); })
-        /* Hedin's new car stock deals go on last, over the lender quote, for the cars they name (lookup/new-offers.json) */
+        /* the retailer's new car stock deals go on last, over the lender quote, for the cars they name (lookup/new-offers.json) */
         .then(function () { return fetch('../lookup/new-offers.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); })
         .then(function (of) { if (of && M.applyOffers) M.applyOffers(S.newStock, of); }); }).catch(function () { S.newStock = []; });
     /* arrival dates (the same ledger stock.html badges from); quiet failure means no Just arrived badges */
@@ -308,18 +308,22 @@
     var fm = st.filter(function (c) { return c.finance; }).map(function (c) { return c.finance.monthly; }); fm = fm.length ? Math.min.apply(null, fm) : null;
     S.newRange = (S.newRange || []).filter(function (p) { return !st.some(function (c) { return M.covers(c, p.name); }); })
       .map(function (p) { p.floor_cash = fc; p.floor_monthly = fm; return p; }); }
-  function stockLabel(c) { return c.kind === 'new_stock' ? 'New, in stock' : c.kind === 'new' ? 'Brand new, ordered for you' : c.source === 'group' ? 'Dan can source this' : 'On my forecourt'; }
+  function stockLabel(c) { return c.kind === 'new_stock' ? 'New, in stock' : c.kind === 'new' ? 'Brand new, ordered for you' : c.source === 'group' ? 'We can source this' : 'On my forecourt'; }
   function ready(c) { return c.lead_min && c.lead_max ? (c.lead_min === c.lead_max ? 'Ready in about ' + c.lead_min + ' weeks' : 'Ready in ' + c.lead_min + ' to ' + c.lead_max + ' weeks') : ''; }
-  function askModelWa(c) { return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the look of a new ' + c.model + ' on SwipeToDrive. Could you tell me about this model and what is available?'); }
-  function buyOrAsk(c) { return c.kind === 'new' ? '<a class="ct-btn ct-btn-big ct-wa ct-ask" target="_blank" rel="noopener" href="' + esc(askModelWa(c)) + '">Ask ' + esc(waWho() || 'Dan') + ' about this model</a>'
+  function askModelWa(c) { return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent(hiWho() + ', I like the look of a new ' + c.model + ' on SwipeToDrive. Could you tell me about this model and what is available?'); }
+  function buyOrAsk(c) { return c.kind === 'new' ? '<a class="ct-btn ct-btn-big ct-wa ct-ask" target="_blank" rel="noopener" href="' + esc(askModelWa(c)) + '">Ask ' + esc(whoObj()) + ' about this model</a>'
     : '<button class="ct-btn ct-btn-big ct-buy" type="button" data-buy="' + esc(c.reg) + '">Buy this car</button>'; }
   function brandNew(c) { return c.kind === 'new' || c.kind === 'new_stock'; }
   function byReg(reg) { return pool().find(function (c) { return c.reg === reg; }); }
   /* Lead routing (Dan, 17 Nov 2026): every self sign up and guest is Dan's. On the customer side WhatsApp, booking and
      names always go to Dan, never to an assigned salesperson. Staff screens keep the owner's number. */
   function custSide() { return !S.session || S.session.role === 'customer'; }
+  function whoObj() { return waWho() || 'us'; }   /* "Message us", "ask us" */
+  function whoSays(one, many) { var w = waWho(); return w ? w + ' ' + one : 'We ' + many; }   /* "We will", "We have" */
+  function hiWho() { var w = waWho(); return 'Hi' + (w ? ' ' + w : ''); }   /* WhatsApp openers: "Hi," on the customer side */
   function waNum() { return custSide() ? CFG.DAN_WA : (S.owner && S.owner.whatsapp) || CFG.DAN_WA; }
-  function waWho() { return custSide() ? 'Dan' : S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
+  /* BETA (26 Nov 2026): customer side copy never names a person; it is "us" and "we". Staff screens keep the owner's name. */
+  function waWho() { return custSide() ? '' : S.owner && S.owner.name ? S.owner.name.split(' ')[0] : (S.cust && S.cust.owner_staff_id ? '' : 'Dan'); }
 
   /* ---------------- routing ---------------- */
   var SCREENS = ['start', 'guestme', 'signin', 'profile', 'discover', 'matches', 'me', 'bought', 'team', 'invites', 'buys', 'pick', 'followups', 'quote', 'present'];
@@ -425,12 +429,12 @@
         var r2 = Object.assign({}, row); CC.forEach(function (k) { delete r2[k]; }); return store.saveCustomer(r2); })
       .then(function (saved) { S.cust = saved; S.deck = []; A.clear(); S.alertJust = a; track('alert_saved', { model: a.model, specs: a.specs.length, source: a.source });
         if (!location.hash || location.hash === '#signin') location.hash = saved && saved.name ? 'discover' : 'profile'; setTimeout(alertSheet, 600); })
-      .catch(function (e) { console.warn('alert save', e); toast('Your alert could not be saved just now. Message Dan and he will set it up.'); }); }
-  function alertSheet() { var a = S.alertJust; if (!a) return; S.alertJust = null; var who = waWho() || 'Dan';
+      .catch(function (e) { console.warn('alert save', e); toast('Your alert could not be saved just now. Message us on WhatsApp and we will set it up.'); }); }
+  function alertSheet() { var a = S.alertJust; if (!a) return; S.alertJust = null; var who = waWho();
     var what = a.model + (a.specs.length ? ' with ' + a.specs.map(function (k) { return M.specLabel ? M.specLabel(k) : k; }).join(', ') : '');
     var o = document.createElement('div'); o.className = 'ct-sheet'; o.id = 'alertSheet'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true');
-    o.innerHTML = '<div class="ct-sheet-in"><h2>Your alert is saved</h2><p>' + esc(what) + '.</p><p class="ct-sub">When one comes into stock that fits, SwipeToDrive flags it to ' + esc(who) + ' and ' + esc(who) + ' messages you. Turn on notifications so the app can tell you directly as well.</p>' +
-      '<p class="ct-sub">The cars that fit right now are in Discover. To stop an alert at any time: Me, then Stock alerts, then Stop this alert, or reply STOP to Dan on WhatsApp.</p>' +
+    o.innerHTML = '<div class="ct-sheet-in"><h2>Your alert is saved</h2><p>' + esc(what) + '.</p><p class="ct-sub">When one comes into stock that fits, ' + (who ? 'SwipeToDrive flags it to ' + esc(who) + ' and ' + esc(who) + ' messages you.' : 'SwipeToDrive flags it and we message you.') + ' Turn on notifications so the app can tell you directly as well.</p>' +
+      '<p class="ct-sub">The cars that fit right now are in Discover. To stop an alert at any time: Me, then Stock alerts, then Stop this alert, or reply STOP on WhatsApp.</p>' +
       '<div class="ct-row"><a class="ct-btn ct-btn-big" href="#me" data-alert-x>Turn on notifications</a></div>' +
       '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + who + ', I have set an alert on SwipeToDrive for the ' + what + '. Can you keep an eye out for me?') + '">WhatsApp ' + esc(who) + '</a><button class="ct-btn ct-btn-ghost" type="button" data-alert-x>See the cars that fit now</button></div></div>';
     o.addEventListener('click', function (e) { if (e.target.closest('[data-alert-x]') || e.target === o) o.remove(); }); document.body.appendChild(o); }
@@ -460,7 +464,7 @@
       ['said', 'Has the customer SAID how they are funding?', O('yes=Yes|no=No'), false, true], ['intro_bm', 'Introduction to Business Manager', O('yes=Yes|no=No'), false, true],
       ['n_budget', 'Notes', 'text'], ['n_result', 'Notes on the result', 'text', false, true]] },
     { h: 'Next steps agreed', staff: true, f: [['ns_drive', 'Test drive booked', 'check'], ['ns_drive_when', 'When', 'line'], ['ns_val', 'Valuation on their car', 'check'], ['ns_follow', 'Follow up date', 'date'], ['n_next', 'Notes on next steps', 'text']] },
-    { h: 'Customer', f: [['optin', 'They asked to be kept posted (occasional news from Dan, unsubscribe any time)', 'check'], ['n_customer', 'Notes on the customer', 'text']] }
+    { h: 'Customer', f: [['optin', 'Kept posted with occasional news (unsubscribe any time)', 'check'], ['n_customer', 'Notes on the customer', 'text']] }
   ];
   window.ctDeskDef = DESK;
   function deskHtml(staff) { return DESK.filter(function (g) { return staff || !g.staff; }).map(function (g) {
@@ -520,7 +524,7 @@
     drawRates(c.px_condition_ratings); $('#pxConfirm').checked = false;
     $('#pxConfirmLabel').textContent = staff ? 'I confirm, on behalf of the customer, that this is what they told me' : 'I confirm';
     openSections(c);
-    $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by Dan' : '') : '';
+    $('#pxConfirmed').textContent = c.px_terms_confirmed_at ? 'Last confirmed ' + new Date(c.px_terms_confirmed_at).toLocaleString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + (c.px_terms_confirmed_by === 'staff' && !staff ? ' by us' : '') : '';
     S.pxPhotos = (px.photos || []).slice(); drawThumbs(); showDeps(f);
     var dk = $('#deskBox'); if (dk.getAttribute('data-for') !== String(staff)) { dk.innerHTML = deskHtml(staff); dk.setAttribute('data-for', String(staff)); bindChoice(dk); } deskFill(f, c.desk);
     var cb = $('#commsConsent'); if (cb) { cb.checked = !!c.comms_consent_at; var nt = $('#commsConsentNote');
@@ -552,7 +556,7 @@
     if (!must.length && !like.length) return 'Any'; return [must.length ? 'Must have: ' + must.join(', ') : '', like.length ? 'Would like: ' + like.join(', ') : ''].filter(Boolean).join('. '); }
   function equity(c) { if (c.px_valuation_gbp == null || c.px_settlement_gbp == null) return null; var e = c.px_valuation_gbp - c.px_settlement_gbp;
     return { neg: e < 0, text: M.gbp(Math.abs(e)), label: e < 0 ? 'Negative equity, subject to inspection and settlement confirmation' : 'Estimated equity, subject to inspection and settlement confirmation' }; }
-  function valBy(c) { if (c.px_valuation_gbp == null) return ''; var who = c.px_valuation_set_by === 'customer' ? (S.session && S.session.role === 'customer' ? 'you' : 'the customer') : (c.px_valuation_set_by_name || 'Dan');
+  function valBy(c) { if (c.px_valuation_gbp == null) return ''; var who = c.px_valuation_set_by === 'customer' ? (S.session && S.session.role === 'customer' ? 'you' : 'the customer') : custSide() ? 'us' : (c.px_valuation_set_by_name || 'Dan');
     return 'Valuation entered by ' + who + (c.px_valued_on ? ', valued on ' + fmtDate(c.px_valued_on) : ''); }
   function pxMoneyHtml(c) { var bits = []; if (c.px_valuation_gbp != null) bits.push('PX valuation ' + M.gbp(c.px_valuation_gbp) + (c.px_valued_on ? ' (' + fmtDate(c.px_valued_on) + ')' : ''));
     if (c.px_settlement_gbp != null) bits.push('Settlement ' + M.gbp(c.px_settlement_gbp) + (c.px_settlement_valid_until ? ' valid until ' + fmtDate(c.px_settlement_valid_until) : ''));
@@ -738,11 +742,11 @@
       .catch(function (err) { msg.className = 'ct-msg'; msg.textContent = plainErr(err); });
   }
   function paintEmpty() {
-    var why = S.emptyWhy || { kind: 'seen' }, who = waWho() || 'Dan', ask = 'https://wa.me/' + String(waNum()).replace(/\D/g, '');
-    var askLink = '<a class="ct-btn ct-btn-ghost" target="_blank" rel="noopener" href="' + esc(ask + '?text=' + encodeURIComponent('Hi ' + who + ', I could not find a car in my search on SwipeToDrive. Can you help?')) + '">Message ' + esc(who) + '</a>';
+    var why = S.emptyWhy || { kind: 'seen' }, who = whoObj(), ask = 'https://wa.me/' + String(waNum()).replace(/\D/g, '');
+    var askLink = '<a class="ct-btn ct-btn-ghost" target="_blank" rel="noopener" href="' + esc(ask + '?text=' + encodeURIComponent(hiWho() + ', I could not find a car in my search on SwipeToDrive. Can you help?')) + '">Message ' + esc(who) + '</a>';
     var t = 'That is everyone for now.', p = 'New cars arrive most mornings. Turn on alerts and I will tell you when one fits.', acts = '<a class="ct-btn" href="#matches">See your matches</a>';
     if (why.kind === 'budget') { t = 'Nothing in your budget right now.'; p = M.budgetGapText(why.gap, who); acts = '<a class="ct-btn" href="#profile">Change my budget</a>' + askLink; }
-    else if (why.kind === 'nonew') { t = 'No brand new cars in stock that fit.'; p = 'Brand new cars come in and out of stock. ' + who + ' can order one to your spec.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
+    else if (why.kind === 'nonew') { t = 'No brand new cars in stock that fit.'; p = 'Brand new cars come in and out of stock. ' + whoSays('can', 'can') + ' order one to your spec.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
     else if (why.kind === 'choices') { t = 'No cars match every choice you made.'; p = 'Try opening up the body, fuel or colour on your profile.'; acts = '<a class="ct-btn" href="#profile">Change my choices</a>' + askLink; }
     $('#deckEmptyT').textContent = t; $('#deckEmptyP').textContent = p; $('#deckEmptyActs').innerHTML = acts;
     paintWiden(); $('#notifyMsg').textContent = '';
@@ -908,7 +912,7 @@
   function tdGone(c) { var st = String(c.status || c.availability || '').toLowerCase(); return !!(c.sold || c.reserved || /sold|reserv/.test(st)); }
   function tdText(c) { return [c.year, c.model, c.reg && c.kind !== 'new' ? 'reg ' + c.reg : '', c.price].filter(Boolean).join(', '); }
   function tdHref(c) { var u = String(CFG.TEST_DRIVE_BOOKING_URL || '').trim(), car = tdText(c);
-    if (!u) return 'https://wa.me/' + String(CFG.DAN_WA || waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to arrange a test drive of the ' + car + '. When suits?');
+    if (!u) return 'https://wa.me/' + String(CFG.DAN_WA || waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent(hiWho() + ', I would like to arrange a test drive of the ' + car + '. When suits?');
     var k = CFG.TEST_DRIVE_NOTES_PARAM, cu = S.cust || {}, q = [];
     if (S.session && S.session.role === 'customer') { if (cu.name) q.push('name=' + encodeURIComponent(cu.name)); if (cu.email) q.push('email=' + encodeURIComponent(cu.email)); }
     if (k) q.push(encodeURIComponent(k) + '=' + encodeURIComponent('Test drive: ' + car + '\nBooked via SwipeToDrive'));
@@ -923,7 +927,7 @@
     var c = x.car, m = $('#matchModal'); var mm = $('#mmCar'); S.matchCar = c;
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
     $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other. Added to their shortlist.' : 'You and the ' + c.model + ' look made for each other. Added to your shortlist.';
-    tdButton($('#mmTd'), c); var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
+    tdButton($('#mmTd'), c); var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + whoObj() + ' on WhatsApp';
     var g = isGuest() && !gContact() && !freeOn(); $('#mmSave').hidden = !g; $('#mmShort').hidden = g; if (g) S.askedLike = true;
     m.hidden = false; try { (g ? $('#mmSave') : $('[data-close]', m)).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
@@ -948,11 +952,11 @@
     var ns = c.kind === 'new_stock';
     var specs = isNew ? [['Range', c.group]] : ns ? [['Version', c.description], ['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Drive', c.drive], ['Seats', c.seats], ['Upholstery', c.upholstery], ['Wheels', c.wheels], ['Order number', c.order_number], ['Ready', ready(c).replace(/^Ready /, '')]] : [['Arrived', M.arrivedText(c)], ['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
     $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 10).map(function (u, k) { return photoHtml({ images: imgs, model: c.model }, k, false); }).join('') + '</div>' : '') +
-      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : c.offer ? 'Brand new, unregistered, in stock. ' + c.offer.label + ' from Hedin' : stockLabel(c)) + '</p>' +
+      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : c.offer ? 'Brand new, unregistered, in stock. ' + c.offer.label : stockLabel(c)) + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       descHtml(c) +
       (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : c.offer && f ? dealHtml(c, f, false) : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
-      tdHtml(c) + (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
+      tdHtml(c) + (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(whoObj()) + '</a></div>');
     $('#sheet').hidden = false;
   }
   /* About this car: the listing's own words, minus the dealer boilerplate shared by every car and anything naming the
@@ -983,11 +987,11 @@
       '<g class="g-tick">' + ticks + '</g><line class="g-needle" x1="32" y1="32" x2="' + n[0].toFixed(1) + '" y2="' + n[1].toFixed(1) + '"/><circle cx="32" cy="32" r="3" class="g-hub"/></svg>' +
       '<span class="g-num">' + sc + '<small>%</small></span><span class="g-lab">match</span></div>'; }
   function plate(reg) { return '<span class="ct-plate" aria-label="Registration ' + esc(reg) + '">' + esc(String(reg).replace(/^([A-Z]{2}\d{2})([A-Z]{3})$/, '$1 $2')) + '</span>'; }
-  /* A Hedin deal (M.applyOffers): price, the monthly in big type, deposit and saving, the full figures and the legal line */
+  /* A retailer deal (M.applyOffers): price, the monthly in big type, deposit and saving, the full figures and the legal line */
   function dealHtml(c, f, card) { var o = c.offer, g0 = function (n) { return '\u00a3' + Number(n).toLocaleString('en-GB', { maximumFractionDigits: 2, minimumFractionDigits: n % 1 ? 2 : 0 }); };
     var dep = o.deposit ? g0(o.deposit) + ' deposit' + (!card && o.deposit_contribution > 0 ? ' (' + g0(o.customer_deposit) + ' + ' + g0(o.deposit_contribution) + ' ' + (o.deposit_contribution_label || 'contribution') + ')' : '') : '';
     var bits = card ? [dep, o.saving ? 'Save ' + g0(o.saving) : '']
-      : [dep, o.saving ? 'Save ' + g0(o.saving) : '', o.retailer_contribution > 0 ? 'Includes ' + g0(o.retailer_contribution) + ' Hedin contribution' : '', o.term_months ? o.term_months + ' months, ' + o.product : o.product];
+      : [dep, o.saving ? 'Save ' + g0(o.saving) : '', o.retailer_contribution > 0 ? 'Includes ' + g0(o.retailer_contribution) + ' retailer contribution' : '', o.term_months ? o.term_months + ' months, ' + o.product : o.product];
     bits = bits.filter(Boolean);
     return '<div class="ct-deal' + (card ? '' : ' ct-deal-sheet') + '"><div class="ct-deal-row"><div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' +
       '<div class="ct-mon ct-deal-mon">' + esc(f.monthly) + '/month</div></div>' + (!card && o.recommended_otr ? '<p class="ct-legal">BMW recommended on the road price ' + esc(g0(o.recommended_otr)) + '</p>' : '') +
@@ -997,7 +1001,7 @@
   function finHtml(f, c) { return f ? '<div class="ct-repx"><b>' + esc(f.headline) + '</b><br><b>Representative example.</b> ' + esc(f.example) + '</div>' : '<p class="ct-mon">' + esc(noQuoteText(c)) + '</p>'; }
   /* no lender quote: a rough estimate (never shown, match-core.js estimateMonthly) says whether a monthly budget may stretch to it */
   function noQuoteText(c, maybe) { if (maybe == null) maybe = !!(c && S.cust && M.budgetMaybe && M.budgetMaybe(c, S.cust));
-    return maybe ? 'This may be in budget, ask ' + (waWho() || 'me') + ' for figures' : 'Monthly: ask for a quote'; }
+    return maybe ? 'This may be in budget, ask ' + whoObj() + ' for figures' : 'Monthly: ask for a quote'; }
   function reduced() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
   /* tyre tread marks behind the card while it is dragged */
   function treadTrail(el) { var cv = $('.ct-tread', el), ctx = cv && cv.getContext('2d'), pts = [];
@@ -1089,15 +1093,15 @@
   function badge() { var n = liked().length, b = $('#matchBadge'); b.hidden = !n; b.textContent = n; }
   function showMatches() {
     var L = liked(), staff = S.session.role !== 'customer';
-    $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + (waWho() || 'me') + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
+    $('#mSub').textContent = L.length ? (staff ? 'Everything ' + (S.cust.name || 'your customer') + ' liked.' : 'Every car you swiped right on. Message ' + whoObj() + ' about any of them.') : 'No matches yet. Swipe right on a car you like.';
     $('#matchList').innerHTML = L.map(function (c) { var f = M.finance(c), isNew = c.kind === 'new';
       return '<article class="ct-m" data-open="' + esc(c.reg) + '" tabindex="0" aria-label="' + esc('Full details: ' + c.model) + '">' + (isNew ? '<div class="ct-noimg">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : photos(c).length ? photoHtml(c, 0, false) : '<div class="ct-noimg">' + esc(String(c.model || '').replace(/^BMW /, '')) + '<small>Photos coming soon</small></div>') +
-        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'Dan can source this' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
+        '<div class="ct-m-b">' + (S.swipes[c.reg] && S.swipes[c.reg].shortlisted ? '<span class="ct-keys">Keys please</span>' : '') + (isNew ? '' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><p>' + esc(isNew ? 'Brand new, ' + c.group : c.kind === 'new_stock' ? ['New, in stock', c.colour, c.fuel, ready(c)].filter(Boolean).join(', ') : [c.year, c.mileage, c.fuel, c.source === 'group' ? 'We can source this' : 'On my forecourt'].filter(Boolean).join(' \u00b7 ')) + '</p>' +
         (isNew ? '<p>I quote new car figures live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
         (isNew ? '' : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp about ' + esc(c.kind === 'new_stock' ? 'this car' : M.normReg(c.reg)) + '</a></div>') +
         buyOrAsk(c) +
         '<button class="ct-unlike" type="button" data-unlike="' + esc(c.reg) + '">Remove from matches</button></div></article>'; }).join('');
-    $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to Dan';
+    $('#sendBox').hidden = !L.length; $('#sendBtn').textContent = staff ? 'Send these matches to Dan' : 'Send my matches to us';
   }
   function initMatches() {
     $('#matchList').addEventListener('click', function (e) { var bb = e.target.closest('[data-buy]'); if (bb) { var car = byReg(bb.getAttribute('data-buy')); if (car) askBuy(car); return; } });
@@ -1132,7 +1136,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     msg.className = 'ct-msg'; msg.textContent = 'Sending...';
     saveBuyRequest({ type: 'matches', cars: L.map(function (x) { return { reg: x.reg, model: x.model, price: x.kind === 'new' ? '' : (x.price || ''), kind: x.kind }; }) }).then(function (r) { body.request_id = r ? r.id : ''; });
     fetch(CFG.FORMSPREE, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); msg.className = 'ct-msg ok'; msg.textContent = 'Sent. ' + (waWho() || 'Dan') + ' will be in touch, usually the same day.'; track('matches_sent', { count: L.length, lead_id: lead }); })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); msg.className = 'ct-msg ok'; msg.textContent = 'Sent. ' + whoSays('will', 'will') + ' be in touch, usually the same day.'; track('matches_sent', { count: L.length, lead_id: lead }); })
       .catch(function () { msg.textContent = 'That did not send. Tap WhatsApp on any car instead.'; });
   }
 
@@ -1148,18 +1152,18 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   }
   /* customer side WhatsApp text: a real new car names its order number so Dan can find it straight away */
   function carWa(c) { if (c.kind !== 'new_stock') return M.waLink(waNum(), c, waWho());
-    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I like the new ' + c.model + (c.colour ? ' in ' + c.colour : '') + ' in stock on SwipeToDrive (order ' + c.order_number + ', ' + c.price + '). Is it still available?'); }
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent(hiWho() + ', I like the new ' + c.model + (c.colour ? ' in ' + c.colour : '') + ' in stock on SwipeToDrive (order ' + c.order_number + ', ' + c.price + '). Is it still available?'); }
   function buyWa(c, ref) { var reg = c.kind === 'new' ? '' : c.kind === 'new_stock' ? ', order ' + c.order_number : ', reg ' + M.normReg(c.reg);
-    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent('Hi ' + (waWho() || 'Dan') + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on SwipeToDrive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
-  function askBuy(c) { S.buyCar = c; var who = waWho() || 'Dan';
-    $('#buyTitle').textContent = 'Buy the ' + c.model + '?'; $('#buyText').textContent = who + ' will call you to take a deposit and arrange collection.';
+    return 'https://wa.me/' + String(waNum()).replace(/\D/g, '') + '?text=' + encodeURIComponent(hiWho() + ', I would like to buy the ' + c.model + reg + (c.kind === 'new' || !c.price ? '' : ' (' + c.price + ')') + ' I found on SwipeToDrive.' + (ref ? ' Ref ' + ref.slice(0, 8).toUpperCase() + '.' : '')); }
+  function askBuy(c) { S.buyCar = c;
+    $('#buyTitle').textContent = 'Buy the ' + c.model + '?'; $('#buyText').textContent = whoSays('will', 'will') + ' call you to take a deposit and arrange collection.';
     $('#buyAsk').hidden = false; $('#buyDone').hidden = true; $('#buyYes').disabled = false; $('#buyModal').hidden = false; }
   function confirmBuy() { var c = S.buyCar; if (!c) return; var btn = $('#buyYes'); btn.disabled = true; btn.textContent = 'Sending...';
     if (c.kind === 'new') { btn.disabled = false; $('#buyModal').hidden = true; window.open(askModelWa(c), '_blank', 'noopener'); return; }   /* model cards are not a car to buy */
     saveBuyRequest({ type: 'buy', car_reg: c.reg, car_id: String(c.order_number || c.id || c.reg), car_model: c.kind === 'new_stock' ? c.model + (c.colour ? ', ' + c.colour : '') + ', order ' + c.order_number : c.model, car_price: c.price || '' }).then(function (row) {
-      btn.textContent = 'Yes, buy this car'; var who = waWho() || 'Dan';
+      btn.textContent = 'Yes, buy this car'; var who = whoObj();
       $('#buyAsk').hidden = true; $('#buyDone').hidden = false;
-      $('#buyDoneText').textContent = row ? 'Done. ' + who + ' has your request for the ' + c.model + ' and will call you to take a deposit and arrange collection.' : 'That did not reach ' + who + ' just now. Tap WhatsApp below so nothing is missed.';
+      $('#buyDoneText').textContent = row ? 'Done. ' + whoSays('has', 'have') + ' your request for the ' + c.model + ' and will call you to take a deposit and arrange collection.' : 'That did not reach ' + who + ' just now. Tap WhatsApp below so nothing is missed.';
       var a = $('#buyWa'); a.href = buyWa(c, row && row.id); a.textContent = row ? 'Or WhatsApp ' + who + ' now' : 'WhatsApp ' + who + ' about it';
       platform.haptic([20, 40, 20]); });
   }
@@ -1211,7 +1215,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     var on = v === 'push' || v === 'both'; $('#notifyState').textContent = 'Phone notifications: ' + (on ? 'On' : 'Off, tap Turn on to hear when a car fits you') + (v === 'email' || v === 'both' ? '. Email alerts: On' : '');
     var b = $('#notifySeg [data-v=push]'); if (b) b.textContent = on ? 'On' : 'Turn on'; }
   /* The site notice on the Me page: only says confirmed after this person pressed Confirm here (or on the site). */
-  var TERMS = 'This website has been created by Dan to bring his views and the information that matters into one easy place for you. It is Dan\u2019s personal website and is not an official BMW website. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>.';
+  var TERMS = 'SwipeToDrive is an independent app that brings real BMW stock and the information that matters into one easy place for you. It is not an official BMW website. Full terms and conditions can be found <a href="terms.html" target="_blank" rel="noopener">here</a>.';
   function termsAt() { try { return localStorage.getItem('sdTermsAt') || ''; } catch (e) { return ''; } }
   function termsBox() { var el = $('#meTerms'); if (!el) return; var at = termsAt();
     el.innerHTML = '<h3>Please read and confirm</h3><p class="ct-sub">' + TERMS + '</p>' + (at ? '<p class="ct-msg ok">You confirmed this on ' + esc(new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '.</p>'
@@ -1459,7 +1463,7 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
      answers, consent and swipes are carried into the new account (guestCarry). Nothing here writes to the database
      directly: a guest has no sign in. */
   var GK = 'sd_guest_v1';
-  var CONSENT_GUEST = 'I agree that Dan Cane of Dan Sells, Sidcup can contact me by WhatsApp, phone call, email or app notification about the cars I like, and when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me.';
+  var CONSENT_GUEST = 'I agree that SwipeToDrive can contact me by WhatsApp, phone call, email or app notification about the cars I like, and when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me.';
   function gDb() { try { return JSON.parse(localStorage.getItem(GK)) || {}; } catch (e) { return {}; } }
   function gPut(d) { try { localStorage.setItem(GK, JSON.stringify(d)); } catch (e) { toast('This phone is out of storage space'); } }
   function gContact() { return gDb().contact || null; }
@@ -1560,11 +1564,11 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   /* guest "Me": what they told us, save details, sign in, forget */
   function showGuestMe() { var c = S.cust || {}, ct = gContact();
     $('#gmTitle').textContent = ct ? 'Hi ' + String(ct.name).split(' ')[0] : 'You are browsing as a guest';
-    $('#gmSub').textContent = ct ? 'Dan has your details and the cars you like. Your swipes are saved on this phone.' : 'Your answers and swipes are saved on this phone only.';
+    $('#gmSub').textContent = ct ? 'We have your details and the cars you like. Your swipes are saved on this phone.' : 'Your answers and swipes are saved on this phone only.';
     var money = c.budget_type === 'cash' ? (c.cash_gbp ? 'Cash, up to ' + M.gbp(c.cash_gbp) : 'Cash') : (c.monthly_gbp ? 'Monthly, up to ' + M.gbp(c.monthly_gbp) + ' a month' : 'Monthly');
     if (F.pending({ cust: c })) { $('#gmSummary').innerHTML = '<p>You have not told Revvy what you are after yet, so you are seeing a bit of everything.</p><p><b>Cars you like:</b> ' + liked().length + ' of ' + F.count({ swipes: S.swipes }) + ' swiped</p><button type="button" class="ct-btn" data-free-ask>Tell Revvy what you like</button>'; }
     else $('#gmSummary').innerHTML = '<p><b>Budget:</b> ' + esc(money) + '</p><p><b>Shape:</b> ' + esc(!c.body || c.body === 'any' ? 'Any' : c.body + (M.bodyMust(c) ? ', must have' : '')) + '</p><p><b>Fuel:</b> ' + esc(fuelText(c)) + '</p><p><b>New or used:</b> ' + esc(c.new_used === 'new' ? 'Brand new' : c.new_used === 'used' ? 'Used' : 'Either') + '</p><p><b>Cars you like:</b> ' + liked().length + '</p>';
-    $('#gmSave').textContent = ct ? 'Update my details' : 'Save my details for Dan'; }
+    $('#gmSave').textContent = ct ? 'Update my details' : 'Save my details'; }
   function initGuestMe() {
     $('#gmSave').addEventListener('click', function () { askContact({ why: 'save' }); });
     $('#gmSummary').addEventListener('click', function (e) { if (e.target.closest('[data-free-ask]')) { S.freeFrom = 'me'; go('start'); } });
@@ -1572,14 +1576,14 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   }
   /* The contact ask */
   var ASK_COPY = {
-    like: ['Save this car with Dan', 'Leave your name and a mobile or email, and Dan will hold onto the cars you like and get back to you.'],
-    match: ['It\u2019s a match. Save it with Dan', 'Leave your name and a mobile or email, and Dan will check it is still here and get back to you.'],
-    td: ['Book a test drive with Dan', 'So Dan knows who is coming, leave your name and a mobile or email first.'],
-    wa: ['Message Dan on WhatsApp', 'Leave your name and a mobile or email so Dan can match your message to the cars you like.'],
-    buy: ['Ask Dan about this car', 'Leave your name and a mobile or email and Dan will get back to you about it.'],
-    send: ['Send your cars to Dan', 'Leave your name and a mobile or email and Dan will get back to you about them.'],
-    notify: ['Hear when one comes in', 'Leave your name and a mobile or email and Dan will tell you when a car that fits arrives.'],
-    save: ['Save your details for Dan', 'Leave your name and a mobile or email so Dan can help you find the right car.'],
+    like: ['Save this car', 'Leave your name and a mobile or email, and we will hold onto the cars you like and get back to you.'],
+    match: ['It\u2019s a match. Save it', 'Leave your name and a mobile or email, and we will check it is still here and get back to you.'],
+    td: ['Book a test drive', 'So we know who is coming, leave your name and a mobile or email first.'],
+    wa: ['Message us on WhatsApp', 'Leave your name and a mobile or email so we can match your message to the cars you like.'],
+    buy: ['Ask us about this car', 'Leave your name and a mobile or email and we will get back to you about it.'],
+    send: ['Send us your cars', 'Leave your name and a mobile or email and we will get back to you about them.'],
+    notify: ['Hear when one comes in', 'Leave your name and a mobile or email and we will tell you when a car that fits arrives.'],
+    save: ['Save your details', 'Leave your name and a mobile or email so we can help you find the right car.'],
     revvy: ['Your deck is tuned', 'Want to keep your picks? Leave your name and a mobile or email and your answers and swipes are kept for you, on any phone.']
   };
   var askOpts = null;
@@ -1624,22 +1628,22 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       if (!name || name.length > 40 || /[<>@]/.test(name)) bad.push(fieldErr(f, 'name', 'Add your name.'));
       if (ph && !phoneUK07(ph)) bad.push(fieldErr(f, 'phone', 'Please use a UK mobile starting 07 or +447.'));
       if (em && !/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(em)) bad.push(fieldErr(f, 'email', 'That email does not look right.'));
-      if (!ph && !em) bad.push(fieldErr(f, 'phone', 'Add a mobile or an email, so Dan can reply.'));
-      if (!$('#askConsent').checked) bad.push(fieldErr(f, $('#askConsent'), 'Tick to agree, so Dan can get back to you.'));
+      if (!ph && !em) bad.push(fieldErr(f, 'phone', 'Add a mobile or an email, so we can reply.'));
+      if (!$('#askConsent').checked) bad.push(fieldErr(f, $('#askConsent'), 'Tick to agree, so we can get back to you.'));
       bad = bad.filter(Boolean); if (bad.length) { bad[0].focus(); return; }
       var ct = { name: name, phone: phoneUK07(ph) || '', email: em.toLowerCase(), consent_at: new Date().toISOString(), consent_text: CONSENT_GUEST }, o = askOpts || { why: 'save' };
       busy(btn, true, 'Sending...');
       guestLead(ct, o).then(function (r) { busy(btn, false);
-        if (!r.ok) { $('#askMsg').textContent = 'That did not send. Check your signal and try again, or WhatsApp Dan on 07827 138197.'; return; }
+        if (!r.ok) { $('#askMsg').textContent = 'That did not send. Check your signal and try again, or WhatsApp us on 07827 138197.'; return; }
         var d = gDb(); d.contact = ct; d.lead_at = ct.consent_at; if (d.cust) { d.cust.name = ct.name; d.cust.phone = ct.phone || null; d.cust.email = ct.email || null; d.cust.comms_consent_at = ct.consent_at; d.cust.comms_consent_text = ct.consent_text; } gPut(d);
         if (S.cust) { S.cust = d.cust || S.cust; }
         $('#askDoneT').textContent = 'Thanks, ' + name.split(' ')[0];
-        $('#askDoneP').textContent = o.why === 'notify' ? 'Dan has your details and will tell you when a car that fits comes in.' : 'Dan has your details and the cars you like, and will be in touch, usually the same day.';
+        $('#askDoneP').textContent = o.why === 'notify' ? 'We have your details and will tell you when a car that fits comes in.' : 'We have your details and the cars you like, and will be in touch, usually the same day.';
         askNext(o); $('#askAcct').hidden = !(LIVE && ct.email); $('#askLinkMsg').textContent = '';
         f.hidden = true; $('#askDone').hidden = false;
         var rv = $('#askRv .rvc'); if (rv && window.RevvyChar) window.RevvyChar.setEl(rv, 'thumbs', 2400);
-        if (o.why === 'send') { $('#sendMsg').className = 'ct-msg ok'; $('#sendMsg').textContent = 'Sent. Dan will be in touch, usually the same day.'; }
-        if (o.why === 'notify') { $('#notifyMsg').className = 'ct-msg ok'; $('#notifyMsg').textContent = 'Done. Dan will tell you when a car like this comes in.'; }
+        if (o.why === 'send') { $('#sendMsg').className = 'ct-msg ok'; $('#sendMsg').textContent = 'Sent. We will be in touch, usually the same day.'; }
+        if (o.why === 'notify') { $('#notifyMsg').className = 'ct-msg ok'; $('#notifyMsg').textContent = 'Done. We will tell you when a car like this comes in.'; }
         track('guest_contact', { why: o.why, phone: !!ct.phone, email: !!ct.email }); }); });
     $('#askLink').addEventListener('click', function () { var ct = gContact(), m = $('#askLinkMsg'); if (!ct || !ct.email || !LIVE) return; m.className = 'ct-msg'; m.textContent = 'Sending...';
       supa.sendLink(ct.email).then(function () { m.className = 'ct-msg ok'; m.textContent = 'Check your inbox. Open the link on this phone and your swipes come with you.'; track('guest_link_sent'); })

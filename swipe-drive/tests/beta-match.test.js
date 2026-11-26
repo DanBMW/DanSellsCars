@@ -35,7 +35,7 @@ check('no must for any', !!M.bodyMust({ body: 'any', body_must: true }), false);
 var d = 'Hedin BMW Ruxley are pleased to offer this car. It has Hedin Club Care. Visit Hedin Automotive in Ruxley today. Lovely spec.';
 var c = B.cleanDesc(d);
 check('no hedin or ruxley after cleaning', /hedin|ruxley/i.test(c), false);
-check('opening reworded', /^Dan is pleased to offer/.test(c), true);
+check('opening reworded', /^We are pleased to offer/.test(c), true);
 var car = B.cleanCar({ reg: 'AB12CDE', listing_url: 'https://x', retailer_name: 'Hedin', model: 'BMW X1' });
 check('listing link and retailer dropped', 'listing_url' in car || 'retailer_name' in car, false);
 var stock = path.join(__dirname, '..', '..', 'lookup', 'car-descriptions.json');

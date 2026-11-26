@@ -42,7 +42,7 @@ const STAFF_EMAIL_ENABLED = !!(env('RESEND_API_KEY') && env('MAIL_FROM'));
 // Brand new stock alerts to customers themselves (push, and email only if CUSTOMER_EMAIL_ENABLED too). Off unless Dan sets
 // CUSTOMER_NEW_STOCK_ALERTS=true; until then new stock matches go to staff only, who message the customer.
 const CUSTOMER_NEW_STOCK = env('CUSTOMER_NEW_STOCK_ALERTS') === 'true';
-const BROKER = 'Finance subject to status, 18+, UK residents. Hedin Automotive Group acts as a credit broker and not a lender.';
+const BROKER = 'Finance subject to status, 18+, UK residents. Stephen James (Automotive) Limited trading as Hedin Automotive acts as a credit broker and not a lender.';
 
 async function sendEmail(to: string, msg: {subject: string, html: string, text: string}, unsub: string) {
   if (!STAFF_EMAIL_ENABLED) return false;
