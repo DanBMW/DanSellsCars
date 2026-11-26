@@ -222,3 +222,14 @@ a{color:var(--acc2)}
 }
 /* the plain toast is only a message: touches pass through it to whatever is underneath */
 #toast{pointer-events:none}
+/* Hedin new car stock deals (lookup/new-offers.json): badge, Deal tag, big monthly, deposit and saving chips, legal line */
+.ct-deal-tag{display:inline-block;margin:0 0 6px 6px;padding:2px 8px;border-radius:999px;background:var(--amber);color:#111;font:700 11px/1.6 var(--sans);letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
+.ct-deal-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.ct-deal .ct-deal-mon{font:700 20px/1.2 var(--sans);color:var(--tx);letter-spacing:-.01em}
+.ct-deal-bits{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin:3px 0 0}
+.ct-deal-bits span{font:500 12px/1.35 var(--sans);padding:2px 8px;border-radius:999px;background:rgba(242,179,61,.12);color:#f6d38c;border:1px solid rgba(242,179,61,.28)}
+.ct-legal{font-size:11px;line-height:1.35;color:var(--mut);margin:4px 0 0}
+.ct-legal a{color:var(--acc2)}
+.ct-deal-bits em.ct-legal{font-style:normal;margin:0;align-self:center}
+.ct-deal-sheet .ct-rep{max-height:none}
+@media (max-width:520px) and (max-height:720px){.ct-card .ct-deal .ct-deal-mon{font-size:18px}}
