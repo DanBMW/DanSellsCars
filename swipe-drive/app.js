@@ -803,7 +803,7 @@
     var top = S.deck.filter(function (x) { return !(S.flying || {})[x.car.reg]; }).slice(0, 3);
     /* warm the next few photos so a fast swipe never shows a blank card */
     S.deck.slice(1, 4).forEach(function (x) { var u = x.car && (x.car.image || (x.car.images || [])[0]); if (u && !(S.pre = S.pre || {})[u]) { S.pre[u] = new Image(); S.pre[u].decoding = 'async'; S.pre[u].src = u; } });
-    var canUndo = !!(S.undo && S.undo.length);
+    var canUndo = !!(S.undo && S.undo.length); paintFree();
     $('#deckEmpty').hidden = !!top.length; $('#deckActions').hidden = !top.length && !canUndo; deck.hidden = !top.length;
     $('#btnUndo').disabled = !canUndo; ['#btnPass', '#btnInfo', '#btnSuper', '#btnLike'].forEach(function (s) { $(s).disabled = !top.length; });
     if (!top.length) paintEmpty();
@@ -897,11 +897,12 @@
     try { drawDeck(); } catch (e) { console.warn('SwipeToDrive deck', e); }
     saveSwipe(x.car.reg, liked, superLike ? { shortlisted: true } : null);
     track(superLike ? 'super_like' : liked ? 'swipe_right' : 'swipe_left', { reg: brandNew(x.car) ? '' : x.car.reg, kind: x.car.kind, score: x.score });
-    if (superLike) { badge(); matchMoment(x); return; }
+    if (superLike) { badge(); matchMoment(x); freeCheck(); return; }
     badge();
     if (liked) { if (x.score > 90) matchMoment(x);
-      else if (isGuest() && !gContact() && !S.askedLike) { S.askedLike = true; askContact({ why: 'like', car: x.car }); }   /* a guest is asked once per visit, on their first like */
+      else if (isGuest() && !gContact() && !S.askedLike && !freeOn()) { S.askedLike = true; askContact({ why: 'like', car: x.car }); }   /* a guest is asked once per visit, on their first like */
       else toast(isGuest() && !gContact() ? 'Liked. Saved on this phone' : 'Added to your shortlist'); } /* right swipe always shortlists; only over 90% gets the match pop up, shortlist first, test drive below */
+    freeCheck();
   }
   /* Book a test drive: hands off to Dan's approval only booking link, or WhatsApp while there is none. Never on the swipe screen. */
   function tdGone(c) { var st = String(c.status || c.availability || '').toLowerCase(); return !!(c.sold || c.reserved || /sold|reserv/.test(st)); }
@@ -923,7 +924,7 @@
     if (c.image) { mm.src = c.image; mm.hidden = false; } else mm.hidden = true;
     $('#mmText').textContent = S.session.role !== 'customer' ? (S.cust.name || 'Your customer') + ' and the ' + c.model + ' look made for each other. Added to their shortlist.' : 'You and the ' + c.model + ' look made for each other. Added to your shortlist.';
     tdButton($('#mmTd'), c); var a = $('#mmWa'); a.href = c.kind === 'new' ? askModelWa(c) : carWa(c); a.textContent = 'Message ' + (waWho() || 'me') + ' on WhatsApp';
-    var g = isGuest() && !gContact(); $('#mmSave').hidden = !g; $('#mmShort').hidden = g; if (g) S.askedLike = true;
+    var g = isGuest() && !gContact() && !freeOn(); $('#mmSave').hidden = !g; $('#mmShort').hidden = g; if (g) S.askedLike = true;
     m.hidden = false; try { (g ? $('#mmSave') : $('[data-close]', m)).focus({ preventScroll: true }); } catch (e) {} confetti($('#confetti')); platform.haptic([20, 40, 20, 40, 60]); track('match', { kind: c.kind, score: x.score });
   }
   function confetti(cv) { if (reduced()) return;
@@ -1053,7 +1054,7 @@
     try { $('.tut-go', o).focus({ preventScroll: true }); } catch (e) {} track('tutorial_shown', { replay: !!replay, reduced: rm }); }
   /* the card the customer can see on top: never one that is already flying away */
   function topCard() { var l = $$('#deck .ct-card').filter(function (el) { return !el._flung; }); return l[l.length - 1] || null; }
-  var OVERLAYS = ['#sheet', '#matchModal', '#buyModal', '#iosGuide'];
+  var OVERLAYS = ['#sheet', '#matchModal', '#buyModal', '#iosGuide', '#revvyPrompt'];
   /* the first-visit tutorial counts too: while it is up, arrow keys and buttons must not swipe the cards hidden behind it */
   function openOverlays() { return OVERLAYS.map(function (s) { return $(s); }).concat([$('.ct-tut')]).filter(function (el) { return el && !el.hidden; }); }
   function closeOverlay(el) { if (!el) return; if (el.classList.contains('ct-tut')) { var sk = $('.ct-tut-skip', el); if (sk) sk.click(); else el.remove(); return; } el.hidden = true; if (el.id === 'matchModal') { var c = $('#confetti'); try { c.getContext('2d').clearRect(0, 0, c.width, c.height); } catch (e) {} } }
@@ -1487,36 +1488,86 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     store = guestStore; S.session = { uid: 'guest', role: 'customer', guest: true, email: '', name: '' }; S.owner = null; S.undo = [];
     return guestStore.saveCustomer(cust).then(function (saved) { S.cust = saved; return guestStore.swipes(); }).then(function (sw) { S.swipes = sw; S.deck = []; S.relax = null; badge(); });
   }
+  /* ---------------- first open: 15 free swipes, then Revvy ----------------
+     A new visitor taps Start swiping and swipes with open defaults (guest-free.js). No questions and no contact ask
+     during the free swipes. After the 15th Revvy flies in; "Maybe later" keeps them swiping and Revvy asks once more
+     15 swipes later, then never again on its own (Me keeps a "Tell Revvy what you like" button). */
+  var F = window.ctFree;
+  function freeOn() { return isGuest() && F.pending({ cust: S.cust }); }
+  function freeData() { var d = gDb(); return { cust: S.cust, swipes: S.swipes, free: d.free }; }
+  function startFree() { var d = gDb(), c = d.cust || F.freeCust(); track('guest_free_start', { returning: !!d.cust });
+    return startGuest(c).then(function () { go('discover'); }); }
+  /* during the free swipes the learning bar takes the place of the Chat to Revvy row, so the deck keeps its height */
+  function paintFree() { var bar = $('#freeBar'); if (!bar) return; var p = isGuest() ? F.progress(freeData()) : null; bar.hidden = !p; document.body.classList.toggle('ct-free-on', !!p); if (!p) return;
+    $('#freeN').textContent = p.n + ' / ' + p.of; $('#freeLine').style.transform = 'scaleX(' + (p.n / p.of).toFixed(3) + ')'; }
+  var freeTimer = null;
+  function freeCheck() { if (!isGuest() || !F.shouldPrompt(freeData())) return; clearTimeout(freeTimer);
+    var tries = 0; (function wait() { freeTimer = setTimeout(function () {
+      if ((location.hash || '') !== '#discover' || !F.shouldPrompt(freeData())) return;
+      if ((openOverlays().length || !$('#askSheet').hidden) && ++tries < 60) return wait();   /* after the match pop up or a car sheet closes */
+      revvyIn(); }, tries ? 700 : 520); })(); }
+  function revvyIn() { var o = $('#revvyPrompt'), d = gDb(), fd = freeData(), n = F.count(fd), likes = F.likes(fd), again = F.state(fd).shown > 0;
+    d.free = F.markShown({ free: d.free, swipes: S.swipes, cust: S.cust }).free; gPut(d); paintFree();
+    var bot = $('#rvpBot'); if (bot && window.RevvyChar && !$('.rvc', bot)) bot.appendChild(window.RevvyChar.make('rvc-rvp'));
+    $('#rvpK').textContent = n + ' cars swiped';
+    $('#rvpTitle').textContent = again ? 'Still swiping? Love it.' : 'You\u2019ve got taste.';
+    $('#rvpP').textContent = again ? 'Three quick questions and I\u2019ll only show you the cars you\u2019ll actually love. I won\u2019t ask again.' : 'Let\u2019s learn a little more about you so I only show you the cars you\u2019ll actually love.';
+    $('#rvpStats').innerHTML = '<span><b>' + likes + '</b> liked</span><span><b>' + (n - likes) + '</b> passed</span><span><b>3</b> questions</span>';
+    o.classList.remove('is-in'); o.hidden = false; void o.offsetWidth; o.classList.add('is-in');
+    var rv = $('.rvc', bot); if (rv && window.RevvyChar) { window.RevvyChar.setEl(rv, 'idle'); setTimeout(function () { window.RevvyChar.setEl(rv, 'wink', 1600); }, reduced() ? 0 : 900); }
+    platform.haptic([12, 40, 12]);
+    setTimeout(function () { try { $('#rvpGo').focus({ preventScroll: true }); } catch (e) {} }, 300);
+    track('revvy_prompt', { swipes: n, likes: likes, again: again }); }
+  function revvyOut() { var o = $('#revvyPrompt'); o.classList.remove('is-in'); o.hidden = true; }
+  function initFree() { var o = $('#revvyPrompt'); if (!o) return;
+    $('#rvpGo').addEventListener('click', function () { revvyOut(); S.freeFrom = 'revvy'; track('revvy_prompt_go', { swipes: F.count(freeData()) }); go('start'); });
+    $$('[data-rvp-later]', o).forEach(function (b) { b.addEventListener('click', function () { var d = gDb(); d.free = F.skip({ free: d.free, swipes: S.swipes, cust: S.cust }).free; gPut(d);
+      revvyOut(); var last = F.lastPrompt({ free: d.free }); toast(last ? 'No problem. Tell Revvy what you like any time from Me.' : 'No problem. Keep swiping.'); track('revvy_prompt_later', { swipes: F.count(freeData()), last: last }); }); });
+    $('#rvpSignin').addEventListener('click', function () { revvyOut(); track('revvy_prompt_signin'); }); }
+
   /* the three questions */
-  var WIZ_SAY = ['Hi, I\u2019m Revvy, Dan\u2019s assistant. Three quick questions and you are swiping.', 'First, how would you like to pay? A rough figure is fine, or leave it blank.',
+  var WIZ_SAY = ['Hi, I\u2019m Revvy. Start swiping straight away, no account and no questions. I learn your taste as you go.', 'First, how would you like to pay? A rough figure is fine, or leave it blank.',
     'Any shape or fuel in mind? Tap twice on a shape to only see that one.', 'Last one. Brand new, used, or either?'];
   function wizStep(n) { var f = $('#startForm'); $$('.ct-wiz-step', f).forEach(function (st) { st.hidden = +st.getAttribute('data-step') !== n; });
-    $('.ct-start-hero').hidden = n > 0; $('#wizSay').textContent = WIZ_SAY[n] || ''; var rv = $('#wizRevvy .rvc'); if (rv && window.RevvyChar) window.RevvyChar.setEl(rv, n ? 'wink' : 'idle', 1400);
+    $('.ct-start-hero').hidden = n > 0; $('#wizSay').textContent = (S.wizSay && S.wizSay[n]) || WIZ_SAY[n] || ''; var rv = $('#wizRevvy .rvc'); if (rv && window.RevvyChar) window.RevvyChar.setEl(rv, n ? 'wink' : 'idle', 1400);
     if (n) { try { f.scrollIntoView({ block: 'start' }); } catch (e) {} } track('guest_step', { step: n }); }
   function showStart() { var f = $('#startForm'), c = (isGuest() && S.cust) || gDb().cust || {};
     var rv = $('#wizRevvy'); if (rv && window.RevvyChar && !$('.rvc', rv)) rv.insertBefore(window.RevvyChar.make('rvc-lg rvc-wiz'), rv.firstChild);
+    /* a guest who swiped freely and has not answered yet: their likes pencil in shape, fuel and new or used */
+    var h = F.pending({ cust: c }) ? F.hints({ swipes: S.swipes }, byReg) : null; S.wizSay = null;
+    if (h) { c = Object.assign({}, c, { body: h.body || c.body, fuel: h.fuel.length ? h.fuel.join(',') : c.fuel, new_used: h.new_used || c.new_used });
+      S.wizSay = { 1: 'You liked ' + h.likes + ' cars. Now, how would you like to pay? A rough figure is fine, or leave it blank.', 2: 'I have pencilled in what the cars you liked have in common. Tap to change anything.' }; }
+    else if (F.pending({ cust: c })) S.wizSay = { 1: 'Three quick questions. First, how would you like to pay? A rough figure is fine, or leave it blank.' };
     setChoice(f, 'budget_type', c.budget_type || 'monthly'); f.elements.monthly_gbp.value = c.monthly_gbp || ''; f.elements.cash_gbp.value = c.cash_gbp || '';
     setBody('#wizBody', c.body, M.bodyMust(c)); var fl = M.fuelList ? M.fuelList(c.fuel) : []; setChoice(f, 'fuel', fl.length ? fl : ['open']); setChoice(f, 'new_used', c.new_used || 'both');
     showDeps(f); wizStep(isGuest() ? 1 : 0); }
   function initStart() { var f = $('#startForm'); if (!f) return; bindChoice(f); bindBody($('#wizBody'));
-    f.addEventListener('click', function (e) { var b = e.target.closest('[data-wiz-go]'); if (b) wizStep(+b.getAttribute('data-wiz-go')); });
+    f.addEventListener('click', function (e) { var b = e.target.closest('[data-wiz-go]'); if (b) wizStep(+b.getAttribute('data-wiz-go'));
+      if (e.target.closest('[data-free-go]')) startFree(); });
     f.addEventListener('submit', function (e) { e.preventDefault(); var el = f.elements, old = gDb().cust || {}, bv = bodyVal('#wizBody'), fuel = [].concat(choice(f, 'fuel') || []).filter(function (x) { return x !== 'open'; });
       var num = function (v) { v = Math.round(+v); return v > 0 ? v : null; };
       var c = Object.assign({}, old, { budget_type: choice(f, 'budget_type') || 'monthly', monthly_gbp: num(el.monthly_gbp.value), cash_gbp: num(el.cash_gbp.value), body: bv.body, body_must: bv.must,
         fuel: fuel.join(',') || 'open', fuel_must: [], new_used: choice(f, 'new_used') || 'both', annual_mileage: old.annual_mileage || 8000 });
-      c.desk = Object.assign({}, old.desk || {}, { lead_source: 'swipetodrive-guest', body_must: bv.must || undefined });
+      c.desk = Object.assign({}, old.desk || {}, { lead_source: 'swipetodrive-guest', body_must: bv.must || undefined }); delete c.desk.prefs_pending;
       var ct = gContact(); if (ct) { c.name = ct.name; c.phone = ct.phone || null; c.email = ct.email || null; }
-      startGuest(c).then(function () { track('guest_start', { budget: c.budget_type, body: c.body, must: !!c.body_must, fuel: c.fuel, new_used: c.new_used }); go('discover'); }); });
+      var fromRevvy = S.freeFrom === 'revvy', wasFree = F.pending({ cust: old }); S.freeFrom = null; S.wizSay = null;
+      startGuest(c).then(function () { if (wasFree) { var d = gDb(); F.finish(d); gPut(d); }
+        track('guest_start', { budget: c.budget_type, body: c.body, must: !!c.body_must, fuel: c.fuel, new_used: c.new_used, after_free: wasFree ? F.count({ swipes: S.swipes }) : 0 }); go('discover');
+        if (wasFree && !(fromRevvy && !gContact())) setTimeout(function () { toast('Revvy has tuned your deck to your answers'); }, 350);   /* the save step says it instead */
+        /* then the save or sign up step, once, and only for someone who came from Revvy's prompt and has not left details */
+        if (fromRevvy && !gContact()) setTimeout(function () { if (isGuest() && !gContact() && (location.hash || '') === '#discover' && !openOverlays().length) { S.askedLike = true; askContact({ why: 'revvy' }); } }, 1500); }); });
   }
   /* guest "Me": what they told us, save details, sign in, forget */
   function showGuestMe() { var c = S.cust || {}, ct = gContact();
     $('#gmTitle').textContent = ct ? 'Hi ' + String(ct.name).split(' ')[0] : 'You are browsing as a guest';
     $('#gmSub').textContent = ct ? 'Dan has your details and the cars you like. Your swipes are saved on this phone.' : 'Your answers and swipes are saved on this phone only.';
     var money = c.budget_type === 'cash' ? (c.cash_gbp ? 'Cash, up to ' + M.gbp(c.cash_gbp) : 'Cash') : (c.monthly_gbp ? 'Monthly, up to ' + M.gbp(c.monthly_gbp) + ' a month' : 'Monthly');
-    $('#gmSummary').innerHTML = '<p><b>Budget:</b> ' + esc(money) + '</p><p><b>Shape:</b> ' + esc(!c.body || c.body === 'any' ? 'Any' : c.body + (M.bodyMust(c) ? ', must have' : '')) + '</p><p><b>Fuel:</b> ' + esc(fuelText(c)) + '</p><p><b>New or used:</b> ' + esc(c.new_used === 'new' ? 'Brand new' : c.new_used === 'used' ? 'Used' : 'Either') + '</p><p><b>Cars you like:</b> ' + liked().length + '</p>';
+    if (F.pending({ cust: c })) { $('#gmSummary').innerHTML = '<p>You have not told Revvy what you are after yet, so you are seeing a bit of everything.</p><p><b>Cars you like:</b> ' + liked().length + ' of ' + F.count({ swipes: S.swipes }) + ' swiped</p><button type="button" class="ct-btn" data-free-ask>Tell Revvy what you like</button>'; }
+    else $('#gmSummary').innerHTML = '<p><b>Budget:</b> ' + esc(money) + '</p><p><b>Shape:</b> ' + esc(!c.body || c.body === 'any' ? 'Any' : c.body + (M.bodyMust(c) ? ', must have' : '')) + '</p><p><b>Fuel:</b> ' + esc(fuelText(c)) + '</p><p><b>New or used:</b> ' + esc(c.new_used === 'new' ? 'Brand new' : c.new_used === 'used' ? 'Used' : 'Either') + '</p><p><b>Cars you like:</b> ' + liked().length + '</p>';
     $('#gmSave').textContent = ct ? 'Update my details' : 'Save my details for Dan'; }
   function initGuestMe() {
     $('#gmSave').addEventListener('click', function () { askContact({ why: 'save' }); });
+    $('#gmSummary').addEventListener('click', function (e) { if (e.target.closest('[data-free-ask]')) { S.freeFrom = 'me'; go('start'); } });
     $('#gmForget').addEventListener('click', function () { if (!window.confirm('Clear your answers and swipes from this phone?')) return; try { localStorage.removeItem(GK); } catch (e) {} S.session = S.cust = null; S.swipes = {}; S.deck = []; store = LIVE ? supa : demo; track('guest_forget'); go('start'); });
   }
   /* The contact ask */
@@ -1528,7 +1579,8 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     buy: ['Ask Dan about this car', 'Leave your name and a mobile or email and Dan will get back to you about it.'],
     send: ['Send your cars to Dan', 'Leave your name and a mobile or email and Dan will get back to you about them.'],
     notify: ['Hear when one comes in', 'Leave your name and a mobile or email and Dan will tell you when a car that fits arrives.'],
-    save: ['Save your details for Dan', 'Leave your name and a mobile or email so Dan can help you find the right car.']
+    save: ['Save your details for Dan', 'Leave your name and a mobile or email so Dan can help you find the right car.'],
+    revvy: ['Your deck is tuned', 'Want to keep your picks? Leave your name and a mobile or email and your answers and swipes are kept for you, on any phone.']
   };
   var askOpts = null;
   function askContact(o) { askOpts = o || { why: 'save' }; var sh = $('#askSheet'), f = $('#askForm'), ct = gContact() || {}, cp = ASK_COPY[askOpts.why] || ASK_COPY.save, car = askOpts.car;
@@ -1544,8 +1596,8 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
   function guestLead(ct, o) {
     var c = S.cust || {}, L = liked(), car = o && o.car, lead = 'STD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     var body = { _subject: 'SwipeToDrive guest: ' + ct.name + ' (' + L.length + ' liked)' + (car ? ', ' + car.model : ''), form_page: 'swipe-drive-guest', lead_id: lead, name: ct.name, phone: ct.phone || '', email: ct.email || '',
-      reason: { like: 'Liked a car', match: 'Matched a car', td: 'Tapped Book a test drive', wa: 'Tapped WhatsApp', buy: 'Asked about a car', send: 'Sent their cars', notify: 'Asked to hear when one comes in', save: 'Saved their details' }[(o && o.why) || 'save'],
-      car: car ? tdText(car) : '', budget: c.budget_type === 'cash' ? 'Cash' + (c.cash_gbp ? ' up to \u00a3' + c.cash_gbp : '') : 'Monthly' + (c.monthly_gbp ? ' up to \u00a3' + c.monthly_gbp : ''),
+      reason: { like: 'Liked a car', match: 'Matched a car', td: 'Tapped Book a test drive', wa: 'Tapped WhatsApp', buy: 'Asked about a car', send: 'Sent their cars', notify: 'Asked to hear when one comes in', save: 'Saved their details', revvy: 'Saved after Revvy\u2019s questions' }[(o && o.why) || 'save'],
+      car: car ? tdText(car) : '', budget: F.pending({ cust: c }) ? 'Not answered yet (browsing freely)' : c.budget_type === 'cash' ? 'Cash' + (c.cash_gbp ? ' up to \u00a3' + c.cash_gbp : '') : 'Monthly' + (c.monthly_gbp ? ' up to \u00a3' + c.monthly_gbp : ''),
       body_or_size: (c.body || 'any') + (M.bodyMust(c) ? ' (must have)' : ''), fuel: fuelText(c), new_or_used: c.new_used || 'both',
       liked_cars: L.map(function (x) { return x.model + (brandNew(x) ? ' (new' + (x.order_number ? ', order ' + x.order_number : '') + ')' : ' ' + x.reg + ' ' + (x.price || '')); }).join(' | ') || 'None yet',
       consent: ct.consent_text, consent_at: ct.consent_at, owner_staff_name: 'Dan', submitted_by: 'guest', app_mode: LIVE ? 'live' : 'demo' };
@@ -1601,27 +1653,25 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
       askContact({ why: why, car: car, href: t.getAttribute('href') || '' }); }, true);
   }
   /* sign in after browsing as a guest: their answers, consent and swipes join the new (or claimed) record, owned by Dan */
-  function guestCarry(sess) { var d = gDb(); if (!sess || sess.role !== 'customer' || !d.cust || d.carried) return Promise.resolve();
-    var g = d.cust, ct = d.contact || {}, noop = function () {};
+  function guestCarry(sess) { var d = gDb(); if (!sess || sess.role !== 'customer' || (!d.cust && !F.count(d)) || d.carried) return Promise.resolve();
+    var g = d.cust || {}, ct = d.contact || {}, noop = function () {};
     return (LIVE && d.claim ? Promise.resolve(supa.claim(d.claim)).then(noop, noop) : Promise.resolve()).then(function () { return store.customers(); }).then(function (list) {
-      var ex = list[0] || null, row = Object.assign({}, ex || {}), empty = function (v) { return v == null || v === '' || (Array.isArray(v) && !v.length); };
+      var ex = list[0] || null, empty = function (v) { return v == null || v === '' || (Array.isArray(v) && !v.length); };
+      /* answers fill only what the account has not set; a guest who never answered brings swipes but no answers */
+      var row = F.carryPrefs(ex || {}, g || {});
       S.cust = ex;
       if (empty(row.name) && (ct.name || g.name)) row.name = ct.name || g.name; if (empty(row.phone) && ct.phone) row.phone = ct.phone;
-      if (empty(row.budget_type) || (!row.monthly_gbp && !row.cash_gbp)) { row.budget_type = g.budget_type; row.monthly_gbp = g.monthly_gbp || null; row.cash_gbp = g.cash_gbp || null; }
-      if (empty(row.fuel) || row.fuel === 'open') { row.fuel = g.fuel || 'open'; row.fuel_must = g.fuel_must || []; }
-      if (empty(row.body) || row.body === 'any') { row.body = g.body || 'any'; row.body_must = !!g.body_must; }
-      if (empty(row.new_used) || row.new_used === 'both') row.new_used = g.new_used || 'both';
-      row.desk = Object.assign({}, g.desk || {}, row.desk || {}); if (row.body_must) row.desk.body_must = true; if (empty(row.desk.lead_source)) row.desk.lead_source = 'swipetodrive-guest';
       if (ct.consent_at && !row.comms_consent_at) { row.comms_consent_at = ct.consent_at; row.comms_consent_text = ct.consent_text; }
       return store.saveCustomer(row).catch(function (err) { if (!/comms_consent/.test(String((err && (err.message || err.details)) || ''))) throw err; var r2 = Object.assign({}, row); delete r2.comms_consent_at; delete r2.comms_consent_text; return store.saveCustomer(r2); });
     }).then(function (saved) { S.cust = saved; var sw = d.swipes || {};
-      return store.swipes(saved.id).then(function (have) { return Promise.all(Object.keys(sw).filter(function (r) { return !have[r]; }).map(function (r) { return store.setSwipe(saved.id, r, !!sw[r].liked, sw[r].shortlisted ? { shortlisted: true } : null).catch(noop); })); }); })
-      .then(function () { try { localStorage.removeItem(GK); } catch (e) {} track('guest_carried', { swipes: Object.keys(d.swipes || {}).length }); setTimeout(function () { toast('Your answers and swipes are saved to your account'); }, 900); })
+      /* every guest swipe, like and pass, that the account does not already have; the account's own swipes are never changed */
+      return store.swipes(saved.id).then(function (have) { return Promise.all(F.carrySwipes(sw, have).map(function (x) { return store.setSwipe(saved.id, x.reg, x.liked, x.extra).catch(noop); })); }); })
+      .then(function () { try { localStorage.removeItem(GK); } catch (e) {} track('guest_carried', { swipes: F.count(d), likes: F.likes(d), free: F.pending(d) }); setTimeout(function () { toast('Your answers and swipes are saved to your account'); }, 900); })
       .catch(function (e) { console.warn('guest carry', e); }); }
 
   /* ---------------- boot ---------------- */
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(function (r) { window.__ctSW = r.scope; }).catch(function () {});
-  initSignin(); initStart(); initGuestMe(); initAsk(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
+  initSignin(); initStart(); initFree(); initGuestMe(); initAsk(); initProfile(); initDeck(); initMatches(); initMe(); initBought(); initTeam(); initInvites(); initBuys();
   var dl = platform.deepLink();
   (function () { var a = window.AlertSave && window.AlertSave.get(), el = $('#alertNote'); if (!a || !el) return;
     el.hidden = false; el.textContent = 'One step left. Enter your email to save your alert for the ' + a.model + '. If you are new, you will set a password or use the link we email you.'; })();
@@ -1639,5 +1689,5 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     .then(function () { var l = $('#loader'); if (l) l.hidden = true; })
     .then(iosNudge)
     .catch(function (e) { console.warn('SwipeToDrive start', e); route(); var l = document.getElementById('loader'); if (l) l.hidden = true; });
-  window.ctDebug = { S: S, get store() { return store; }, /* live: a guest's store until they sign in */ safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList, pool: pool, redeck: function () { S.deck = []; if (location.hash === '#discover') showDeck(); } };
+  window.ctDebug = { S: S, free: function () { return gDb().free || null; }, get store() { return store; }, /* live: a guest's store until they sign in */ safePrefs: safePrefs, platform: platform, route: route, allModels: allModels, DESK: DESK, colourList: colourList, pool: pool, redeck: function () { S.deck = []; if (location.hash === '#discover') showDeck(); } };
 })();

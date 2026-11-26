@@ -1,0 +1,57 @@
+/* SwipeToDrive first open guest flow: the "Revvy is learning your taste" bar and Revvy's fly in prompt after 15 free swipes.
+   Graphite glass, BMW blue light, a thin M stripe, HUD mono labels. Motion is transform and opacity only; reduced motion fades. */
+.ct-free{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:9px 14px 11px;border:1px solid var(--line);border-radius:var(--r-m);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01));font:500 10px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+.ct-free-k{display:flex;align-items:center;gap:8px}
+.ct-free-dot{width:6px;height:6px;border-radius:50%;background:var(--acc2);box-shadow:0 0 10px var(--acc2);animation:ctFreePulse 1.8s ease-in-out infinite}
+.ct-free-n{color:#fff;letter-spacing:.12em}
+.ct-free-line{position:absolute;left:14px;right:14px;bottom:5px;height:2px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden}
+.ct-free-line i{display:block;height:100%;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#0066b1,#4f8fe8 60%,#9cc4ff);box-shadow:0 0 8px rgba(79,143,232,.8);transition:transform .5s var(--ease)}
+body.ct-free-on [data-revvy-row]{display:none!important}
+@keyframes ctFreePulse{50%{opacity:.35}}
+
+.ct-rvp{position:fixed;inset:0;z-index:80;display:flex;align-items:flex-end;justify-content:center;padding:16px 12px calc(16px + var(--safe-b,0px))}
+.ct-rvp[hidden]{display:none}
+.ct-rvp-scrim{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 100%,rgba(5,6,8,.55),rgba(5,6,8,.88));-webkit-backdrop-filter:blur(10px) saturate(120%);backdrop-filter:blur(10px) saturate(120%);opacity:0;transition:opacity .4s var(--ease)}
+.ct-rvp-card{position:relative;width:100%;max-width:420px;padding:20px 20px 16px;border-radius:var(--r-xl);text-align:center;color:var(--tx);
+  background:linear-gradient(180deg,rgba(24,29,37,.92),rgba(10,12,16,.96));border:1px solid var(--line2);
+  box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 40px 80px -20px rgba(0,0,0,.9),0 0 0 1px rgba(28,105,212,.12),0 -20px 60px -30px var(--glow);
+  transform:translateY(40px) scale(.98);opacity:0;filter:blur(6px);transition:transform .6s var(--ease) .12s,opacity .45s var(--ease) .12s,filter .6s var(--ease) .12s;overflow:hidden}
+/* the M stripe */
+.ct-rvp-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#0066b1 0 33.3%,#003d78 33.3% 66.6%,#e22718 66.6%)}
+/* a faint grid behind the stage */
+.ct-rvp-card::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px) 0 0/24px 24px;-webkit-mask:radial-gradient(70% 45% at 50% 18%,#000,transparent);mask:radial-gradient(70% 45% at 50% 18%,#000,transparent)}
+.ct-rvp.is-in .ct-rvp-scrim{opacity:1}
+.ct-rvp.is-in .ct-rvp-card{transform:none;opacity:1;filter:none}
+.ct-rvp-hud{position:relative;z-index:1;display:flex;justify-content:space-between;font:500 9px/1 var(--mono);letter-spacing:.24em;color:rgba(255,255,255,.45)}
+.ct-rvp-hud span:last-child::before{content:'';display:inline-block;width:5px;height:5px;margin:0 7px 1px 0;border-radius:50%;background:var(--go);box-shadow:0 0 8px var(--go);vertical-align:middle;animation:ctFreePulse 2s ease-in-out infinite}
+.ct-rvp-stage{position:relative;z-index:1;height:132px;margin:2px auto 4px;display:flex;align-items:center;justify-content:center}
+.ct-rvp-ring{position:absolute;width:104px;height:104px;border-radius:50%;border:1px solid rgba(79,143,232,.45);box-shadow:0 0 24px rgba(28,105,212,.35) inset;opacity:0;transform:scale(.4)}
+.ct-rvp-ring2{width:150px;height:150px;border-color:rgba(79,143,232,.18);box-shadow:none}
+.ct-rvp.is-in .ct-rvp-ring{animation:ctRvpRing .9s var(--ease) .95s forwards}
+.ct-rvp.is-in .ct-rvp-ring2{animation:ctRvpRing .9s var(--ease) 1.1s forwards,ctRvpRadar 3.2s ease-in-out 2s infinite}
+.ct-rvp-trail{position:absolute;left:50%;top:50%;width:220px;height:2px;margin-top:-10px;transform-origin:0 50%;transform:rotate(-34deg) scaleX(0);background:linear-gradient(90deg,rgba(156,196,255,0),rgba(156,196,255,.9));filter:blur(.6px);opacity:0}
+.ct-rvp.is-in .ct-rvp-trail{animation:ctRvpTrail .95s cubic-bezier(.2,.7,.2,1) .15s forwards}
+.ct-rvp-bot{position:relative;display:block;width:96px;height:112px;filter:drop-shadow(0 12px 24px rgba(0,0,0,.6)) drop-shadow(0 0 18px rgba(41,227,255,.25));opacity:0}
+.ct-rvp-bot .rvc{display:block;width:100%;height:100%}
+.ct-rvp.is-in .ct-rvp-bot{animation:ctRvpFly 1.05s cubic-bezier(.18,.84,.24,1.06) .15s forwards}
+.ct-rvp-k{position:relative;z-index:1;margin:0 0 6px;font:500 10px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--acc2)}
+.ct-rvp-card h2{position:relative;z-index:1;margin:0 0 8px;font-size:30px;font-weight:650;letter-spacing:-.03em;line-height:1.05;background:linear-gradient(180deg,#fff,#c9d6ea);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ct-rvp-p{position:relative;z-index:1;margin:0 auto 14px;max-width:32ch;color:var(--mut);font-size:15px;line-height:1.45}
+.ct-rvp-stats{position:relative;z-index:1;display:flex;justify-content:center;gap:8px;margin:0 0 16px}
+.ct-rvp-stats span{flex:1;max-width:110px;padding:8px 6px;border:1px solid var(--line);border-radius:var(--r-s);background:rgba(255,255,255,.025);font:500 9px/1.2 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.ct-rvp-stats b{display:block;margin-bottom:4px;font:600 20px/1 var(--sans);letter-spacing:-.02em;color:#fff}
+.ct-rvp-card .ct-btn{position:relative;z-index:1;display:flex;width:100%;justify-content:center;margin:0 0 8px}
+.ct-rvp-card #rvpLater{background:transparent;border:1px solid var(--line2);color:var(--tx)}
+.ct-rvp-alt{position:relative;z-index:1;margin:6px 0 0;font-size:13px;color:var(--dim)}
+.ct-rvp-alt a{color:var(--mut)}
+@keyframes ctRvpFly{0%{opacity:0;transform:translate(170px,-150px) rotate(24deg) scale(.35)}45%{opacity:1;transform:translate(-26px,-12px) rotate(-10deg) scale(1.06)}72%{transform:translate(6px,4px) rotate(3deg) scale(.98)}100%{opacity:1;transform:none}}
+@keyframes ctRvpTrail{0%{opacity:0;transform:rotate(-34deg) scaleX(0)}35%{opacity:1;transform:rotate(-34deg) scaleX(1)}100%{opacity:0;transform:rotate(-34deg) scaleX(.05) translateX(10px)}}
+@keyframes ctRvpRing{to{opacity:1;transform:scale(1)}}
+@keyframes ctRvpRadar{50%{transform:scale(1.08);opacity:.55}}
+@media (min-width:640px){.ct-rvp{align-items:center}}
+@media (prefers-reduced-motion:reduce){
+  .ct-free-dot,.ct-rvp-hud span:last-child::before{animation:none}
+  .ct-rvp-card{transform:none;filter:none;transition:opacity .2s}
+  .ct-rvp.is-in .ct-rvp-bot,.ct-rvp.is-in .ct-rvp-ring,.ct-rvp.is-in .ct-rvp-ring2{animation:none;opacity:1;transform:none}
+  .ct-rvp.is-in .ct-rvp-trail{animation:none}
+}

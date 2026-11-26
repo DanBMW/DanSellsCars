@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="crd.css?v=1">
 <link rel="stylesheet" href="../motion.css?v=1"/>
 <link rel="stylesheet" href="premium.css?v=6">
+<link rel="stylesheet" href="guest-free.css?v=1">
 <script src="../motion.js?v=1" defer></script>
 <!-- Google Analytics loads only after the visitor accepts the cookie bar (consent.js) -->
 <script src="consent.js?v=1" defer></script>
@@ -65,12 +66,13 @@
       <div class="ct-hero-media" aria-hidden="true"><img src="img/hero-i7-800.webp" srcset="img/hero-i7-800.webp 800w, img/hero-i7.webp 1280w" sizes="(min-width:520px) 520px, 100vw" alt="" width="1280" height="812" fetchpriority="high" decoding="async"><span class="ct-hud ct-hud-tl">SWIPETODRIVE</span><span class="ct-hud ct-hud-tr">BETA</span><span class="ct-hud-line"></span></div><a class="ct-credit" href="https://commons.wikimedia.org/wiki/File:BMW_i7_xDrive60_1X7A6822.jpg" target="_blank" rel="noopener">Photo: Alexander-93, CC BY-SA 4.0</a>
       <p class="ct-eyebrow">600+ BMWs in and around London</p>
       <h1>Find your perfect BMW.</h1>
-      <p>Answer three quick questions, then swipe through real cars that fit. No account needed.</p>
+      <p>Swipe through real cars straight away. No account and no questions. Revvy learns your taste as you go.</p>
     </div>
     <form class="ct-panel ct-wiz" id="startForm" novalidate>
-      <div class="ct-wiz-revvy" id="wizRevvy"><span class="ct-wiz-say" id="wizSay" aria-live="polite">Hi, I'm Revvy, Dan's assistant. Three quick questions and you are swiping.</span></div>
+      <div class="ct-wiz-revvy" id="wizRevvy"><span class="ct-wiz-say" id="wizSay" aria-live="polite">Hi, I&rsquo;m Revvy. Start swiping straight away, no account and no questions. I learn your taste as you go.</span></div>
       <div class="ct-wiz-step" data-step="0">
-        <button class="ct-btn ct-btn-big" type="button" data-wiz-go="1">Start swiping</button>
+        <button class="ct-btn ct-btn-big" type="button" data-free-go>Start swiping</button>
+        <p class="ct-sub ct-wiz-alt">Rather tell Revvy first? <button type="button" class="ct-linkbtn" data-wiz-go="1">Answer three quick questions</button></p>
         <p class="ct-sub ct-wiz-alt">Already have an account? <a href="#signin" data-wiz-signin>Sign in</a></p>
       </div>
       <div class="ct-wiz-step" data-step="1" hidden>
@@ -205,6 +207,7 @@
   <section class="ct-screen" data-screen="discover" hidden>
     <div class="ct-revvy-row" data-revvy-row hidden><button class="ct-revvy" type="button" data-revvy><img src="icons/icon-192.png" alt="">Chat to Revvy</button><a class="ct-btn ct-btn-ghost ct-edit-choices" href="#profile" data-edit-choices>Edit my choices</a></div>
     <div class="ct-ns ct-ns-top" id="deckNoStock" hidden aria-live="polite"></div>
+    <div class="ct-free" id="freeBar" hidden><span class="ct-free-k"><i class="ct-free-dot" aria-hidden="true"></i>Revvy is learning your taste</span><span class="ct-free-n" id="freeN" aria-live="polite">0 / 15</span><span class="ct-free-line" aria-hidden="true"><i id="freeLine"></i></span></div>
     <div class="ct-deck" id="deck"></div>
     <div class="ct-row" id="relaxBar" hidden><span class="ct-sub" id="relaxText"></span><button class="ct-btn ct-btn-ghost ct-sm" id="relaxReset" type="button">Back to my own search</button></div>
     <div class="ct-empty" id="deckEmpty" hidden><h2 id="deckEmptyT">That is everyone for now.</h2><p id="deckEmptyP">New cars arrive most mornings. Turn on alerts and I will tell you when one fits.</p><div class="ct-row" id="deckEmptyActs"><a class="ct-btn" href="#matches">See your shortlist</a></div><div class="ct-widen" id="deckWiden"></div><div class="ct-notify"><p class="ct-hint">Want the next one that fits? I will message you the moment it comes in.</p><button class="ct-btn" id="notifyBtn" type="button">Notify me when one comes in</button><p class="ct-msg" id="notifyMsg" role="status"></p></div></div>
@@ -374,6 +377,19 @@
 
 <div class="ct-sheet" id="sheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-label="Car details"><button class="ct-x" type="button" data-close aria-label="Close">&times;</button><div id="sheetBody"></div></div></div>
 <div class="ct-match" id="matchModal" hidden><canvas id="confetti"></canvas><div class="ct-match-in"><h2>It's a match!</h2><div class="ct-match-pics"><img id="mmCar" alt=""><span class="ct-match-heart"><svg class="pa-ic" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19.5s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 6.9a4.2 4.2 0 0 1 7.5 2.6c0 5.4-7.5 10-7.5 10z"/></svg></span><img src="icons/icon-192.png" alt="Dan Sells"></div><p id="mmText"></p><button class="ct-btn ct-btn-big ct-short" id="mmSave" type="button" hidden>Save it with Dan</button><a class="ct-btn ct-btn-big ct-short" id="mmShort" href="#matches" data-close>View shortlist</a><a class="ct-btn ct-wa" id="mmWa" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5l1.2-3.4A7.5 7.5 0 1 1 9 18z"/></svg>Message on WhatsApp</a><a class="ct-btn ct-td" id="mmTd" target="_blank" rel="noopener"><svg class="pa-ic" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>Book a test drive</a><button class="ct-btn ct-btn-ghost" type="button" data-close>Keep swiping</button></div></div>
+<div class="ct-rvp" id="revvyPrompt" hidden><div class="ct-rvp-scrim" data-rvp-later></div>
+  <div class="ct-rvp-card" role="dialog" aria-modal="true" aria-labelledby="rvpTitle" aria-describedby="rvpP">
+    <div class="ct-rvp-hud" aria-hidden="true"><span>REVVY</span><span>PROFILE 01</span></div>
+    <div class="ct-rvp-stage" aria-hidden="true"><span class="ct-rvp-ring"></span><span class="ct-rvp-ring ct-rvp-ring2"></span><span class="ct-rvp-trail"></span><span class="ct-rvp-bot" id="rvpBot"></span></div>
+    <p class="ct-rvp-k" id="rvpK">15 cars swiped</p>
+    <h2 id="rvpTitle">You&rsquo;ve got taste.</h2>
+    <p class="ct-rvp-p" id="rvpP">Let&rsquo;s learn a little more about you so I only show you the cars you&rsquo;ll actually love.</p>
+    <div class="ct-rvp-stats" id="rvpStats"></div>
+    <button class="ct-btn ct-btn-big" type="button" id="rvpGo">Let&rsquo;s do it</button>
+    <button class="ct-btn ct-btn-ghost" type="button" id="rvpLater" data-rvp-later>Maybe later, keep swiping</button>
+    <p class="ct-rvp-alt">Already have an account? <a href="#signin" id="rvpSignin">Sign in</a> and your swipes come with you.</p>
+  </div>
+</div>
 <div class="ct-sheet ct-ask" id="askSheet" hidden><div class="ct-sheet-in" role="dialog" aria-modal="true" aria-labelledby="askTitle"><button class="ct-x" type="button" data-ask-x aria-label="Close">&times;</button>
   <form id="askForm" novalidate>
     <div class="ct-ask-head"><span class="ct-ask-rv" id="askRv"></span><div><h2 id="askTitle">Save this car with Dan</h2><p class="ct-sub" id="askWhy">Leave your name and a mobile or email, and Dan will hold onto the cars you like and get back to you.</p></div></div>
@@ -423,7 +439,8 @@
 <script src="match-core.js?v=46"></script>
 <script src="std-brand.js?v=1"></script>
 <script src="alert-save.js?v=41"></script>
-<script src="app.js?v=59"></script>
+<script src="guest-free.js?v=1"></script>
+<script src="app.js?v=60"></script>
 <script src="../product-email.js?v=42"></script>
 <script src="../quote-email.js?v=41"></script>
 <script src="../email-signature.js?v=2"></script>

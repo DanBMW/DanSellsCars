@@ -18,5 +18,5 @@ check('the round undo style only hits the deck button, not the staff undo toast'
 check('a sideways drag that starts on a floating button swipes the card', /function floatDrag\(\)/.test(app) && /getComputedStyle\(acts\)\.position !== 'fixed'/.test(app) && /card\.setPointerCapture\(s\.id\)/.test(app) && /floatDrag\(\);/.test(app));
 check('drag forwarding waits for a clear sideways move, so taps still press the button', /Math\.abs\(dx\) < 12 \|\| Math\.abs\(dx\) < Math\.abs\(dy\)/.test(app));
 check('drag forwarding stays off while a pop up is open', /if \(!card \|\| openOverlays\(\)\.length\) return;/.test(app));
-check('asset versions bumped', /premium\.css\?v=6/.test(html) && /app\.js\?v=59/.test(html));
+check('asset versions bumped', /premium\.css\?v=6/.test(html) && /app\.js\?v=(59|[6-9]\d)\b/.test(html));
 console.log(p + ' passed, ' + f + ' failed'); if (f) process.exit(1);
