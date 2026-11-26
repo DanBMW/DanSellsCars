@@ -914,5 +914,43 @@ async function runAt(db, date, h, m, cfgExtra) {
     console.log('ok: unsent cover emails from before the links are swapped for ones with a link');
   }
 
+  // "I am not in today" is about the day, not the shift (Dan, 26 November 2026: Clive said it on the
+  // 9 to 12 on the 25th, was given the 12 to 3 at 13:46 and stayed on lockup). It is recorded as an
+  // absence for the day, every other shift of theirs is freed, and they are never picked again that day.
+  {
+    const LR = require('../lockup-rota.js');
+    const abs = async d => (await d.ref('lockupTest/absences').get()).val() || {};
+    db = fakeDb();
+    await runAt(db, MON, 8, 0);
+    const day = db.data.lockupTest.reception[MON];
+    const out = day.am.personId;
+    // they also hold the afternoon (a double with a gap), as Clive could have
+    day.pm = { personId: out, status: 'assigned', ts: 1 };
+    day.am = Object.assign({}, day.am, { status: 'declined', reason: RR.REASONS.notin, reasonText: '', ts: Date.now() });
+    r = await runAt(db, MON, 8, 51, { absences: await abs(db) });
+    const id = J.notInId(MON, out);
+    const a = (await abs(db))[id];
+    assert.ok(a && a.personId === out && a.from === MON && a.to === MON && a.kind === 'absent' && a.status === 'approved', 'recorded as away for the day: ' + JSON.stringify(a));
+    assert.deepStrictEqual(r.res.saidOut.map(x => x.personId), [out], 'reported back so lockup re-pairs this run');
+    const held = d => Object.keys(d).filter(k => !/^_/.test(k) && d[k] && d[k].personId === out);
+    assert.deepStrictEqual(held(db.data.lockupTest.reception[MON]), [], 'off every shift today, the afternoon included');
+    assert.ok(db.data.lockupTest.reception[MON].am.personId, 'the morning is refilled');
+    assert.ok(db.data.lockupTest.reception[MON].pm.personId, 'the afternoon is refilled');
+    // later somebody else cannot cover the midday shift: it is never handed to the person who is not in
+    const md = db.data.lockupTest.reception[MON].mid;
+    db.data.lockupTest.reception[MON].mid = Object.assign({}, md, { status: 'declined', reason: RR.REASONS.customer, ts: Date.now() });
+    r = await runAt(db, MON, 13, 46, { absences: await abs(db) });
+    assert.ok(db.data.lockupTest.reception[MON].mid.personId !== out, 'the 12 to 3 does not go to them');
+    assert.deepStrictEqual(held(db.data.lockupTest.reception[MON]), []);
+    assert.deepStrictEqual(r.res.saidOut, [], 'recorded once only');
+    // the lockup night re-pairs from the same record
+    const wk = LR.isoWeek(MON), dow = 'mon', other = Object.keys(team).filter(x => x !== out)[0];
+    const weeks = { [wk]: { v: 2, days: { mon: [out, other] } } };
+    const ch = LR.applyAbsences(weeks, team, await abs(db), MON, {});
+    assert.ok(ch.some(c => c.out === out && c.date === MON), 'taken off lockup that night: ' + JSON.stringify(ch));
+    assert.ok(weeks[wk].days[dow].indexOf(out) < 0);
+    console.log('ok: "not in today" takes them off every shift and lockup for the day');
+  }
+
   console.log('all reception job tests passed');
 })().catch(e => { console.error(e); process.exit(1); });

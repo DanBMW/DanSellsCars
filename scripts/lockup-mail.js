@@ -168,14 +168,28 @@ async function main() {
       testExec: TEST ? TEST_EXEC : null, queueAdd: (id, rec, dry) => rq.add(id, rec, dry), log: console.log,
       /* personal no sign in links (cover.html) only in live mode, where the private queue is sent */
       links: !TEST, nowMs,
-      reception: rc.reception, absences, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {},
+      reception: rc.reception, absences, absRoot: ROOT, shiftCfg: rc.shiftCfg, bh: rc.bh, holidays: hol, closed: {},
       notify: notifySnap };
     const rToday = await RC.run(Object.assign({}, base, { date: n.date, planAt: 7 * 60 + 30, recheck: !!feedToday,
       busy: feedToday ? feedToday.busy : null, feedFailed: needToday && !feedToday }));
-    console.log('Showroom cover today', JSON.stringify(rToday));
+    console.log('Showroom cover today', JSON.stringify(Object.assign({}, rToday, { saidOut: (rToday.saidOut || []).length })));
+    const saidOut = [].concat(rToday.saidOut || []);
     if (needTomorrow) {
       const rTom = await RC.run(Object.assign({}, base, { date: tom, planAt: 0, busy: feedTomorrow ? feedTomorrow.busy : null, feedFailed: !feedTomorrow }));
-      console.log('Showroom cover tomorrow', JSON.stringify(rTom));
+      console.log('Showroom cover tomorrow', JSON.stringify(Object.assign({}, rTom, { saidOut: (rTom.saidOut || []).length })));
+      saidOut.push.apply(saidOut, rTom.saidOut || []);
+    }
+    /* somebody said "I am not in today" on cover: that is now an absence for the day (reception-mail.js),
+       so the lockup night is re-paired in this same run rather than the next, and the managers get the
+       usual lockup re-paired email when it moved them (the seededNow queue below). */
+    if (saidOut.length) {
+      const ch3 = R.applyAbsences(weeks, team0, absences, n.date, signed);
+      for (const c of ch3) {
+        console.log('Re-paired', c.date, nm(c.out), '->', c.in ? nm(c.in) : 'nobody', 'now', c.pair.map(nm).join(' and '));
+        if (!DRY) await db.ref(ROOT + '/weeks/' + c.week + '/days/' + c.dow).set(c.pair);
+        changes.push(c);
+      }
+      for (const so of saidOut) if (ch3.some(c => c.out === so.personId)) seededNow.push(so.id);
     }
     await rq.flush();
   } catch (e) { console.error('showroom cover failed', e); }

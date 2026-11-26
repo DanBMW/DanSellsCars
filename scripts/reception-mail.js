@@ -185,6 +185,9 @@ function shiftCtx(o) {
 }
 
 /* previous reception shifts per person in the last 30 days, from the plan */
+/* the absence a "not in today" answer records, one per person per day */
+function notInId(date, pid) { return 'rc_notin_' + String(date).replace(/-/g, '') + '_' + pid; }
+
 function historyOf(all, date) {
   const out = {};
   Object.keys(all || {}).forEach(d => {
@@ -241,6 +244,8 @@ async function run(o) {
   };
   const locOptsFor = (s, pid) => ({ alone: RR.heldCount(today, shifts, s, pid ? { [s.id]: pid } : {}) <= 1 });
   const absences = o.absences || {};
+  const absRoot = o.absRoot || root;
+  const saidOut = [];
   const ctx = shiftCtx({ team, managers, absences, shiftCfg: o.shiftCfg, bh: o.bh, holidays: o.holidays, closed: o.closed, n });
   if (SR.dayKind(ctx, date) === 'closed') return { skipped: 'closed' };
 
@@ -456,6 +461,22 @@ async function run(o) {
     }
     if (r.status === 'declined' && r.ts !== r.handledTs) {
       const who = firstName(team[r.personId] || (managers || {})[r.personId], r.personId);
+      /* "I am not in today" is about the day, not this shift (Dan, 26 November 2026: Clive said it on the
+         9 to 12 on the 25th, was given the 12 to 3 at 13:46 and stayed on lockup). It becomes an absence for
+         the day, the same record a day's absence on the team calendar makes, so every system follows it:
+         step 1c below frees any other shift they hold, the plan stops picking them, lockup.html and the
+         lockup job re-pair the night, and the calendar shows them away. A manager can cancel it there. */
+      if (r.personId && r.reason === RR.REASONS.notin && team[r.personId]) {
+        const aid = notInId(date, r.personId);
+        if (!absences[aid]) {
+          const rec = { personId: r.personId, from: date, to: date, kind: 'absent', status: 'approved', by: 'Showroom cover',
+            note: who + ' said "I am not in today" on showroom cover ' + s.from + ' to ' + s.to, ts: r.ts || Date.now() };
+          absences[aid] = rec;
+          saidOut.push({ id: aid, personId: r.personId });
+          if (!dry) await db.ref(absRoot + '/absences/' + aid).set(rec);
+          say(who + ' is not in today: recorded as away for ' + date);
+        }
+      }
       const note = RR.managerNote(who, s, r.reason || 'Cannot cover', r.reasonText || '');
       const banked = await bankHandBack(logWrite, s, r, n, date, { ts: r.ts });
       await logWrite('skip_' + date + '_' + s.id + '_' + r.ts, { kind: 'skip', personId: r.personId, date, shift: s.id, from: s.from, to: s.to, ts: r.ts, reason: r.reason || '', reasonText: r.reasonText || '' });
@@ -494,21 +515,22 @@ async function run(o) {
   const oneOff = (RR.ONE_OFF_IN || {})[date] || [];
   for (const s of shifts) {
     const r = today[s.id] || {}, pid = existing[s.id];
-    if (!pid || !awayToday[pid] || oneOff.indexOf(pid) >= 0) continue;
+    if (!pid || !awayToday[pid] || (oneOff.indexOf(pid) >= 0 && !absences[notInId(date, pid)])) continue;
     if (date === n.date && endMins(s) <= n.mins) continue;
     const chosen = (r.assign && r.assign.personId === pid && r.assignHandledTs === r.assign.ts) ||
       (r.take && r.take.personId === pid && r.takeHandledTs === r.take.ts);
     if (chosen) continue;
     const ts = Date.now(), who = firstName(team[pid], pid);
     const banked = await bankHandBack(logWrite, s, r, n, date, { ts, by: 'calendar' });
-    await logWrite('absent_' + date + '_' + s.id + '_' + ts, { kind: 'absent', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts, reason: 'Off on the team calendar', by: 'calendar' });
+    const saidNotIn = !!absences[notInId(date, pid)];
+    await logWrite('absent_' + date + '_' + s.id + '_' + ts, { kind: 'absent', personId: pid, date, shift: s.id, from: s.from, to: s.to, ts, reason: saidNotIn ? 'Said they are not in today' : 'Off on the team calendar', by: 'calendar' });
     const dm = Object.assign({}, r.declined || {});
     dm[pid] = true;
     const freed = { personId: null, status: 'open', declined: dm, offCalendar: { personId: pid, ts } };
     today[s.id] = Object.assign({}, r, freed);
     if (!dry) await db.ref(root + '/reception/' + date + '/' + s.id).update(freed);
     delete existing[s.id];
-    const line = who + ' is off on the team calendar, so they have been taken off showroom cover ' + s.from + ' to ' + s.to +
+    const line = who + (saidNotIn ? ' said they are not in today' : ' is off on the team calendar') + ', so they have been taken off showroom cover ' + s.from + ' to ' + s.to +
       (banked ? ' (they covered ' + banked.from + ' to ' + banked.to + ' first)' : '') + '. The shift goes to the next person free.';
     qAdd(rcId('off', date, s.id, pid), { to: 'managers', subject: who + ' is off: showroom cover ' + s.from + ' to ' + s.to + ' reassigned', text: line, html: '<p>' + esc(line) + '</p>', ts: Date.now() }, dry);
     say('Off on the calendar: ' + who + ' taken off ' + s.id);
@@ -549,9 +571,10 @@ async function run(o) {
   }
   const dayMark = (today._day || {}).plannedAt;
   const planAt = o.planAt != null ? o.planAt : PLAN_FROM;
-  if (!dayMark && planAt > 0 && n.mins < planAt) return { skipped: 'before the plan time' };
+  if (!dayMark && planAt > 0 && n.mins < planAt) return { skipped: 'before the plan time', saidOut };
   if (!dayMark || Object.keys(existing).length < shifts.length) {
-    const available = Array.from(new Set(SR.staffOn(ctx, date).concat((RR.ONE_OFF_IN || {})[date] || [])));
+    const available = Array.from(new Set(SR.staffOn(ctx, date).concat((RR.ONE_OFF_IN || {})[date] || [])))
+      .filter(id => !absences[notInId(date, id)]);
     /* a seat that has already ended today is left alone: never filled, never reported short. This is what
        stops the day the second seats arrived (17 November, mid afternoon) emailing somebody for the morning. */
     const ended = date === n.date ? shifts.filter(s => endMins(s) <= n.mins && !existing[s.id]).map(s => s.id) : [];
@@ -734,7 +757,7 @@ async function run(o) {
       }
     }
   }
-  return { planned: !dayMark, date };
+  return { planned: !dayMark, date, saidOut };
 }
 
 /* reads what the job needs, then runs. db is the firebase-admin database */
@@ -778,4 +801,4 @@ async function readBusy(date, fetchImpl) {
   } catch (e) { return null; }
 }
 
-module.exports = { LINK_ROOT, IDX_ROOT, NAG_MS, NAG_MANAGERS_AT, run, load, makeQueue, readBusy, APPT_FEED, OFFICE_ALERTS_URL, fetchWalkinAlerts, readStoredWalkins, mergeWalkins, WALKIN_ROOT, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };
+module.exports = { notInId, LINK_ROOT, IDX_ROOT, NAG_MS, NAG_MANAGERS_AT, run, load, makeQueue, readBusy, APPT_FEED, OFFICE_ALERTS_URL, fetchWalkinAlerts, readStoredWalkins, mergeWalkins, WALKIN_ROOT, PLAN_FROM, hm, historyOf, rcId, rcMode, coverSendAfterMs, coverAlreadySent, ukTimeToMs, ukMinsFromTs, confirmMinsOf, bankHandBack };
