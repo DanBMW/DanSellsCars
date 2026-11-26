@@ -257,7 +257,10 @@
       S.newStock = (d.cars || []).filter(function (c) { return c.order_number && !c.on_hold && c.price_gbp; }).map(M.fromNewStock);
       /* monthly figures for new cars: the lender's own quote only (dsfinance.js rules), else no monthly */
       return fetch('../lookup/new-stock-quotes.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-        .then(function (qf) { M.applyLenderQuotes(S.newStock, qf, window.dsFin); }); }).catch(function () { S.newStock = []; });
+        .then(function (qf) { M.applyLenderQuotes(S.newStock, qf, window.dsFin); })
+        /* Hedin's new car stock deals go on last, over the lender quote, for the cars they name (lookup/new-offers.json) */
+        .then(function () { return fetch('../lookup/new-offers.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); })
+        .then(function (of) { if (of && M.applyOffers) M.applyOffers(S.newStock, of); }); }).catch(function () { S.newStock = []; });
     /* arrival dates (the same ledger stock.html badges from); quiet failure means no Just arrived badges */
     var arr = fetch('../automation/stock-arrivals.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { S.arrivals = d; }).catch(function () { S.arrivals = null; });
     /* Hedin's description of each used car, keyed by listing id. Never waited on: without it the sheet simply has no About this car. */
@@ -724,13 +727,14 @@
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : noPhoto(c));
     var ns = c.kind === 'new_stock', src = stockLabel(c);
-    var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
+    var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, c.offer ? '' : ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
+      : c.offer && f ? dealHtml(c, f, true)
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' : '<div class="ct-mon">' + esc(noQuoteText(c, x.budgetMaybe)) + '</div>');
     var just = M.justArrived(c) ? '<span class="ct-just">Just arrived</span>' : '';
     return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">SHORTLIST</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
-      '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? 'NEW, IN STOCK' : 'NEW') + '</span>' : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
+      '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? (c.offer ? esc(c.offer.badge) : 'NEW, IN STOCK') : 'NEW') + '</span>' + (c.offer ? '<span class="ct-deal-tag">' + esc(c.offer.label) + '</span>' : '') : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
       x.reasons.filter(function (r) { return r !== 'Just arrived'; }).map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') +
       (x.notes || []).map(function (n) { return '<span class="ct-note">' + esc(n) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
@@ -906,10 +910,10 @@
     var ns = c.kind === 'new_stock';
     var specs = isNew ? [['Range', c.group]] : ns ? [['Version', c.description], ['Colour', c.colour], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Drive', c.drive], ['Seats', c.seats], ['Upholstery', c.upholstery], ['Wheels', c.wheels], ['Order number', c.order_number], ['Ready', ready(c).replace(/^Ready /, '')]] : [['Arrived', M.arrivedText(c)], ['Year', c.year], ['Mileage', c.mileage], ['Fuel', c.fuel], ['Gearbox', c.gearbox], ['Body', c.body], ['Colour', c.colour], ['Power', c.power], ['Seats', c.seats], ['Drive', c.drive], ['Reg', c.reg]];
     $('#sheetBody').innerHTML = (imgs.length ? '<div class="ct-gal">' + imgs.slice(0, 10).map(function (u, k) { return photoHtml({ images: imgs, model: c.model }, k, false); }).join('') + '</div>' : '') +
-      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : stockLabel(c)) + '</p>' +
+      '<h2>' + esc(c.model) + '</h2><p class="ct-sub">' + (M.justArrived(c) ? '<span class="ct-just ct-just-inline">Just arrived</span> ' : '') + esc(isNew ? 'Brand new BMW, ordered to your spec' : c.offer ? 'Brand new, unregistered, in stock. ' + c.offer.label + ' from Hedin' : stockLabel(c)) + '</p>' +
       '<div class="ct-specs">' + specs.filter(function (s) { return s[1]; }).map(function (s) { return '<div><span>' + s[0] + '</span>' + esc(s[1]) + '</div>'; }).join('') + '</div>' +
       descHtml(c) +
-      (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
+      (isNew ? '<p>New car figures change with allocation, so I quote them live.</p>' : c.offer && f ? dealHtml(c, f, false) : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + finHtml(f, c)) +
       tdHtml(c) + (isNew ? buyOrAsk(c) : '<div class="ct-row"><a class="ct-btn ct-wa" target="_blank" rel="noopener" href="' + esc(carWa(c)) + '">WhatsApp ' + esc(waWho() || 'me') + '</a></div>');
     $('#sheet').hidden = false;
   }
@@ -939,6 +943,17 @@
       '<g class="g-tick">' + ticks + '</g><line class="g-needle" x1="32" y1="32" x2="' + n[0].toFixed(1) + '" y2="' + n[1].toFixed(1) + '"/><circle cx="32" cy="32" r="3" class="g-hub"/></svg>' +
       '<span class="g-num">' + sc + '<small>%</small></span><span class="g-lab">match</span></div>'; }
   function plate(reg) { return '<span class="ct-plate" aria-label="Registration ' + esc(reg) + '">' + esc(String(reg).replace(/^([A-Z]{2}\d{2})([A-Z]{3})$/, '$1 $2')) + '</span>'; }
+  /* A Hedin deal (M.applyOffers): price, the monthly in big type, deposit and saving, the full figures and the legal line */
+  function dealHtml(c, f, card) { var o = c.offer, g0 = function (n) { return '\u00a3' + Number(n).toLocaleString('en-GB', { maximumFractionDigits: 2, minimumFractionDigits: n % 1 ? 2 : 0 }); };
+    var dep = o.deposit ? g0(o.deposit) + ' deposit' + (!card && o.deposit_contribution > 0 ? ' (' + g0(o.customer_deposit) + ' + ' + g0(o.deposit_contribution) + ' ' + (o.deposit_contribution_label || 'contribution') + ')' : '') : '';
+    var bits = card ? [dep, o.saving ? 'Save ' + g0(o.saving) : '']
+      : [dep, o.saving ? 'Save ' + g0(o.saving) : '', o.retailer_contribution > 0 ? 'Includes ' + g0(o.retailer_contribution) + ' Hedin contribution' : '', o.term_months ? o.term_months + ' months, ' + o.product : o.product];
+    bits = bits.filter(Boolean);
+    return '<div class="ct-deal' + (card ? '' : ' ct-deal-sheet') + '"><div class="ct-deal-row"><div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' +
+      '<div class="ct-mon ct-deal-mon">' + esc(f.monthly) + '/month</div></div>' + (!card && o.recommended_otr ? '<p class="ct-legal">BMW recommended on the road price ' + esc(g0(o.recommended_otr)) + '</p>' : '') +
+      '<div class="ct-deal-bits">' + bits.map(function (b) { return '<span>' + esc(b) + '</span>'; }).join('') + (card ? '<em class="ct-legal">' + esc(o.legal) + '</em>' : '') + '</div>' +
+      (card ? '' : '<p class="ct-legal">' + esc(o.legal) + '</p>') + '<p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' +
+      (!card && o.quote_url ? '<p class="ct-legal"><a target="_blank" rel="noopener" href="' + esc(o.quote_url) + '">See the full BMW Financial Services quote</a></p>' : '') + '</div>'; }
   function finHtml(f, c) { return f ? '<div class="ct-repx"><b>' + esc(f.headline) + '</b><br><b>Representative example.</b> ' + esc(f.example) + '</div>' : '<p class="ct-mon">' + esc(noQuoteText(c)) + '</p>'; }
   /* no lender quote: a rough estimate (never shown, match-core.js estimateMonthly) says whether a monthly budget may stretch to it */
   function noQuoteText(c, maybe) { if (maybe == null) maybe = !!(c && S.cust && M.budgetMaybe && M.budgetMaybe(c, S.cust));

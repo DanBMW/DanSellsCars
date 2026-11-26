@@ -340,7 +340,9 @@
      when the customer opens it and merged in here: pictures, equipment and the rest of the specification. */
   function mergeNewDetail(car, d) { if (!car || !d) return car;
     var x = fromNewStock(d); ['description', 'colour', 'fuel', 'gearbox', 'transmission', 'drive', 'seats', 'upholstery', 'wheels', 'image'].forEach(function (k) { if (x[k] != null && x[k] !== '') car[k] = x[k]; });
-    if (x.images && x.images.length) car.images = x.images; car.standard = x.standard; car.options = x.options; car.detail = true; return car; }
+    if (x.images && x.images.length) car.images = x.images;
+    if (car.offer && car.offer.image) { car.image = car.offer.image; car.images = [car.offer.image].concat((car.images || []).filter(function (u) { return u !== car.offer.image; })).slice(0, 10); }
+    car.standard = x.standard; car.options = x.options; car.detail = true; return car; }
   /* Brand new stock: the monthly comes only from the lender's own quote for that car (lookup/new-stock-quotes.json,
      checked by dsfinance.js newOk: complete, adds up, matches the price, in date, file fresh). A car without a good
      quote shows no monthly, so a monthly budget never matches it on a guess. fin is window.dsFin. */
@@ -349,6 +351,40 @@
       if (fin && e && fin.newOk(c, e, gen, now)) { c.finance = { monthly: e.monthly, product: e.product, lender: e.lender, representative_example: fin.newRep(e), legal: fin.BROKER, source: 'lender' }; c.monthly_gbp = e.monthly; }
       else { c.finance = null; c.monthly_gbp = null; c.est_monthly = undefined;   /* re-estimated by stampEstimates */
         c.stale_quote = e && e.monthly > 0 && e.cash_price > 0 ? { monthly: e.monthly, cash_price: e.cash_price, deposit: e.deposit } : null; } });
+    return cars; }
+  /* Hedin's own new car stock deals (lookup/new-offers.json, kept by hand from the Hedin offers page and the BMW
+     Financial Services quote each deal links to). A deal sits on top of the real stock car with the same order number:
+     its monthly, deposit, contribution and saving replace the standard lender quote for that car. Only an active deal,
+     inside its valid_to, whose figures add up (deposit + contribution + payments x monthly, plus the final payment on
+     PCP, equals the total payable) is used; anything else leaves the car exactly as it was. No figure is ever worked out. */
+  var OFFER_NEED = ['monthly', 'payments', 'term_months', 'customer_deposit', 'cash_price', 'annual_mileage', 'total_payable', 'product'];
+  function offerOk(o, now) { if (!o || o.active === false || !o.order_number) return false;
+    if (OFFER_NEED.some(function (k) { return o[k] == null || o[k] === ''; })) return false;
+    var vt = o.valid_to ? Date.parse(o.valid_to + (String(o.valid_to).length === 10 ? 'T23:59:59Z' : '')) : NaN;
+    if (!vt || vt < (now || Date.now())) return false;
+    var pcp = o.apr != null;
+    if (pcp && ['amount_of_credit', 'final_payment', 'charge_for_credit'].some(function (k) { return o[k] == null; })) return false;
+    var t = o.customer_deposit + (o.deposit_contribution || 0) + o.payments * o.monthly + (pcp ? o.final_payment : 0);
+    return Math.abs(t - o.total_payable) <= 0.05; }
+  function offerDeposit(o) { return o.customer_deposit + (o.deposit_contribution || 0); }
+  /* the full figures in plain words, same style as the lender examples (no dashes) */
+  function offerRep(o) { var pcp = o.apr != null, dc = o.deposit_contribution > 0;
+    return o.product + ', ' + o.term_months + ' months. ' + o.payments + ' monthly payments of ' + gbp2(o.monthly) + '. ' +
+      'Cash price ' + gbp2(o.cash_price) + '. Customer deposit ' + gbp2(o.customer_deposit) + '. ' +
+      (dc ? 'Plus ' + gbp2(o.deposit_contribution) + ' ' + (o.deposit_contribution_label || 'deposit contribution') + '. ' : '') +
+      (pcp ? 'Total amount of credit ' + gbp2(o.amount_of_credit) + '. Optional final payment ' + gbp2(o.final_payment) + '. ' : '') +
+      'Total amount payable ' + gbp2(o.total_payable) + '. ' + (pcp ? 'Total charge for credit ' + gbp2(o.charge_for_credit) + '. ' : '') +
+      Number(o.annual_mileage).toLocaleString('en-GB') + ' miles a year' + (o.excess_pence != null ? ', ' + o.excess_pence + 'p per excess mile' : '') + '. ' +
+      (pcp ? o.apr + '% APR representative. ' : '') + 'Offer from Hedin Automotive ' + (o.location || '').replace(/^Hedin Automotive /, '') + '.'; }
+  function applyOffers(cars, file, now) { var list = (file && file.offers) || [], legal = (file && file.legal) || 'Finance subject to status. 18+. T&Cs apply.', by = {};
+    list.forEach(function (o) { if (offerOk(o, now)) by[String(o.order_number)] = o; });
+    (cars || []).forEach(function (c) { if (c.kind !== 'new_stock') return; var o = by[String(c.order_number)]; if (!o) return;
+      c.offer = { badge: o.badge || 'NEW \u2022 UNREGISTERED', label: o.label || 'Deal', monthly: o.monthly, deposit: offerDeposit(o), customer_deposit: o.customer_deposit,
+        deposit_contribution: o.deposit_contribution || 0, deposit_contribution_label: o.deposit_contribution_label || '', saving: o.saving || null, retailer_contribution: o.retailer_contribution || 0, recommended_otr: o.recommended_otr || null,
+        product: o.product, term_months: o.term_months, valid_to: o.valid_to, quote_url: o.quote_url || '', image: o.image || '', image_alt: o.image_alt || '', legal: legal };
+      c.finance = { monthly: o.monthly, product: o.product, representative_example: offerRep(o), legal: legal, source: 'offer' };
+      c.monthly_gbp = o.monthly; c.est_monthly = undefined; c.stale_quote = null; c.deal = true;
+      if (o.image) { c.images = [o.image].concat((c.images || []).filter(function (u) { return u !== o.image; })).slice(0, 10); c.image = o.image; } });
     return cars; }
   /* does a real stock car stand in for a model placeholder (MBG list name)? M cars only cover M names. */
   var BODY = ['gran coupe', 'active tourer', 'convertible', 'touring', 'saloon', 'coupe'];
@@ -458,5 +494,5 @@
         return (a.unconfirmed - b.unconfirmed) || (b.score - a.score) || (ra - rb); })
       .slice(0, n || 6);
   }
-  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, budgetGap: budgetGap, budgetGapText: budgetGapText, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
+  root.ctMatch = { variantOf: variantOf, modelOk: modelOk, yearOk: yearOk, applyLenderQuotes: applyLenderQuotes, applyOffers: applyOffers, offerOk: offerOk, offerRep: offerRep, hasBudget: hasBudget, mustNote: mustNote, noStock: noStock, noStockText: noStockText, noStockWiden: noStockWiden, hasModel: hasModel, isMModel: isMModel, colourFamily: colourFamily, specOptions: specOptions, hasSpec: hasSpec, FAMILY: FAMILY, DAN_WA: DAN_WA, normReg: normReg, score: score, rank: rank, fromNewStock: fromNewStock, mergeNewDetail: mergeNewDetail, waLink: waLink, waText: waText, finance: finance, gbp: gbp, covers: covers, stampArrivals: stampArrivals, arrivalOf: arrivalOf, justArrived: justArrived, arrivedText: arrivedText, newSince: newSince, londonDay: londonDay, JUST_DAYS: JUST_DAYS, newStockFinance: newStockFinance, fuelList: fuelList, fuelPrefs: fuelPrefs, fuelFit: fuelFit, MILEAGE_BANDS: MILEAGE_BANDS, carMiles: carMiles, modelFit: modelFit, pickLatest: pickLatest, stampEstimates: stampEstimates, estimateMonthly: estimateMonthly, budgetMaybe: budgetMaybe, budgetGap: budgetGap, budgetGapText: budgetGapText, EST_KEEP: EST_KEEP, CAM_NOTE: CAM_NOTE, specLabel: specLabel, specGroups: GROUPS };
 })(typeof window !== 'undefined' ? window : globalThis);
