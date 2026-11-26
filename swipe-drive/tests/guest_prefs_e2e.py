@@ -40,7 +40,7 @@ async def run(b, mobile):
     seen = set()
     for _ in range(50):
         await pg.wait_for_timeout(150); q = await last()
-        if 'Anything else Dan' in q: break
+        if 'Anything else we should know' in q: break
         if ('For spec' in q or 'Any spec you want' in q) and 'spec' not in seen:
             if await pg.locator('#g-tray .g-chip >> text=Change it').count(): await pg.click('#g-tray .g-chip >> text=Change it')
             await pg.wait_for_selector('.g-picks.tri'); await shot('3-spec-picker'); await pg.locator('.g-pick').first.click(); await pg.click(done); seen.add('spec'); continue

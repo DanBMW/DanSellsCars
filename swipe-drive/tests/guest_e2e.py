@@ -19,14 +19,14 @@ async def run(b, mobile):
     n = int((await pg.text_content('#g-count')).split(' of ')[1]); ok(n >= 6, t + f': deck of {n} cars'); await shot('2-deck')
     body = await pg.text_content('body')
     ok(not any(x in body for x in ['Lorna', '07700900111', 'lorna@example', 'Budget', 'Postcode']), t + ': no customer details anywhere on the page')
-    ok(await pg.locator('text=Me').count() == 0 and await pg.locator('text=Matches').count() == 0, t + ': no Me tab or matches list')
+    ok(await pg.locator('text="Me"').count() == 0 and await pg.locator('text="Matches"').count() == 0, t + ': no Me tab or matches list')
     await pg.click('#g-like'); await pg.wait_for_timeout(400); await pg.click('#g-pass'); await pg.wait_for_timeout(400)
     card = pg.locator('#g-deck .g-card:not(.under)'); bb = await card.bounding_box()
     await pg.mouse.move(bb['x'] + bb['width'] / 2, bb['y'] + bb['height'] / 2); await pg.mouse.down(); await pg.mouse.move(bb['x'] + bb['width'] / 2 + 200, bb['y'] + bb['height'] / 2, steps=8); await pg.mouse.up(); await pg.wait_for_timeout(500)
     ok('Car 4 of' in await pg.text_content('#g-count'), t + ': buttons and drag both swipe')
     await pg.click('#g-info'); await pg.wait_for_selector('#g-sheet:not([hidden])'); await shot('3-details')
     await pg.click('#g-buy'); await pg.click('#g-buy'); await pg.wait_for_function("document.querySelector('#g-buy-msg').textContent.length>0")
-    ok('Sent to Dan' in await pg.text_content('#g-buy-msg'), t + ': Buy this car sends to Dan')
+    ok('Sent. We will be in touch' in await pg.text_content('#g-buy-msg'), t + ': Buy this car sends the request')
     await pg.click('#g-x')
     for i in range(n):
         if await pg.locator('#g-end').is_visible(): break
@@ -44,17 +44,17 @@ async def run(b, mobile):
     ok('does not look right' in await pg.text_content('#g-log'), t + ': bad email caught'); await pg.fill('#g-inp', 'lorna.new@example.com'); await pg.press('#g-inp', 'Enter')
     for k in range(40):
         await pg.wait_for_timeout(150); last = await pg.locator('#g-log .g-m.bot').last.text_content()
-        if 'Anything else Dan' in last: break
+        if 'Anything else we should know' in last: break
         for lab in ['Yes, still right', 'Skip']:
             if await pg.locator('#g-tray .g-chip', has_text=lab).count(): await pg.locator('#g-tray .g-chip', has_text=lab).first.click(); break
     log = await pg.text_content('#g-log')
     ok('For models, you have' in log and '3 Series, X3' in log and 'Petrol, Hybrid, Diesel' in log and '450' not in log and '£' not in log, t + ': every requirement walked one by one, no budget figures')
     await pg.wait_for_selector('#g-tray .g-chip >> text=Skip'); await pg.click('#g-tray .g-chip >> text=Skip'); await pg.wait_for_selector('text=Sign in to SwipeToDrive >> nth=-1'); await pg.wait_for_timeout(300)
     st = json.load(urllib.request.urlopen(MOCK + '/_state'))['confirm']; ok(st['proposed'].get('email') == 'lorna.new@example.com' and st['confirmed']['phone'] and st['confirmed']['prefs'] and not st['filled'], t + ': changed email held for Dan, confirmations saved')
-    ok('Dan will check the new email' in await pg.text_content('#g-log'), t + ': tells them Dan will check the change'); await shot('6-revvy-done')
+    ok('We will check the new email' in await pg.text_content('#g-log'), t + ': tells them we will check the change'); await shot('6-revvy-done')
     full = await pg.text_content('body'); ok(not any(x in full for x in ['07700900111', 'lorna@example.com', 'Hayre']), t + ': no stored contact details anywhere on the page')
     await pg.click('.g-chip >> text=Back to the cars')
-    await pg.click('#g-send'); await pg.wait_for_function("document.querySelector('#g-send-msg').textContent.length>0"); ok('Sent to Dan' in await pg.text_content('#g-send-msg'), t + ': Send my likes to Dan works')
+    await pg.click('#g-send'); await pg.wait_for_function("document.querySelector('#g-send-msg').textContent.length>0"); ok('Sent. We will be in touch' in await pg.text_content('#g-send-msg'), t + ': Send my likes works')
     s = json.load(urllib.request.urlopen(MOCK + '/_state')); ok(len(s['swipes']) >= n and all(v['source'] == 'guest_link' for v in s['swipes'].values()), t + ': swipes recorded against the customer as guest_link')
     api = [u for u in reqs if u.startswith(MOCK)]; ok(api and all(u == MOCK + '/functions/v1/guest-deck' for u in api), t + ': the page only ever calls guest-deck')
     ok(not any('/rest/v1/' in u or '/auth/v1/' in u or 'supabase-js' in u for u in reqs), t + ': no database, auth or Supabase client requests')

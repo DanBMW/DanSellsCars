@@ -387,7 +387,7 @@
       if (!LIVE) { msg.textContent = 'Demo mode: no email is sent. Use the button below to carry on.'; $('#demoBox').hidden = false; return; }
       msg.textContent = 'Sending...';
       store.sendLink(em).then(function () { msg.className = 'ct-msg ok'; msg.textContent = 'Check your inbox for the sign in link. It works once. Open it on this phone, or type the code from the email below.'; $('#codeBox').hidden = false; track('sign_in_link_sent'); })
-        .catch(function () { msg.textContent = 'That did not send. Try again, or WhatsApp me on 07827 138197.'; });
+        .catch(function () { msg.textContent = 'That did not send. Try again, or WhatsApp us on 07827 138197.'; });
     });
     if (AUTH_ERR) { var m0 = $('#siMsg'); m0.textContent = (/expired|invalid/i.test(AUTH_ERR.code + AUTH_ERR.text) ? 'That sign in link has expired or was already used. Links work once. Send a new one below.' : 'Sign in did not finish: ' + AUTH_ERR.text + '. Send a new link below.');
       history.replaceState(null, '', location.pathname + location.search); }
