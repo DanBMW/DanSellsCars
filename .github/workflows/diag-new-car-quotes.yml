@@ -18,6 +18,8 @@ jobs:
       - run: npm install --no-save --no-audit --no-fund puppeteer-core && google-chrome --version && curl -s https://api.ipify.org; echo
       - run: python3 automation/new-stock-urls.py > /tmp/u.json
       - run: node automation/diag-tmp/diag.mjs /tmp/u.json
+        env: { CHROME_PATH: /usr/bin/google-chrome, INTERCEPT: '1' }
+      - run: cp /tmp/u.json /tmp/u3.json && LIMIT=3 node automation/new-stock-quotes.mjs /tmp/u.json || true
         env: { CHROME_PATH: /usr/bin/google-chrome }
       - uses: actions/upload-artifact@v4
         if: always()

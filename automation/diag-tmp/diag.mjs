@@ -11,9 +11,10 @@ let i = 0;
 for (const r of urls) {
   const pg = await b.newPage();
   const hosts = {};
+  if (process.env.INTERCEPT) { await pg.setRequestInterception(true); pg.on('request', q => ['image','media','font'].includes(q.resourceType()) ? q.abort() : q.continue()); }
   pg.on('response', async x => { const u = x.url(); let h=''; try{h=new URL(u).host}catch(e){}; hosts[h]=(hosts[h]||0)+1;
     if (/codeweavers|velocity|calculat/i.test(u)) {
-      let shape=''; if (/api\/finance\/quote\//i.test(u) && x.request().method()!=='OPTIONS') { try { const t = await x.text(); try { const j=JSON.parse(t); shape='keys:'+Object.keys(j).join(',')+' vin:'+!!(j.Vehicle&&j.Vehicle.Physical&&j.Vehicle.Physical.Vin)+' product:'+(j.Finance&&j.Finance.Product&&j.Finance.Product.Key); } catch(e){ shape='notjson:'+t.slice(0,120).replace(/\s+/g,' '); } } catch(e){ shape='textErr:'+e.message; } }
+      let shape=''; if (/api\/finance\/quote\//i.test(u) && x.request().method()!=='OPTIONS') { try { const t = await x.text(); try { const j=JSON.parse(t); shape='keys:'+Object.keys(j).join(',')+' vin:'+!!(j.Vehicle&&j.Vehicle.Physical&&j.Vehicle.Physical.Vin)+' product:'+(j.Finance&&j.Finance.Product&&j.Finance.Product.Key); } catch(e){ shape='notjson:'+t.slice(0,120).replace(/\s+/g,' '); } } catch(e){ shape='textErr:'+e.message.slice(0,150); } }
       console.log(' RESP', x.status(), x.request().method(), u.split('?')[0].replace(/[0-9a-f-]{36}/,'<id>').slice(0,120), shape); } });
   pg.on('requestfailed', q => { if (/codeweavers|velocity|bmwgroup/i.test(q.url())) console.log(' FAIL', q.url().split('?')[0].slice(0,120), q.failure()?.errorText); });
   pg.on('console', m => { if (m.type()==='error') console.log(' CONSOLE', m.text().slice(0,200)); });
