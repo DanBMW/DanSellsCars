@@ -357,7 +357,7 @@
  "KP72CCK": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-26",
-  "removed_at": null
+  "removed_at": "2026-11-26"
  },
  "KT72ORW": {
   "first_seen": "2026-11-13",
@@ -377,7 +377,7 @@
  "LC72XNX": {
   "first_seen": "2026-11-02",
   "last_seen": "2026-11-26",
-  "removed_at": null
+  "removed_at": "2026-11-26"
  },
  "LD24FWH": {
   "first_seen": "2026-10-07",
@@ -1249,6 +1249,11 @@
   "last_seen": "2026-11-26",
   "removed_at": null
  },
+ "LW26CWM": {
+  "first_seen": "2026-11-26",
+  "last_seen": "2026-11-26",
+  "removed_at": null
+ },
  "LX22JEO": {
   "first_seen": "2026-11-05",
   "last_seen": "2026-11-17",
@@ -1747,7 +1752,7 @@
  "SV74XBS": {
   "first_seen": "2026-10-07",
   "last_seen": "2026-11-26",
-  "removed_at": null
+  "removed_at": "2026-11-26"
  },
  "VK23XDO": {
   "first_seen": "2026-10-07",
