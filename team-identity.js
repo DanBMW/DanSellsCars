@@ -3,7 +3,9 @@
  * and scripts/test-team.js run exactly the same rules.
  *
  * One identity for every team system (Dan, 30 October 2026):
- *   - the account must be a verified @hedinautomotive.co.uk address;
+ *   - the account must be a verified @hedinautomotive.co.uk address, or any
+ *     verified account whose uid is on staff/<uid> (Dan's own Google account,
+ *     which then counts as Dan);
  *   - it is linked to a person on the lockup team list or managers list, by
  *     email (shifts/links/<uid> remembers the link once made);
  *   - admin  = the uid is on the Firebase staff list (staff/<uid>, Dan);
@@ -47,7 +49,19 @@
     i = i || {};
     var base = { status: 'signedout', personId: null, name: null, role: null, admin: false, canManage: false, linkNeeded: false };
     if (!i.user) return base;
-    if (!DOMAIN.test(String(i.user.email || ''))) return Object.assign(base, { status: 'wrongdomain' });
+    if (!DOMAIN.test(String(i.user.email || ''))) {
+      /* Dan, 26 November 2026: "Make this an admin account", of his own Google
+         account. An account that is not a Hedin address gets in only when its
+         uid is on the Firebase staff list (staff/<uid>), which only the Firebase
+         console can write, and it then acts as the creator. The address itself
+         is never written here: this repo is public. */
+      if (i.staffAdmin !== true || i.user.emailVerified !== true) return Object.assign(base, { status: 'wrongdomain' });
+      var me = personForEmail(CREATOR, i.team, i.managers);
+      var row = me && ((i.team && i.team[me.id]) || (i.managers && i.managers[me.id]));
+      if (!row) return Object.assign(base, { status: 'unlinked' });
+      return { status: 'team', personId: me.id, name: row.name || me.id, role: 'admin',
+        admin: true, canManage: true, linkNeeded: false, staffAccount: true };
+    }
     if (i.user.emailVerified !== true) return Object.assign(base, { status: 'unverified' });
     var match = personForEmail(i.user.email, i.team, i.managers);
     var personId = i.link || (match && match.id) || null;

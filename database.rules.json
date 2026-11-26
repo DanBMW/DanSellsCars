@@ -698,7 +698,7 @@
     },
 
       "shifts": {
-        ".read": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/)",
+        ".read": "(auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/)) || (auth != null && root.child('staff').child(auth.uid).val() === true)",
         ".write": false,
         "config": {
           ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && ((root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true)) || root.child('shifts/managers').child(root.child('shifts/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shifts/links').child(auth.uid).val()).val() !== null)",
@@ -843,7 +843,7 @@
         },
         "audit": {
           "$id": {
-            ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && !data.exists()",
+            ".write": "((auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/)) || (auth != null && root.child('staff').child(auth.uid).val() === true)) && !data.exists()",
             ".validate": "$id.matches(/^[A-Za-z0-9_-]{1,40}$/) && newData.hasChildren(['what', 'ts'])",
             "what": {
               ".validate": "newData.isString() && newData.val().length <= 200"
@@ -852,7 +852,7 @@
         }
       },
       "shiftsTest": {
-        ".read": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/)",
+        ".read": "(auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/)) || (auth != null && root.child('staff').child(auth.uid).val() === true)",
         ".write": false,
         "config": {
           ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && ((root.child('staff').child(auth.uid).val() === true || (auth.token.email === 'daniel.cane@hedinautomotive.co.uk' && auth.token.email_verified === true)) || root.child('shiftsTest/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() === true || root.child('lockup/config/managers').child(root.child('shiftsTest/links').child(auth.uid).val()).val() !== null)",
@@ -997,7 +997,7 @@
         },
         "audit": {
           "$id": {
-            ".write": "auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/) && !data.exists()",
+            ".write": "((auth != null && auth.token.email_verified === true && auth.token.email.matches(/^[a-zA-Z0-9._-]+@hedinautomotive\\.co\\.uk$/)) || (auth != null && root.child('staff').child(auth.uid).val() === true)) && !data.exists()",
             ".validate": "$id.matches(/^[A-Za-z0-9_-]{1,40}$/) && newData.hasChildren(['what', 'ts'])",
             "what": {
               ".validate": "newData.isString() && newData.val().length <= 200"

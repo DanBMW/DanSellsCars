@@ -833,7 +833,7 @@
   function render() {
     NOW = clock();
     if (st.auth === 'signedout') { show('signin'); return; }
-    if (st.auth === 'wrongdomain') { $('wrong-email').textContent = st.user ? st.user.email : ''; show('wrong'); return; }
+    if (st.auth === 'wrongdomain') { $('wrong-email').textContent = st.user ? st.user.email : ''; if ($('wrong-uid')) $('wrong-uid').textContent = st.user ? st.user.uid : ''; show('wrong'); return; }
     if (st.auth === 'loading' || !st.D.lcfg) { show('loading'); return; }
     if (!Object.keys(teamCfg()).length) {
       $('loading-msg').textContent = 'The team list is not set up on this copy of the rota yet. Open lockup.html once, then come back.';
@@ -881,9 +881,10 @@
   function relink() {
     if (!st.user || !st.D.lcfg) { st.me = null; return; }
     var linked = st.D.link || null;
-    var fromEmail = personForEmail(st.user.email);
+    /* a staff listed account that is not a Hedin address is Dan (see team-identity.js) */
+    var fromEmail = personForEmail(st.staffAcct ? 'daniel.cane@hedinautomotive.co.uk' : st.user.email);
     st.me = linked || fromEmail || null;
-    if (st.D.linkLoaded && !linked && fromEmail && !linking) {
+    if (st.D.linkLoaded && !linked && fromEmail && !linking && !st.staffAcct) {
       linking = true;
       B.set(st.RS + '/links/' + st.user.uid, fromEmail).catch(function (e) { console.error('link', e); }).then(function () { linking = false; });
     }
@@ -908,14 +909,28 @@
     }).catch(function () {});
     B.watch('lockup/config/testMode', function (v) { setRoots(v !== false); schedule(); });
     setRoots(true);
+    var staffOff = null;
     B.onAuth(function (u) {
       st.user = u;
       st.me = null;
+      st.staffAcct = false;
+      if (staffOff) { if (typeof staffOff === 'function') staffOff(); staffOff = null; }
       if (!u) st.auth = 'signedout';
-      else if (!okDomain(u)) st.auth = 'wrongdomain';
+      else if (!okDomain(u)) st.auth = u.emailVerified ? 'loading' : 'wrongdomain';
       else st.auth = 'ready';
       if (u && okDomain(u)) subscribeRoots();
       else { st.unsub.forEach(function (x) { if (typeof x === 'function') x(); }); st.unsub = []; st.D = { lcfg: null, absences: {}, weeks: {}, status: {}, scfg: null, requests: {}, bh: {}, managers: {}, link: null, linkLoaded: false, admin: false }; }
+      /* not a Hedin address: let it in only if its uid is on the staff list */
+      if (u && !okDomain(u) && u.emailVerified) {
+        staffOff = B.watch('staff/' + u.uid, function (v) {
+          if (st.user !== u) return;
+          var was = st.staffAcct;
+          st.staffAcct = v === true;
+          st.auth = st.staffAcct ? 'ready' : 'wrongdomain';
+          if (st.staffAcct && !was) subscribeRoots();
+          schedule();
+        });
+      }
       schedule();
     });
     document.addEventListener('click', onClick);
