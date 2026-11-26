@@ -759,6 +759,14 @@
     sec('px').open = !!(c.px && c.px.reg);
     sec('more').open = !!(c.desk && Object.keys(c.desk).length);
   }
+  /* The swipe card shows a short, clean name: 'BMW 120 1.5 120i MHT M Sport DCT Euro 6 (s/s) 5dr' reads 'BMW 120i M Sport'.
+     Engine size, battery size, gearbox, emissions and door count go; the details view keeps the full name. */
+  function shortTitle(m) { var s = String(m || '').replace(/^BMW\s+/i, ''), t;
+    s = s.replace(/\([^)]*\)/g, ' ').replace(/\bEuro\s*\d\b/gi, ' ').replace(/\b\d+(\.\d+)?\s*kWh\b/gi, ' ').replace(/\b\d\.\d\b/g, ' ')
+      .replace(/\b(MHT|GPF|DCT|Auto|Steptronic|Sport Automatic|\d+dr)\b/gi, function (w) { return /^sport automatic$/i.test(w) ? w : ' '; });
+    t = s.split(/\s+/).filter(Boolean);
+    t = t.filter(function (w, i) { var n = t[i + 1]; return !(i === 0 && n && n.length > w.length && n.indexOf(w) === 0) && w !== t[i - 1]; });
+    return t.length ? 'BMW ' + t.join(' ') : String(m || ''); }
   function cardHtml(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : noPhoto(c));
@@ -768,9 +776,11 @@
       : c.offer && f ? dealHtml(c, f, true)
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p><p class="ct-replink"><u>Representative example in Info</u>, tap the card</p>' : '<div class="ct-mon">' + esc(noQuoteText(c, x.budgetMaybe)) + '</div>');
     var just = M.justArrived(c) ? '<span class="ct-just">Just arrived</span>' : '';
-    return '<div class="ct-tarea">' + img + gauge(x.score) + '<div class="ct-src">' + esc(src) + '</div>' + just +
+    var ser = !isNew && photos(c).length && c.series ? '<span class="ct-series" aria-hidden="true">' + esc(String(c.series).replace(/^BMW\s+/i, '')) + '</span>' : ''; /* tall screens: the series name, large and faint, above the car */
+    return '<div class="ct-tarea">' + img + ser + gauge(x.score) + just +
       '</div>' + '<div class="ct-stamp ct-stamp-like" aria-hidden="true">SHORTLIST</div><div class="ct-stamp ct-stamp-nope" aria-hidden="true">PASS</div><div class="ct-stamp ct-stamp-super" aria-hidden="true">KEYS PLEASE</div><canvas class="ct-tread" aria-hidden="true"></canvas>' +
-      '<div class="ct-meta">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? (c.offer ? esc(c.offer.badge) : 'NEW, IN STOCK') : 'NEW') + '</span>' + (c.offer ? '<span class="ct-deal-tag">' + esc(c.offer.label) + '</span>' : '') : plate(c.reg)) + '<h3>' + esc(c.model) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
+      '<div class="ct-meta"><div class="ct-mtop">' + (isNew || ns ? '<span class="ct-plate ct-plate-new">' + (ns ? (c.offer ? esc(c.offer.badge) : 'NEW, IN STOCK') : 'NEW') + '</span>' + (c.offer ? '<span class="ct-deal-tag">' + esc(c.offer.label) + '</span>' : '') : plate(c.reg)) + '<div class="ct-src">' + esc(src) + '</div></div><h3 title="' + esc(c.model) + '">' + esc(shortTitle(c.model)) + '</h3><div class="ct-tags">' + tags.filter(Boolean).map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') +
+      (isNew ? [] : [c.power, c.body, c.drive === 'FourWheel' || /xDrive/.test(c.model || '') ? 'xDrive' : '']).filter(Boolean).map(function (t) { return '<span class="ct-xtag">' + esc(t) + '</span>'; }).join('') + /* tall screens only */
       x.reasons.filter(function (r) { return r !== 'Just arrived'; }).map(function (r) { return '<span>&#10003; ' + esc(r) + '</span>'; }).join('') +
       (x.notes || []).map(function (n) { return '<span class="ct-note">' + esc(n) + '</span>'; }).join('') + '</div>' + money + '</div>';
   }
@@ -822,6 +832,7 @@
       if (depth === 0) drag(el, x); deck.appendChild(el);
     });
     fly.forEach(function (el) { deck.appendChild(el); });   /* a card mid swipe finishes its flight above the new top card */
+    if (window.sdFit) window.sdFit();   /* card-premium.js: the deck and buttons fill the space down to the nav */
     if (fly.length) deck.hidden = false;
     settlePhotos(deck);
   }
@@ -996,7 +1007,7 @@
     return '<div class="ct-deal' + (card ? '' : ' ct-deal-sheet') + '"><div class="ct-deal-row"><div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' +
       '<div class="ct-mon ct-deal-mon">' + esc(f.monthly) + '/month</div></div>' + (!card && o.recommended_otr ? '<p class="ct-legal">BMW recommended on the road price ' + esc(g0(o.recommended_otr)) + '</p>' : '') +
       '<div class="ct-deal-bits">' + bits.map(function (b) { return '<span>' + esc(b) + '</span>'; }).join('') + (card ? '<em class="ct-legal">' + esc(o.legal) + '</em>' : '') + '</div>' +
-      (card ? '' : '<p class="ct-legal">' + esc(o.legal) + '</p>') + '<p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' +
+      (card ? '' : '<p class="ct-legal">' + esc(o.legal) + '</p>') + '<p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p>' + (card ? '<p class="ct-replink"><u>Representative example in Info</u>, tap the card</p>' : '') +
       (!card && o.quote_url ? '<p class="ct-legal"><a target="_blank" rel="noopener" href="' + esc(o.quote_url) + '">See the full BMW Financial Services quote</a></p>' : '') + '</div>'; }
   function finHtml(f, c) { return f ? '<div class="ct-repx"><b>' + esc(f.headline) + '</b><br><b>Representative example.</b> ' + esc(f.example) + '</div>' : '<p class="ct-mon">' + esc(noQuoteText(c)) + '</p>'; }
   /* no lender quote: a rough estimate (never shown, match-core.js estimateMonthly) says whether a monthly budget may stretch to it */
@@ -1014,6 +1025,7 @@
   function photoState(img, ok) { var ph = img.closest('.ct-ph'); if (!ph) return;
     var want = img.getAttribute('data-want'); if (want && img.getAttribute('src') !== want) return; /* stale load */
     ph.classList.remove('is-loading'); ph.classList.toggle('is-broken', !ok);
+    if (ok && img.naturalWidth) { var r = img.naturalWidth / img.naturalHeight; ph.classList.toggle('is-odd', r < 1.3 || r > 2.4); } /* portrait, square or panorama photos are shown whole */
     if (!ok && !$('.ct-ph-fail', ph)) { var f = document.createElement('div'); f.className = 'ct-ph-fail'; f.textContent = ph.getAttribute('data-model') || 'Photo unavailable'; ph.appendChild(f); }
     if (ok) { var x = $('.ct-ph-fail', ph); if (x) x.remove(); } }
   document.addEventListener('load', function (e) { if (e.target.classList && e.target.classList.contains('ct-ph-img')) photoState(e.target, e.target.naturalWidth > 0); }, true);
