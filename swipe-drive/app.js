@@ -836,7 +836,7 @@
     el.addEventListener('pointermove', function (e) { if (!down) return; dx = e.clientX - sx; dy = (e.clientY - sy) * 0.4; var now = performance.now(); vx = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now; set(); });
     function up() { if (!down) return; down = false; el.style.cursor = '';
       /* a short tap with little movement anywhere on the photo or the info opens the details; anything more is a drag */
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 4 && performance.now() - t0 < 500) { dx = dy = 0; set(); openSheet(x); return; }
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 4 && performance.now() - t0 < 500) { dx = dy = 0; set(); if (!shielded()) openSheet(x); return; }
       if (-dy / 0.4 > 150 && Math.abs(dx) < 90) { fling(el, x, 2, 0); return; }
       if (dx > 110 || (vx > 0.6 && dx > 45)) fling(el, x, 1, vx); else if (dx < -110 || (vx < -0.6 && dx < -45)) fling(el, x, -1, vx);
       else { el.style.transition = 'transform .45s cubic-bezier(.2,1.5,.4,1)'; dx = dy = 0; set(); like.style.opacity = nope.style.opacity = sup.style.opacity = 0; tread.clear(); el.classList.remove('is-go', 'is-stop'); } }
@@ -1067,10 +1067,10 @@
       if (!o) return; S.relax = o.relax; S.relaxLabel = o.label.replace(/ to see$/, '').toLowerCase(); S.deck = []; showDeck(); });
     $('#relaxReset').addEventListener('click', function () { S.relax = null; S.deck = []; showDeck(); });
     $('#notifyBtn').addEventListener('click', notifyMe);
-    $('#btnLike').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(1); });
-    $('#btnPass').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(-1); });
+    $('#btnLike').addEventListener('click', function () { if (shielded()) return; var t = topCard(); if (t && t._fling) t._fling(1); });
+    $('#btnPass').addEventListener('click', function () { if (shielded()) return; var t = topCard(); if (t && t._fling) t._fling(-1); });
     $('#btnSuper').addEventListener('click', function () { var t = topCard(); if (t && t._fling) t._fling(2); });
-    $('#btnInfo').addEventListener('click', function () { var t = topCard(), x = t && S.deck.find(function (y) { return y.car.reg === t.dataset.reg; }); if (x) openSheet(x); });
+    $('#btnInfo').addEventListener('click', function () { if (shielded()) return; var t = topCard(), x = t && S.deck.find(function (y) { return y.car.reg === t.dataset.reg; }); if (x) openSheet(x); });
     $('#btnUndo').addEventListener('click', undoSwipe);
     /* While any pop up or sheet is open the deck takes no input at all, and Escape closes the top one. */
     document.addEventListener('keydown', function (e) { var open = openOverlays();
@@ -1522,7 +1522,9 @@ px_valuation_from_dan: c.px_valuation_gbp == null ? '' : M.gbp(c.px_valuation_gb
     platform.haptic([12, 40, 12]);
     setTimeout(function () { try { $('#rvpGo').focus({ preventScroll: true }); } catch (e) {} }, 300);
     track('revvy_prompt', { swipes: n, likes: likes, again: again }); }
-  function revvyOut() { var o = $('#revvyPrompt'); o.classList.remove('is-in'); o.hidden = true; }
+  /* a quick second tap on a Revvy button must not land on the card or the swipe buttons underneath */
+  function revvyOut() { var o = $('#revvyPrompt'); o.classList.remove('is-in'); o.hidden = true; S.shieldUntil = performance.now() + 450; }
+  function shielded() { return performance.now() < (S.shieldUntil || 0); }
   function initFree() { var o = $('#revvyPrompt'); if (!o) return;
     $('#rvpGo').addEventListener('click', function () { revvyOut(); S.freeFrom = 'revvy'; track('revvy_prompt_go', { swipes: F.count(freeData()) }); go('start'); });
     $$('[data-rvp-later]', o).forEach(function (b) { b.addEventListener('click', function () { var d = gDb(); d.free = F.skip({ free: d.free, swipes: S.swipes, cust: S.cust }).free; gPut(d);
