@@ -39,13 +39,14 @@ body.sd-fit .ct-toast{bottom:calc(var(--sd-acts-h,72px) + var(--sd-nav-h,64px) +
 #deck .ct-card{display:flex;flex-direction:column;container-type:inline-size;border-radius:22px;border:1px solid rgba(255,255,255,.09);background:#0b0d11;
   box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 28px 56px -18px rgba(0,0,0,.9),0 0 0 1px rgba(0,0,0,.4)}
 
-/* hero photo: fills the frame edge to edge. The sharp photo keeps a 16:10 frame at most (a dealer shot keeps the whole car),
+/* hero photo: fills the frame edge to edge. The sharp photo is always shown whole at its own ratio, full card width, never cropped
+   left or right (the car and the roundel a dealer prints in the corner stay inside the card),
    any extra height above it is the same photo softly blurred, faded in, so there is never a grey bar or a letterbox.
    The photo sits on the details, and the deep foot fade softens any caption a dealer prints along the bottom of a photo. */
 #deck .ct-card .ct-tarea{position:relative;flex:1 1 auto;min-height:0;max-height:86cqw;overflow:hidden;background:#07080a}
 #deck .ct-card .ct-tarea>.ct-ph,#deck .ct-card .ct-tarea>.ct-noimg-ph{position:absolute;inset:0;width:100%;height:100%!important;aspect-ratio:auto!important}
 #deck .ct-card .ct-ph .ct-ph-bg{inset:-40px;filter:blur(30px) brightness(.6) saturate(1.1);transform:scale(1.15)}
-#deck .ct-card .ct-ph img.ct-ph-img{position:absolute;left:0;top:auto;bottom:0;transform:none;width:100%;height:auto;aspect-ratio:16/10;max-height:100%;object-fit:cover;object-position:50% 50%;
+#deck .ct-card .ct-ph img.ct-ph-img{position:absolute;left:0;top:auto;bottom:0;transform:none;width:100%;height:auto;max-height:100%;object-fit:contain;object-position:50% 100%;
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16%);mask-image:linear-gradient(180deg,transparent 0,#000 16%)}
 #deck .ct-card .ct-ph.is-odd img.ct-ph-img{top:0;bottom:0;transform:none;height:100%;aspect-ratio:auto;object-fit:contain;-webkit-mask-image:none;mask-image:none}
 /* scrims: a soft top fade for the badges, a deeper foot fade into the details */
@@ -83,7 +84,7 @@ body.sd-fit .ct-toast{bottom:calc(var(--sd-acts-h,72px) + var(--sd-nav-h,64px) +
 #deck .ct-card h3{margin:0 0 6px!important;font:600 20px/1.18 var(--sans)!important;letter-spacing:-.02em;white-space:normal!important;overflow:hidden;text-overflow:clip;
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
 #deck .ct-card .ct-tags{display:flex;flex-wrap:wrap!important;gap:4px;margin:0 0 8px;max-height:42px;overflow:hidden;-webkit-mask:none;mask:none}
-#deck .ct-card .ct-tags span{flex:0 0 auto;white-space:nowrap;font:500 10px/1.5 var(--mono)!important;letter-spacing:.06em;padding:1px 7px!important;border-radius:6px!important;color:#b8c0cc;border-color:rgba(255,255,255,.12)!important}
+#deck .ct-card .ct-tags span{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 10px/1.5 var(--mono)!important;letter-spacing:.06em;padding:1px 7px!important;border-radius:6px!important;color:#b8c0cc;border-color:rgba(255,255,255,.12)!important}
 #deck .ct-card .ct-price{font:650 26px/1.05 var(--sans)!important;letter-spacing:-.03em}
 #deck .ct-card .ct-mon{font:500 12.5px/1.35 var(--mono);color:#7fb0ff;margin-top:3px}
 #deck .ct-card .ct-rep{display:none}
@@ -99,7 +100,7 @@ body.sd-fit .ct-toast{bottom:calc(var(--sd-acts-h,72px) + var(--sd-nav-h,64px) +
 #deck[data-fit=l] .ct-card h3{font-size:23px!important;margin-bottom:10px!important}
 #deck .ct-card .ct-tags .ct-xtag{display:none}
 #deck .ct-card .ct-series{display:none}
-#deck[data-fit=l] .ct-card .ct-series{display:block;position:absolute;left:0;right:0;bottom:calc(62.5cqw - 3cqw);z-index:2;text-align:center;pointer-events:none;white-space:nowrap;overflow:hidden;
+#deck[data-fit=l] .ct-card .ct-series{display:block;position:absolute;left:0;right:0;bottom:calc(var(--ph-r,.5625) * 100cqw - 3cqw);z-index:2;text-align:center;pointer-events:none;white-space:nowrap;overflow:hidden;
   font:200 13cqw/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;padding-left:.14em;
   background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.06));-webkit-background-clip:text;background-clip:text;color:transparent}
 #deck[data-fit=l] .ct-card .ct-ph.is-odd~.ct-series,#deck[data-fit=l] .ct-card .ct-ph.is-broken~.ct-series{display:none}
@@ -111,10 +112,10 @@ body.sd-fit .ct-toast{bottom:calc(var(--sd-acts-h,72px) + var(--sd-nav-h,64px) +
 #deck[data-fit=l] .ct-card .ct-deal .ct-price{margin-top:0}
 #deck[data-fit=l] .ct-card .ct-mon{font-size:13.5px}
 #deck[data-fit=l] .ct-card .ct-replink{font-size:12px;margin-top:6px}
-/* short screens (in app browsers): one line of chips, one line of title */
+/* short screens (in app browsers): one line of title; chips wrap to a second row at most */
 #deck[data-fit=xs] .ct-card .ct-meta{padding:8px 14px 12px!important}
 #deck[data-fit=xs] .ct-card h3{font-size:18px!important;-webkit-line-clamp:1;line-clamp:1;margin-bottom:5px!important}
-#deck[data-fit=xs] .ct-card .ct-tags{flex-wrap:nowrap!important;max-height:20px;margin-bottom:6px;-webkit-mask:linear-gradient(90deg,#000 85%,transparent);mask:linear-gradient(90deg,#000 85%,transparent)}
+#deck[data-fit=xs] .ct-card .ct-tags{margin-bottom:6px}
 #deck[data-fit=xs] .ct-card .ct-price{font-size:23px!important}
 #deck[data-fit=xs] .ct-card .ct-mtop{margin:2px 0 5px}
 /* narrow cards: a deal badge and its tag already say new and in stock, so the source chip steps aside */

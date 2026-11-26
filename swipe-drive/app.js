@@ -767,11 +767,14 @@
     t = s.split(/\s+/).filter(Boolean);
     t = t.filter(function (w, i) { var n = t[i + 1]; return !(i === 0 && n && n.length > w.length && n.indexOf(w) === 0) && w !== t[i - 1]; });
     return t.length ? 'BMW ' + t.join(' ') : String(m || ''); }
+  /* short fuel labels for the card chips: 'Petrol (mild hybrid)' reads 'Mild hybrid', 'Plug-in hybrid' and 'PHEV' read 'Plug in hybrid' */
+  function chipFuel(f) { var t = String(f || ''); if (/^petrol\s*\(mild hybrid\)$/i.test(t)) return 'Mild hybrid'; if (/^diesel\s*\(mild hybrid\)$/i.test(t)) return 'Diesel mild hybrid';
+    if (/^(plug[\s\u2010-\u2015-]*in hybrid|phev)$/i.test(t)) return 'Plug in hybrid'; return t.replace(/\s*[\u2010-\u2015-]+\s*/g, ' '); }
   function cardHtml(x) {
     var c = x.car, f = M.finance(c), isNew = c.kind === 'new';
     var img = isNew ? '<div class="ct-noimg-ph">' + esc(c.model.replace(/^BMW /, '')) + '</div>' : (photos(c).length ? photoHtml(c, 0, true) : noPhoto(c));
     var ns = c.kind === 'new_stock', src = stockLabel(c);
-    var tags = isNew ? [c.group] : ns ? [c.colour, c.fuel, c.gearbox, c.offer ? '' : ready(c)] : [c.year, c.mileage, c.colour, c.fuel, c.gearbox]; /* colour and mileage tell same name cars apart */
+    var tags = isNew ? [c.group] : ns ? [c.colour, chipFuel(c.fuel), c.gearbox, c.offer ? '' : ready(c)] : [c.year, c.mileage, c.colour, chipFuel(c.fuel), c.gearbox]; /* colour and mileage tell same name cars apart */
     var money = isNew ? '<div class="ct-mon">Ordered to your spec, or from new stock. I quote new car figures live.</div>'
       : c.offer && f ? dealHtml(c, f, true)
       : '<div class="ct-price">' + esc(c.price || 'Price on request') + '</div>' + (f ? '<div class="ct-mon">' + esc(f.headline) + '</div><p class="ct-rep"><b>Representative example.</b> ' + esc(f.example) + '</p><p class="ct-replink"><u>Representative example in Info</u>, tap the card</p>' : '<div class="ct-mon">' + esc(noQuoteText(c, x.budgetMaybe)) + '</div>');
@@ -1025,7 +1028,7 @@
   function photoState(img, ok) { var ph = img.closest('.ct-ph'); if (!ph) return;
     var want = img.getAttribute('data-want'); if (want && img.getAttribute('src') !== want) return; /* stale load */
     ph.classList.remove('is-loading'); ph.classList.toggle('is-broken', !ok);
-    if (ok && img.naturalWidth) { var r = img.naturalWidth / img.naturalHeight; ph.classList.toggle('is-odd', r < 1.3 || r > 2.4); } /* portrait, square or panorama photos are shown whole */
+    if (ok && img.naturalWidth) { var r = img.naturalWidth / img.naturalHeight; ph.classList.toggle('is-odd', r < 1.3 || r > 2.4); ph.style.setProperty('--ph-r', (1 / r).toFixed(4)); } /* portrait, square or panorama photos are shown whole */
     if (!ok && !$('.ct-ph-fail', ph)) { var f = document.createElement('div'); f.className = 'ct-ph-fail'; f.textContent = ph.getAttribute('data-model') || 'Photo unavailable'; ph.appendChild(f); }
     if (ok) { var x = $('.ct-ph-fail', ph); if (x) x.remove(); } }
   document.addEventListener('load', function (e) { if (e.target.classList && e.target.classList.contains('ct-ph-img')) photoState(e.target, e.target.naturalWidth > 0); }, true);
