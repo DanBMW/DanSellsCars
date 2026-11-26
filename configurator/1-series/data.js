@@ -27,7 +27,7 @@ window.CONFIG_DATA = {
     onRoadFee: 1450,          // on the road costs included in every OTR price
     vatRate: 0.20,
     contact: {
-      name: "Dan Cane",
+      name: "Dan",
       role: "BMW Sales Executive, Hedin Ruxley BMW, Sidcup",
       whatsapp: "447827138197",
       email: "daniel.cane@hedinautomotive.co.uk",

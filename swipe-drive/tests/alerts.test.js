@@ -24,5 +24,5 @@ const html = fs.readFileSync(R + '/alerts.html', 'utf8').replace(/<script[\s\S]*
 const vis = html + fs.readFileSync(R + '/swipe-drive/alert-save.js', 'utf8').match(/CONSENT = '([^']*)'/)[1];
 ok(!/[\u2013\u2014]|\s-\s/.test(vis), 'no dashes in the alert page copy');
 ok(!/Bromley|Enfield|Woolwich/.test(vis), 'one stock pool, no site names');
-ok(/I agree that Dan Cane at Hedin Ruxley can contact me/.test(vis) && !/email/i.test(vis.match(/I agree[\s\S]*?Stock alerts\./)[0]), 'consent wording names no email channel while customer emails are off');
+ok(/I agree that Dan of Dan Sells, Sidcup can contact me/.test(vis) && vis.includes(A.CONSENT) && !/email/i.test(vis.match(/I agree[\s\S]*?Stock alerts\./)[0]), 'consent wording names no email channel while customer emails are off, and the page matches the stored text');
 console.log('RESULT alerts ' + n + '/' + n);

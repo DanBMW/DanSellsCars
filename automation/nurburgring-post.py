@@ -266,7 +266,7 @@ def page(n, inner, swipe=True, hero=None, band=None, band_cap='', band_h=496):
 </div>
 %s<div class="body">%s</div>
 <div class="foot">
-  <span class="who">Dan Cane &middot; <b>BMW Ruxley</b></span>
+  <span class="who">Dan &middot; <b>BMW Ruxley</b></span>
   %s
 </div>
 </body></html>""" % (CSS, 'hero' if hero else '', shot, n, strip, inner, foot_right)
@@ -403,7 +403,7 @@ def slides(px):
       <p><b>DM me</b> to get yours on the list &ndash; and <b>send this to
         whoever you know</b> who would want one.</p>
     </div>
-    <p class="note">Dan Cane, Sales Executive, BMW Ruxley (Hedin Automotive).
+    <p class="note">Dan, Sales Executive, BMW Ruxley (Hedin Automotive).
       Specification shown is BMW M&rsquo;s published edition detail and may vary
       by market. Not a binding offer.</p>""",
   {}),
@@ -428,7 +428,7 @@ DM me and I will get you on the list before the allocation is spoken for.
 
 And please SHARE this - tag someone, send it on, stick it on your story. Somebody you know has wanted one of these since 1927.
 
-Dan Cane | BMW Ruxley
+Dan | BMW Ruxley
 dan-sells.co.uk
 
 #BMW #BMWM #Nurburgring #100JahreNurburgring #Nordschleife #GreenHell #BMWM2 #BMWM3 #BMWM4 #BMWM5 #M3Touring #M5Touring #BMWRuxley #HedinAutomotive #LimitedEdition #BornOnTheRacetrack

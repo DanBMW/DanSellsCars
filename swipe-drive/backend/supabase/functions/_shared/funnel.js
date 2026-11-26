@@ -10,7 +10,7 @@ const SPEC = { heated: 'feat:heated', pano: 'feat:pano', hud: 'feat:hud', sound:
 const MILES = { u6: 5000, '6to10': 8000, '10to15': 12500, '15plus': 18000 };
 const WHEN = { now: 'now', month: 'month', quarter: 'quarter', browsing: 'browsing' };
 const COLOURS = ['Black', 'White', 'Grey', 'Silver', 'Blue', 'Red', 'Green'];
-export const CONSENT = "I agree that Dan Cane of Dan Sells, Sidcup can contact me by WhatsApp, phone call or app notification when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.";
+export const CONSENT = "I agree that Dan of Dan Sells, Sidcup can contact me by WhatsApp, phone call or app notification when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me, Stock alerts.";
 /* SwipeToDrive guest (browse first, no account): the wording the guest ticked in the app, word for word (app.js CONSENT_GUEST) */
 export const CONSENT_GUEST = 'I agree that SwipeToDrive can contact me by WhatsApp, phone call, email or app notification about the cars I like, and when a car that matches my answers comes into stock. I can stop at any time by replying STOP on WhatsApp, or in SwipeToDrive under Me.';
 export const GUEST_SRC = 'swipetodrive-guest';
