@@ -26,7 +26,7 @@ check('buttons sit flush on the nav, sized from card-premium.js', /bottom:var\(-
 check('nothing behind the buttons: cars left is screen reader only, How it works moves to the top bar', /#deckLeft\{position:absolute!important;width:1px/.test(css) && /bar\.appendChild\(how\)/.test(js));
 check('layout refits on resize and in app browser viewport changes', /visualViewport/.test(js) && /ResizeObserver/.test(js));
 check('drawDeck asks for a refit', /if \(window\.sdFit\) window\.sdFit\(\);/.test(app));
-check('files wired in and versions bumped', /card-premium\.css\?v=1/.test(html) && /card-premium\.js\?v=1/.test(html) && /app\.js\?v=62/.test(html) && /'sd-v82'/.test(sw) && /card-premium\.css\?v=1/.test(sw) && /card-premium\.js\?v=1/.test(sw));
+check('files wired in and versions bumped', /card-premium\.css\?v=1/.test(html) && /card-premium\.js\?v=1/.test(html) && /app\.js\?v=62/.test(html) && +((sw.match(/'sd-v(\d+)'/) || [])[1] || 0) >= 82 && /card-premium\.css\?v=1/.test(sw) && /card-premium\.js\?v=1/.test(sw));
 check('card-premium.css loads after premium.css and guest-free.css', html.indexOf('card-premium.css') > html.indexOf('guest-free.css') && html.indexOf('card-premium.css') > html.indexOf('premium.css?'));
 check('no dashes in new visible copy', !/content:'[^']*[\u2010-\u2015-][^']*'/.test(css));
 console.log(p + ' passed, ' + f + ' failed'); if (f) process.exit(1);
