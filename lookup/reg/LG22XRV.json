@@ -16,7 +16,7 @@
  "trim": "Sport",
  "price": "£19,084",
  "price_gbp": 19084,
- "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a21232-c135-73c1-b10a-30f58ff69f2c-preview.jpg",
+ "image": "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a21fa6-45b0-7f8a-8f1d-5c5657d705ed-preview.jpg",
  "images": [
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a21232-c135-73c1-b10a-30f58ff69f2c-enlarged.jpg",
   "https://cdne-cdn-prod-polaris-prod.azureedge.net/vehicles/01a21232-c25c-78fa-afa7-88841cc73738-enlarged.jpg",
@@ -41,7 +41,7 @@
   "payments": 47,
   "price": 19084,
   "product": "BMW Select (PCP)",
-  "quoted_at": "2026-11-27T16:05:15.4156362+00:00",
+  "quoted_at": "2026-11-28T07:04:10.3737225+00:00",
   "reg": "LG22XRV",
   "term": 48,
   "total_payable": 25073.7,
