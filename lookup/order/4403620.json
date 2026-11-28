@@ -16,8 +16,8 @@
  "monthly": "£1,711.35",
  "monthly_gbp": 1711.35,
  "apr": 2.9,
- "lead_time_weeks_min": 4,
- "lead_time_weeks_max": 6,
+ "lead_time_weeks_min": 3,
+ "lead_time_weeks_max": 5,
  "on_hold": false,
  "options": [
   "M Carbon Side Mirror Caps",
